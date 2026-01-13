@@ -1,0 +1,4 @@
+# Dependencias principales para backend
+Django
+djangorestframework
+mysqlclient
