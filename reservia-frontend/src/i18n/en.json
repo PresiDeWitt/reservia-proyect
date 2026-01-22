@@ -1,0 +1,69 @@
+{
+  "header": {
+    "home": "Home",
+    "map": "Map",
+    "categories": "Categories",
+    "myBookings": "My Bookings",
+    "signIn": "Sign In",
+    "searchPlaceholder": "Ask AI: 'Find a romantic Italian spot...'"
+  },
+  "hero": {
+    "title": "Table Booking & Food Pre-ordering",
+    "subtitle": "Skip the wait. Reserve your table or order ahead for a seamless dining experience.",
+    "bookTable": "Book a Table",
+    "preorderFood": "Pre-order Food",
+    "tabs": {
+      "bookTable": "Book Table",
+      "orderPickup": "Order Pickup"
+    },
+    "searchPlaceholder": "Restaurant, cuisine, or specific dish...",
+    "filters": {
+      "cuisine": "Cuisine",
+      "distance": "Distance",
+      "ratings": "Ratings"
+    },
+    "search": "Search"
+  },
+  "home": {
+    "browseByCraving": "Browse by Craving",
+    "topRatedTitle": "Top Rated Near You",
+    "topRatedSubtitle": "Highly reviewed restaurants with immediate availability.",
+    "viewAll": "View all"
+  },
+  "restaurant": {
+    "realTime": "Real-time",
+    "menu": "Menu",
+    "bookNow": "Book Now",
+    "reviews": "reviews",
+    "about": "About the restaurant",
+    "menuHighlights": "Menu highlights",
+    "reserveTitle": "Reserve a table",
+    "guests": "Guests",
+    "date": "Date",
+    "availableTimes": "Available Times",
+    "completeReservation": "Complete Reservation",
+    "noCharges": "No charges yet. You'll only pay at the restaurant.",
+    "reserved": "Reserved!",
+    "reservedDetails": "Table for {{guests}} at {{time}} on {{date}}",
+    "gotIt": "Got it",
+    "photos": "+12 photos"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact",
+    "rights": "© 2026 ReserVia Inc. All rights reserved."
+  },
+  "cuisines": {
+    "Italian": "Italian",
+    "Sushi": "Sushi",
+    "Steak": "Steak",
+    "Mexican": "Mexican",
+    "Burgers": "Burgers",
+    "Healthy": "Healthy",
+    "Bakery": "Bakery",
+    "Asian": "Asian",
+    "Japanese": "Japanese",
+    "Steakhouse": "Steakhouse"
+  }
+}

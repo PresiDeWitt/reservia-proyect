@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ReserVia - Premium Restaurant Booking &amp; Pre-ordering</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                "primary": "#f97415",
+                "background-light": "#f8f7f5",
+                "background-dark": "#23170f",
+                "navy": "#0F172A",
+                "emerald": "#10B981",
+                },
+                fontFamily: {
+                "display": ["Inter", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#1c130d] dark:text-[#fcfaf8]">
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-slate-800 bg-navy px-10 py-4 shadow-md">
+<div class="flex items-center gap-4 text-white">
+<div class="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
+<span class="material-symbols-outlined text-3xl">restaurant</span>
+</div>
+<h2 class="text-white text-xl font-bold leading-tight tracking-tight">ReserVia</h2>
+</div>
+<div class="hidden lg:flex flex-1 max-w-lg mx-8">
+<div class="relative w-full group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-indigo-400 group-focus-within:text-indigo-300 transition-colors">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+</div>
+<input class="w-full h-10 pl-10 pr-4 rounded-lg bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm" placeholder="Ask AI: 'Find a romantic Italian spot with vegan options...'" type="text"/>
+<div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+<span class="text-xs text-slate-500 border border-slate-700 rounded px-1.5 py-0.5">⌘K</span>
+</div>
+</div>
+</div>
+<div class="flex justify-end gap-8 items-center">
+<nav class="hidden md:flex items-center gap-9">
+<a class="text-slate-300 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Home</a>
+<a class="text-slate-300 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">Categories</a>
+<a class="text-slate-300 hover:text-white transition-colors text-sm font-medium leading-normal" href="#">My Bookings</a>
+</nav>
+<div class="flex gap-3">
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-6 bg-primary hover:bg-orange-600 transition-colors text-white text-sm font-bold leading-normal tracking-[0.015em] shadow-sm">
+<span class="truncate">Sign In</span>
+</button>
+<div class="hidden md:flex size-10 items-center justify-center rounded-full bg-slate-700 text-white cursor-pointer hover:bg-slate-600 transition-colors">
+<span class="material-symbols-outlined">person</span>
+</div>
+</div>
+</div>
+</header>
+<main class="flex flex-col min-h-screen">
+<section class="relative flex min-h-[640px] flex-col items-center justify-center bg-cover bg-center bg-no-repeat p-4 md:p-10" data-alt="Gourmet dining table with candles and wine in a dimly lit restaurant" style='background-image: linear-gradient(rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.4) 100%), url("../assets/images/hero.jpg");'>
+<div class="flex flex-col gap-6 text-center max-w-5xl z-10 mb-10">
+<h1 class="text-white text-5xl md:text-7xl font-black leading-tight tracking-[-0.033em] drop-shadow-2xl">
+                    Table Booking &amp; Food Pre-ordering
+                </h1>
+<h2 class="text-slate-200 text-lg md:text-2xl font-light leading-relaxed max-w-3xl mx-auto drop-shadow-md">
+                    Skip the wait. Reserve your table or order ahead for a seamless dining experience.
+                </h2>
+<div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+<button class="px-8 py-3.5 bg-primary hover:bg-orange-600 text-white rounded-full font-bold text-lg shadow-lg hover:shadow-orange-500/20 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">table_restaurant</span>
+                        Book a Table
+                     </button>
+<button class="px-8 py-3.5 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-full font-bold text-lg shadow-lg transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">shopping_bag</span>
+                        Pre-order Food
+                     </button>
+</div>
+</div>
+<div class="w-full max-w-[960px] bg-white rounded-2xl shadow-2xl p-6 md:p-8 z-20 transform translate-y-12 border border-slate-100/50 backdrop-blur-sm">
+<div class="flex flex-col gap-5">
+<div class="flex gap-6 border-b border-slate-100 pb-4 mb-2">
+<button class="text-primary font-bold border-b-2 border-primary pb-4 -mb-4.5 px-2">Book Table</button>
+<button class="text-slate-500 font-medium hover:text-slate-800 transition-colors pb-4 -mb-4.5 px-2">Order Pickup</button>
+<button class="text-slate-500 font-medium hover:text-slate-800 transition-colors pb-4 -mb-4.5 px-2">Delivery</button>
+</div>
+<div class="relative w-full">
+<div class="absolute inset-y-0 left-0 flex items-center pl-5 pointer-events-none text-slate-400">
+<span class="material-symbols-outlined text-2xl">search</span>
+</div>
+<input class="w-full h-16 pl-14 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-lg font-medium shadow-inner" placeholder="Restaurant, cuisine, or specific dish..." type="text"/>
+</div>
+<div class="flex flex-col md:flex-row gap-4 justify-between items-center">
+<div class="flex gap-3 flex-wrap w-full md:w-auto">
+<div class="relative group">
+<button class="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:border-primary hover:text-primary transition-colors shadow-sm">
+<span>Cuisine</span>
+<span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+</button>
+</div>
+<div class="relative group">
+<button class="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:border-primary hover:text-primary transition-colors shadow-sm">
+<span>Distance</span>
+<span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+</button>
+</div>
+<div class="relative group">
+<button class="flex h-12 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 hover:border-primary hover:text-primary transition-colors shadow-sm">
+<span>Ratings</span>
+<span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+</button>
+</div>
+</div>
+<button class="w-full md:w-auto h-14 px-10 bg-navy hover:bg-slate-800 text-white text-lg font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+<span>Search</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<section class="pt-24 pb-12 px-4 md:px-10 lg:px-40 bg-background-light">
+<div class="max-w-[1280px] mx-auto">
+<h3 class="text-slate-900 text-xl font-bold mb-8">Browse by Craving</h3>
+<div class="flex overflow-x-auto pb-6 gap-8 scrollbar-hide snap-x">
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Slice of pepperoni pizza" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCaL_ZMUKce1lEIS6Go8bPqzvAnhkh-ZlzDz6CTQKUA3OiIE1NTTIa3PTFnyd8YaFzaCl9ELdjDDL2hfT1dqmaPf6uThUI8yVPAkxhM9SYhcpS7t82I37Nxa8wyObVfgxbz6knwk8mclv5Xaw0Ij52OG6b-PBQhtxhH_Vfge1xcWDRDt6U7OUmCN27lg4tDiYOGeXSlTH4_udI8Tf4RPRrTFF90_i5k1em1ZTymFWKUPrbfc0uFVo5eh5cHFOJ3PF2_YETbCjsk1ZGO");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Italian</span>
+</div>
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Fresh sushi rolls on a plate" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBNI1ZH6Aw94gvB4wR7jyeJ2Lb4O-heuBupulxyA5IHJqgSkqxMEcwzOHAk_XiWbq-ZGGBUtAW3taso-Jo1uVlhiTo9UPGUU24i9bIlC0-dBCrRzdGdMJ-trA0D-PRNGAEyPXmr6XcleHIXiYloVxt1qOKOilfnncgLOMWdEYtWYqm3fyvT4x0dPlO6LmOYp3hJNEQgHWk4Q9LVuDfEE0WXzVQxngkcQhLr6K1bzvcriDIpUXXFwb0iziMXrMUfIrz32OH1v6uycMDL");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Sushi</span>
+</div>
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Juicy grilled steak" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCYVZv5jcYRQjHFAA1rt6K95GAiPQzoLqRGz3m_SBLxMR46HF2PFZA82raR59_b0PZNs1zU_HKsdSuRe1jU9f19xGeMLIyOC8WgjnuV_UxBrtzUr8ysVycufih9cKmoZolIeivGmTcGEMZi_HkBbT7yhkVwfT2PgZ-enscbRFIwFoJMDX-xZsMVRvwfcSON84tDjpDfXvw1QxA3JAETSaqs4aq1ROsRdF44ivDMxOgBE5Im69NUun6yqJJl4fuRE_yIHUGgQz5EzBRk");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Steak</span>
+</div>
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Mexican tacos with lime" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA2mXVSNxQFwnf1dzET37dnim12Y655R4ZfMafQ6lq0N8-QZoAXo9qVgipNMXChxxZG_kU67sUy_a44fM_0oLzSnj-boSKsKVxj039gY65-FAuK84xskt9f5Vw8H2ox4TJKCEKKVTcsQhOY1_u4DNHye1O5KMpK2UOKSJIZuV9j_eUuksrCECv44FPsRKsrdlCVYWjNjpu-KKSuOWDsGdIHCFesmPoOXk6yfxlWaOz4sn4Cgg7WhKL9RiOxhnykjiGKVhVTLRuHJ5O6");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Mexican</span>
+</div>
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Gourmet burger with fries" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBcvk0ZKg3L7imNcBkIhdIS6jlU-BRIXdeChbM8sjXzSNZAzBvuDSSu7LvW-Hp5cYx6DtiURRYnFd0ZJL-_30MUGT_7WBsAxf_ckM-NL3sA6JfEoO6b2mr__3gizdJII0yfjoJM2X1x7tcYHCCCmNg7dFMDYa_g5VIPjrDEyMV1tnmvdz4iRH9ferJrEnp3AW2OcV45xu2IFLZu5a2z9MUfoRfvdM6m5ebLSv7kqAifSJoQRo4c8DlP4avbfkhB-YKM9fZjSacYGCZV");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Burgers</span>
+</div>
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Fresh salad bowl" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDAN_CDoCgDYM9MZRAIqgCfcciiffkzo4Y05IPyyVkGR5FbQCMXjhnDrI5TvjH0Oob79FIBdGmv7WXim2wbuqRlx_RAF56tq01pLc7L69JH9KoQstk2AzCFUp87CpCWA01JeUDzaMcnOAPdwI2ZMVfh_oEsuOhyGtwnBI_MSkh18C_uWe0mpuYmXnEKvmOZGAEG1ymvOjgzOMA2myuQ3axdVlSAePLKXLK9NmW_Q9R0Yy2tLlu_zstUyG13QTBX8ClEbjiAQ5fOhZGZ");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Healthy</span>
+</div>
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Croissants and coffee" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDmPDibvVLndILyGh9V8yqMU84RX8pSLfLp4MyVcCBFBXlN9V2j33QVkEOyQDCFzoa6Bai7m9U6yXXbWi6TJgrbT6YeQ7sj_gmaDb517JGQ5zyfwxTSA08isvE0cSEckfr0-aGD4P6qEGYpmDbK8YszXaQpDQQ72d0c6ri6xJw2HTWX6xy1NGou0AElIxaNagKQALos3vFIu9oFOhTXYaTqD3hMJhAbQa00QRzHuo2H74XQuFxDPVrUZ6a1nVfrLTW5ctikjzDLC98G");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Bakery</span>
+</div>
+<div class="flex flex-col items-center gap-4 min-w-[100px] cursor-pointer group snap-center">
+<div class="size-24 rounded-full bg-cover bg-center shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 ring-4 ring-white" data-alt="Pad thai noodles" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAOvSqV9kLrQ9qNvvTse96r2-qatNiCLF4IGKTvnL1pT5s3Typi4g-FyDPVujJmtvkNW09Z_b-20MMzP9bCS2Zi6quiOAH5hMjJ-uYDsBXcdQuTzRMr5U6LKBfpmMLf1-dZvXvjjU4Ai2rW4xixphXis1XXNeZjJ08U6mNsV30JS5AF55eVWfhoIMMzu3gKOxP2gTJqBaeX1cgTIkvwrg5fxhYHkp0n-w-ygaGhEZQzgyu62793KaCF90MCps73a9qEArLuB6bHEkRY");'></div>
+<span class="text-base font-bold text-slate-700 group-hover:text-primary">Asian</span>
+</div>
+</div>
+</div>
+</section>
+<section class="py-12 px-4 md:px-10 lg:px-40 bg-white">
+<div class="max-w-[1280px] mx-auto flex flex-col gap-8">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="text-navy text-3xl font-bold leading-tight tracking-tight">Top Rated Near You</h2>
+<p class="text-slate-500 mt-2 text-lg">Highly reviewed restaurants with immediate availability.</p>
+</div>
+<a class="text-primary font-bold text-base hover:underline flex items-center gap-1 hidden sm:flex" href="#">
+                        View all (42)
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+<div class="relative h-60 w-full overflow-hidden">
+<div class="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald text-white px-3 py-1.5 text-xs font-bold shadow-md backdrop-blur-sm bg-opacity-90">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                                Real-time
+                            </div>
+<div class="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors shadow-sm">
+<span class="material-symbols-outlined block text-[20px]">favorite</span>
+</div>
+<div class="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Elegant pasta dish served in a restaurant" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDZ9WwNreB6ErG5koBvPmXahLEWp5g29uQNZx3FZ3HzwfJFNXckjDmqAPEFKMa4TfIlYngfdx85VY56-yP8SvMmQqQ66HAizHmdYzqkwc93ZkhYqViw1QD_o4TpLiUaA-XYXq2Sl1CAyULZ2MU5AnhmERtoPviqq67oYW2JxxOMoKUU7NnFK7vcuwT4gEyrZIzG5OQfesZgLU9Bls1JQ92mT8gtxl_8f2LZ0LKWqACYjQa6GuE2q-A8KjubFegGqOy3mr1RSKpkR3cV");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</div>
+</div>
+<div class="flex flex-1 flex-col p-6">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-xl font-bold text-navy group-hover:text-primary transition-colors">The Golden Fork</h3>
+<p class="text-sm text-slate-500 font-medium mt-1">Italian • Downtown • 0.8 mi</p>
+</div>
+<div class="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
+<span class="material-symbols-outlined text-[16px] text-green-600 filled">star</span>
+<span class="text-sm font-bold text-navy">4.8</span>
+</div>
+</div>
+<div class="mb-6 flex items-center gap-3 text-sm text-slate-600">
+<span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">$$$</span>
+<span>Fine Dining</span>
+</div>
+<div class="mt-auto grid grid-cols-2 gap-3">
+<button class="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+                                     Menu
+                                </button>
+<button class="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    Book Now
+                                </button>
+</div>
+</div>
+</div>
+<div class="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+<div class="relative h-60 w-full overflow-hidden">
+<div class="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald text-white px-3 py-1.5 text-xs font-bold shadow-md backdrop-blur-sm bg-opacity-90">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                                Real-time
+                            </div>
+<div class="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors shadow-sm">
+<span class="material-symbols-outlined block text-[20px]">favorite</span>
+</div>
+<div class="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Platter of sushi rolls" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAq09YOeZIxvpzQ940Pcc4HzbAzakLTNiD4VIc--yoiE6rdfnQIGbvGZI1qutQzhqotmtc_VSsaOqTJItgibIVvssjhwquZJQOQ1fgU81rthi9F3pCYHuxQUc1wj5WEz17j-az59VkjKif4404X7JCfGQUNwl1e7gTkIQ8w3H164ci1nDvCkv9QWr5B-W8oWJL8dTw70CyQhmFsno9_Bctny-2ev-7Iy24hxTbcsUDgeB7KFhdoHxXanyofwjOl8EHb010ilffBfAtS");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</div>
+</div>
+<div class="flex flex-1 flex-col p-6">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-xl font-bold text-navy group-hover:text-primary transition-colors">Sakura Gardens</h3>
+<p class="text-sm text-slate-500 font-medium mt-1">Japanese • West End • 2.1 mi</p>
+</div>
+<div class="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
+<span class="material-symbols-outlined text-[16px] text-green-600 filled">star</span>
+<span class="text-sm font-bold text-navy">4.6</span>
+</div>
+</div>
+<div class="mb-6 flex items-center gap-3 text-sm text-slate-600">
+<span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">$$</span>
+<span>Casual</span>
+</div>
+<div class="mt-auto grid grid-cols-2 gap-3">
+<button class="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+                                     Order Food
+                                </button>
+<button class="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    Book Now
+                                </button>
+</div>
+</div>
+</div>
+<div class="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+<div class="relative h-60 w-full overflow-hidden">
+<div class="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors shadow-sm">
+<span class="material-symbols-outlined block text-[20px]">favorite</span>
+</div>
+<div class="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Steak cooked medium rare" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBH-CsHleHWB5nyIgM_hiMzXN8P61yPRxZSNJbs_sucIms7WOT_RwCVj8aCDWV9bTUSx5u2AK6VNvF4GE6oPFiOAfZj57h842O6cQ3p7lMw1MWygysfcfot6kYgujLm6oZ5O1Nxf3KuYAsWzwLeGBKPUNOOW8xCkCUeIvhpet9A1vnM89FkoH-a2-IAYuvaK9LdT_WJVxsWebCK2ftEu93US7-mmLaFmSdSYEwZt9JodfNWazjd0fK_tz4jvfN670aw9sjC6czmjmHT");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</div>
+</div>
+<div class="flex flex-1 flex-col p-6">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-xl font-bold text-navy group-hover:text-primary transition-colors">Prime Cuts</h3>
+<p class="text-sm text-slate-500 font-medium mt-1">Steakhouse • Uptown • 1.5 mi</p>
+</div>
+<div class="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
+<span class="material-symbols-outlined text-[16px] text-green-600 filled">star</span>
+<span class="text-sm font-bold text-navy">4.9</span>
+</div>
+</div>
+<div class="mb-6 flex items-center gap-3 text-sm text-slate-600">
+<span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">$$$$</span>
+<span>Luxury</span>
+</div>
+<div class="mt-auto grid grid-cols-2 gap-3">
+<button class="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+                                     View Menu
+                                </button>
+<button class="w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-400 cursor-not-allowed" disabled="">
+                                    Fully Booked
+                                </button>
+</div>
+</div>
+</div>
+<div class="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+<div class="relative h-60 w-full overflow-hidden">
+<div class="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald text-white px-3 py-1.5 text-xs font-bold shadow-md backdrop-blur-sm bg-opacity-90">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                                Real-time
+                            </div>
+<div class="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors shadow-sm">
+<span class="material-symbols-outlined block text-[20px]">favorite</span>
+</div>
+<div class="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Modern fusion tacos" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBjO2obFloQjEfUPiF-4yHBZCxKx1qtYzORNYWu29lIcLlel16Cl3Rt0gsbKSjYjHKc59-on9UG5We76HQT-B9uEYHP6aTIijRFj1baLXVYNukx9ep-2kgNFPuTNCm5G3uFrBZU_BMlRWmBElB6GBqIRvfaX6F41dyvwHvghWJbbH84vXwBfxZy3AxpZUx6Ssdeo33FwL0W0j0cia-VyxmTJEjHaEiKSopvRcpGTp8k_3paNgAaDwjL0AsV6eVHrIkOjpCLrch4GySZ");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</div>
+</div>
+<div class="flex flex-1 flex-col p-6">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-xl font-bold text-navy group-hover:text-primary transition-colors">El Centro</h3>
+<p class="text-sm text-slate-500 font-medium mt-1">Mexican Fusion • Arts District • 3.0 mi</p>
+</div>
+<div class="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
+<span class="material-symbols-outlined text-[16px] text-green-600 filled">star</span>
+<span class="text-sm font-bold text-navy">4.5</span>
+</div>
+</div>
+<div class="mb-6 flex items-center gap-3 text-sm text-slate-600">
+<span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">$$</span>
+<span>Lively</span>
+</div>
+<div class="mt-auto grid grid-cols-2 gap-3">
+<button class="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+                                     Order Food
+                                </button>
+<button class="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    Book Now
+                                </button>
+</div>
+</div>
+</div>
+<div class="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+<div class="relative h-60 w-full overflow-hidden">
+<div class="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald text-white px-3 py-1.5 text-xs font-bold shadow-md backdrop-blur-sm bg-opacity-90">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                                Real-time
+                            </div>
+<div class="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors shadow-sm">
+<span class="material-symbols-outlined block text-[20px]">favorite</span>
+</div>
+<div class="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="Plant based burger" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCMBoaRidl1UVYVeR7i9lV4S9S2aAsOYrVbpIItCHs3dBgCYgm93eaRB-vFBJ0GVj8HyRf32VsTyjK4zushi7L5w-KC_wqTQeFIZqaetzuZ89KyP3hKn81UOVKJDdx2Q2qRiaxIjXHBLDitksncZuE0uPYqXvp8_BAxx6u66aWuviuPmqwuSXvS7ubkOwVWDTIqkuFVt1jaMfJ-jW93XubsOqSAp7VOAnHLf_91PvzqpU86dci5x5jxhnFviIWzIHN_a33TT6m7JRkr");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</div>
+</div>
+<div class="flex flex-1 flex-col p-6">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-xl font-bold text-navy group-hover:text-primary transition-colors">Green Leaf</h3>
+<p class="text-sm text-slate-500 font-medium mt-1">Vegetarian • Midtown • 1.2 mi</p>
+</div>
+<div class="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
+<span class="material-symbols-outlined text-[16px] text-green-600 filled">star</span>
+<span class="text-sm font-bold text-navy">4.7</span>
+</div>
+</div>
+<div class="mb-6 flex items-center gap-3 text-sm text-slate-600">
+<span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">$$</span>
+<span>Healthy</span>
+</div>
+<div class="mt-auto grid grid-cols-2 gap-3">
+<button class="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">shopping_bag</span>
+                                     Order Food
+                                </button>
+<button class="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                                    Book Now
+                                </button>
+</div>
+</div>
+</div>
+<div class="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+<div class="relative h-60 w-full overflow-hidden">
+<div class="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors shadow-sm">
+<span class="material-symbols-outlined block text-[20px]">favorite</span>
+</div>
+<div class="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="French pastry dessert" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCYqiTs7C5WXGwfZG40oBZiUYL9Bm5OoRex9sy3i0dIvR732t4tRHQQwR1771vRsWdGaE9NIBHqnaZz7tcWmnNzuqUNhqnqnsW0o0gkITZQw8V1vy1lmJ2NBWKo0BbKCR-DrMJcguDHUdDNRZgDr0Ha_yRVqNKHGlRGPw0qEYJ2Rxm8WnkNEplspozG8rP3pfJTEkyHv09F2KCj0AnMIeKZLnRiwC_OiybYy-Zl5wbuqYD6HSL8bfE2zmL7_OTJcEOre9ODiuZ0k8v6");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+</div>
+</div>
+<div class="flex flex-1 flex-col p-6">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="text-xl font-bold text-navy group-hover:text-primary transition-colors">Le Petit Paris</h3>
+<p class="text-sm text-slate-500 font-medium mt-1">French Bistro • Old Town • 4.5 mi</p>
+</div>
+<div class="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
+<span class="material-symbols-outlined text-[16px] text-green-600 filled">star</span>
+<span class="text-sm font-bold text-navy">4.3</span>
+</div>
+</div>
+<div class="mb-6 flex items-center gap-3 text-sm text-slate-600">
+<span class="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">$$$</span>
+<span>Romantic</span>
+</div>
+<div class="mt-auto grid grid-cols-2 gap-3">
+<button class="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 hover:text-navy transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+                                     View Menu
+                                </button>
+<button class="w-full rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-400 cursor-not-allowed" disabled="">
+                                    Fully Booked
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<footer class="mt-auto bg-navy text-white py-12 px-4 md:px-10 lg:px-40">
+<div class="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+<div class="col-span-1 md:col-span-2">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-primary text-2xl">restaurant</span>
+<h4 class="text-xl font-bold">ReserVia</h4>
+</div>
+<p class="text-slate-400 text-sm max-w-sm leading-relaxed">
+                        Connecting food lovers with the best dining experiences. Book your next memorable meal or order ahead instantly with ReserVia.
+                    </p>
+</div>
+<div>
+<h5 class="font-bold mb-4 text-slate-200">Discover</h5>
+<ul class="flex flex-col gap-2 text-sm text-slate-400">
+<li><a class="hover:text-primary transition-colors" href="#">Dining Rewards</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Private Dining</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Top 10 Lists</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">New Arrivals</a></li>
+</ul>
+</div>
+<div>
+<h5 class="font-bold mb-4 text-slate-200">Company</h5>
+<ul class="flex flex-col gap-2 text-sm text-slate-400">
+<li><a class="hover:text-primary transition-colors" href="#">About Us</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Careers</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Terms of Service</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">Privacy Policy</a></li>
+</ul>
+</div>
+</div>
+<div class="max-w-[1280px] mx-auto mt-12 pt-8 border-t border-slate-800 text-center text-xs text-slate-500">
+                © 2023 ReserVia Inc. All rights reserved.
+            </div>
+</footer>
+</main>
+
+</body></html>
