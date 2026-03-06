@@ -1,0 +1,98 @@
+{
+  "header": {
+    "home": "Inicio",
+    "map": "Mapa",
+    "categories": "Categorías",
+    "myBookings": "Mis Reservas",
+    "signIn": "Iniciar Sesión",
+    "searchPlaceholder": "Pregunta a la IA: 'Busca un sitio italiano romántico...'"
+  },
+  "hero": {
+    "title": "Reserva de Mesas y Pre-pedido de Comida",
+    "subtitle": "Olvídate de las esperas. Reserva tu mesa o pide por adelantado para una experiencia sin interrupciones.",
+    "bookTable": "Reservar Mesa",
+    "preorderFood": "Pedir Comida",
+    "tabs": {
+      "bookTable": "Reservar Mesa",
+      "orderPickup": "Recoger Pedido"
+    },
+    "searchPlaceholder": "Restaurante, cocina o plato específico...",
+    "filters": {
+      "cuisine": "Cocina",
+      "distance": "Distancia",
+      "ratings": "Calificaciones"
+    },
+    "search": "Buscar"
+  },
+  "home": {
+    "browseByCraving": "Explora por Antojo",
+    "topRatedTitle": "Mejor Valorados Cerca de Ti",
+    "topRatedSubtitle": "Restaurantes con excelentes reseñas y disponibilidad inmediata.",
+    "viewAll": "Ver todos",
+    "results": "restaurantes",
+    "clearFilters": "Limpiar filtros",
+    "noResults": "No se encontraron restaurantes. Prueba con otra búsqueda."
+  },
+  "restaurant": {
+    "realTime": "Tiempo real",
+    "menu": "Menú",
+    "bookNow": "Reservar",
+    "reviews": "reseñas",
+    "about": "Sobre el restaurante",
+    "menuHighlights": "Platos destacados",
+    "reserveTitle": "Reserva una mesa",
+    "guests": "Comensales",
+    "date": "Fecha",
+    "availableTimes": "Horarios Disponibles",
+    "completeReservation": "Completar Reserva",
+    "noCharges": "Sin cargos por ahora. Solo pagarás en el restaurante.",
+    "reserved": "¡Reservado!",
+    "reservedDetails": "Mesa para {{guests}} a las {{time}} el {{date}}",
+    "gotIt": "Entendido",
+    "photos": "+12 fotos"
+  },
+  "footer": {
+    "privacy": "Política de Privacidad",
+    "terms": "Términos de Servicio",
+    "contact": "Contacto",
+    "rights": "© 2026 ReserVia Inc. Todos los derechos reservados."
+  },
+  "auth": {
+    "signIn": "Iniciar Sesión",
+    "register": "Registrarse",
+    "createAccount": "Crear Cuenta",
+    "namePlaceholder": "Tu nombre",
+    "emailPlaceholder": "Correo electrónico",
+    "passwordPlaceholder": "Contraseña (mín. 6 caracteres)"
+  },
+  "bookings": {
+    "title": "Mis Reservas",
+    "empty": "No tienes reservas todavía.",
+    "guests": "comensales",
+    "cancel": "Cancelar",
+    "cancelled": "Cancelada",
+    "confirmed": "Confirmada"
+  },
+  "cuisines": {
+    "Italian": "Italiana",
+    "Sushi": "Sushi",
+    "Steak": "Carne",
+    "Mexican": "Mexicana",
+    "Burgers": "Hamburguesas",
+    "Healthy": "Saludable",
+    "Bakery": "Panadería",
+    "Asian": "Asiática",
+    "Japanese": "Japonesa",
+    "Steakhouse": "Parrilla",
+    "French": "Francesa",
+    "Fusion": "Fusión"
+  },
+  "chat": {
+    "subtitle": "Encuentra tu restaurante perfecto",
+    "welcome": "Hola\\! Preg�ntame y te ayudo a encontrar el restaurante ideal seg�n tu cocina favorita, el ambiente, presupuesto o tu ubicaci�n.",
+    "placeholder": "Ej: Italiano rom�ntico para esta noche...",
+    "error": "Lo siento, algo sali� mal. Int�ntalo de nuevo.",
+    "locationOn": "Ubicaci�n activada",
+    "locationOff": "Activar ubicaci�n para sugerencias cercanas"
+  }
+}
