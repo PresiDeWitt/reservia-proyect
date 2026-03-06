@@ -1,4 +1,8 @@
-# Dependencias principales para backend
-Django
-djangorestframework
-mysqlclient
+django>=4.2,<5.0
+djangorestframework>=3.15,<4.0
+django-cors-headers>=4.3,<5.0
+djangorestframework-simplejwt>=5.3,<6.0
+python-dotenv>=1.0,<2.0
+gunicorn>=21.2,<22.0
+whitenoise>=6.6,<7.0
+anthropic>=0.40,<1.0
