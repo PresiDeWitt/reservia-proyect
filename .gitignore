@@ -1,0 +1,90 @@
+# ========================
+# Python / Django
+# ========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Django
+*.log
+*.pot
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# ========================
+# Node / React / Vite
+# ========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+.cache/
+.parcel-cache/
+
+# Build output
+frontend/dist/
+frontend/build/
+
+# ========================
+# Variables de entorno
+# ========================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ========================
+# IDEs y editores
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ========================
+# Testing
+# ========================
+.coverage
+htmlcov/
+.pytest_cache/
+coverage/
+*.cover
+
+# ========================
+# Docker
+# ========================
+*.override.yml
+
+# ========================
+# Misc
+# ========================
+*.bak
+*.tmp

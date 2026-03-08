@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
 
   return (
     <section
-      className="relative flex min-h-[600px] flex-col items-center justify-center bg-cover bg-center bg-no-repeat p-4 md:p-10"
+      className="relative flex min-h-[480px] md:min-h-[600px] flex-col items-center justify-center bg-cover bg-center bg-no-repeat p-4 md:p-10"
       style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.4) 100%), url(${heroImg})` }}
     >
       <div className="flex flex-col gap-6 text-center max-w-5xl z-10 mb-10">
@@ -52,7 +52,7 @@ const Hero: React.FC = () => {
 
       <form
         onSubmit={handleSearch}
-        className="w-full max-w-[960px] bg-white rounded-2xl shadow-2xl p-6 md:p-8 z-20 transform translate-y-12 border border-slate-100/50"
+        className="w-full max-w-[960px] bg-white rounded-2xl shadow-2xl p-4 md:p-8 z-20 transform translate-y-6 md:translate-y-12 border border-slate-100/50"
       >
         <div className="flex flex-col gap-5">
           <div className="flex gap-6 border-b border-slate-100 pb-4">

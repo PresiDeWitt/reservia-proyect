@@ -80,10 +80,10 @@ const Home: React.FC = () => {
     >
       <Hero />
       
-      <section className="pt-32 pb-12 px-4 md:px-10 lg:px-40">
+      <section className="pt-16 sm:pt-20 md:pt-28 pb-10 md:pb-12 px-4 md:px-10 lg:px-40">
         <div className="max-w-[1280px] mx-auto">
-          <motion.h3 variants={itemVariants} className="text-slate-900 text-xl font-bold mb-8">{t('home.browseByCraving')}</motion.h3>
-          <motion.div variants={itemVariants} className="flex overflow-x-auto pb-6 gap-8 scrollbar-hide snap-x">
+          <motion.h3 variants={itemVariants} className="text-slate-900 text-xl font-bold mb-6 md:mb-8">{t('home.browseByCraving')}</motion.h3>
+          <motion.div variants={itemVariants} className="flex overflow-x-auto pb-6 gap-4 md:gap-8 scrollbar-hide snap-x">
             {CATEGORIES.map(cat => (
               <CategoryCard
                 key={cat.key}
@@ -123,7 +123,7 @@ const Home: React.FC = () => {
             </div>
           </motion.div>
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-72 rounded-2xl bg-slate-100 animate-pulse" />
               ))}
@@ -135,7 +135,7 @@ const Home: React.FC = () => {
               <Link to="/" className="mt-4 inline-block text-primary font-bold hover:underline">{t('home.clearFilters')}</Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
               {restaurants.map((rest) => (
                 <motion.div key={rest.id} variants={itemVariants} viewport={{ once: true }}>
                   <RestaurantCard

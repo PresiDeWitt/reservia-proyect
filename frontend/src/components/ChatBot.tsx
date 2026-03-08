@@ -60,7 +60,7 @@ const ChatBot: React.FC = () => {
       {/* Floating button */}
       <motion.button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="AI Chat"
@@ -78,8 +78,8 @@ const ChatBot: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-24 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-100"
-            style={{ height: '480px' }}
+            className="fixed bottom-20 right-3 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-1.5rem)] sm:w-[360px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-100"
+            style={{ height: 'min(480px, calc(100dvh - 6rem))' }}
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-orange-500 px-4 py-3 flex items-center gap-3">

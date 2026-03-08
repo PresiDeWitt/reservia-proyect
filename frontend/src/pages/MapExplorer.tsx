@@ -38,6 +38,7 @@ const MapExplorer: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisineFilter, setCuisineFilter] = useState('');
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
   useEffect(() => {
     restaurantsApi.list(cuisineFilter ? { cuisine: cuisineFilter } : undefined)
@@ -47,23 +48,47 @@ const MapExplorer: React.FC = () => {
 
   const activeRestaurant = restaurants.find(r => r.id === selectedId);
 
+  const handleSelectRestaurant = (id: string) => {
+    setSelectedId(id);
+    setMobileView('map');
+  };
+
   return (
-    <div className="flex h-[calc(100vh-73px)] w-full overflow-hidden bg-slate-50">
+    <div className="flex flex-col md:flex-row h-[calc(100dvh-65px)] w-full overflow-hidden bg-slate-50">
+
+      {/* Mobile toggle */}
+      <div className="md:hidden flex border-b border-slate-200 bg-white shrink-0">
+        <button
+          onClick={() => setMobileView('list')}
+          className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'list' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
+        >
+          <span className="material-symbols-outlined text-base">list</span>
+          {t('home.topRatedTitle')}
+        </button>
+        <button
+          onClick={() => setMobileView('map')}
+          className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-1.5 transition-colors ${mobileView === 'map' ? 'text-primary border-b-2 border-primary' : 'text-slate-500'}`}
+        >
+          <span className="material-symbols-outlined text-base">map</span>
+          {t('header.map')}
+        </button>
+      </div>
+
       {/* Sidebar List */}
-      <div className="w-full md:w-96 h-full overflow-y-auto bg-white border-r border-slate-200 z-10 shadow-xl scrollbar-hide">
-        <div className="p-6">
-          <h2 className="text-2xl font-black text-navy mb-2">{t('home.topRatedTitle')}</h2>
-          <p className="text-slate-500 text-sm mb-6">{restaurants.length} {t('home.topRatedSubtitle')}</p>
+      <div className={`${mobileView === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-96 shrink-0 flex-col h-full overflow-y-auto bg-white border-r border-slate-200 z-10 shadow-xl scrollbar-hide`}>
+        <div className="p-4 md:p-6">
+          <h2 className="text-xl md:text-2xl font-black text-navy mb-1">{t('home.topRatedTitle')}</h2>
+          <p className="text-slate-500 text-sm mb-4 md:mb-6">{restaurants.length} {t('home.topRatedSubtitle')}</p>
 
           <div className="flex flex-col gap-4">
             {restaurants.map((rest) => (
               <button
                 key={rest.id}
-                onClick={() => setSelectedId(rest.id)}
-                className={`w-full text-left transition-all ${selectedId === rest.id ? 'ring-2 ring-primary rounded-2xl' : ''}`}
+                onClick={() => handleSelectRestaurant(rest.id)}
+                className={`w-full text-left transition-all active:scale-[0.98] ${selectedId === rest.id ? 'ring-2 ring-primary rounded-2xl' : ''}`}
                 title={rest.name}
               >
-                <div className="scale-95 group hover:scale-[0.98] transition-transform">
+                <div className="scale-95 hover:scale-[0.98] transition-transform">
                   <RestaurantCard {...rest} cuisine={t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} />
                 </div>
               </button>
@@ -73,10 +98,10 @@ const MapExplorer: React.FC = () => {
       </div>
 
       {/* Map Content */}
-      <div className="flex-1 relative">
-        <MapContainer 
-          center={[40.4168, -3.7038]} 
-          zoom={13} 
+      <div className={`${mobileView === 'map' ? 'flex' : 'hidden'} md:flex flex-1 relative`}>
+        <MapContainer
+          center={[40.4168, -3.7038]}
+          zoom={13}
           style={{ height: '100%', width: '100%' }}
           zoomControl={false}
         >
@@ -84,10 +109,10 @@ const MapExplorer: React.FC = () => {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           />
-          
+
           {restaurants.map((rest) => (
-            <Marker 
-              key={rest.id} 
+            <Marker
+              key={rest.id}
               position={rest.coords}
               icon={selectedId === rest.id ? activeIcon : DefaultIcon}
               eventHandlers={{
@@ -107,10 +132,10 @@ const MapExplorer: React.FC = () => {
         </MapContainer>
 
         {/* Floating Category Filter */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex gap-2 flex-wrap justify-center px-4">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex gap-2 flex-wrap justify-center px-4 max-w-full">
           <button
             onClick={() => setCuisineFilter('')}
-            className={`backdrop-blur-md px-4 py-2 rounded-full shadow-lg border text-sm font-bold transition-all ${!cuisineFilter ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
+            className={`backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-lg border text-xs md:text-sm font-bold transition-all ${!cuisineFilter ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
           >
             All
           </button>
@@ -118,13 +143,12 @@ const MapExplorer: React.FC = () => {
             <button
               key={cat}
               onClick={() => setCuisineFilter(cuisineFilter === cat ? '' : cat)}
-              className={`backdrop-blur-md px-4 py-2 rounded-full shadow-lg border text-sm font-bold transition-all ${cuisineFilter === cat ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
+              className={`backdrop-blur-md px-3 py-1.5 md:px-4 md:py-2 rounded-full shadow-lg border text-xs md:text-sm font-bold transition-all ${cuisineFilter === cat ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
             >
               {t(`cuisines.${cat}`, { defaultValue: cat })}
             </button>
           ))}
         </div>
-
       </div>
     </div>
   );

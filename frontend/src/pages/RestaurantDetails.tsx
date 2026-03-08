@@ -65,8 +65,8 @@ const RestaurantDetails: React.FC = () => {
   return (
     <div className="bg-background-light min-h-screen pb-20">
       {/* Hero Gallery */}
-      <div className="h-[40vh] md:h-[50vh] grid grid-cols-4 gap-2 p-2">
-        <div className="col-span-4 md:col-span-2 relative overflow-hidden rounded-xl">
+      <div className="h-[35vh] md:h-[50vh] grid grid-cols-1 md:grid-cols-4 gap-2 p-2">
+        <div className="col-span-1 md:col-span-2 relative overflow-hidden rounded-xl">
           <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
         </div>
         <div className="hidden md:block relative overflow-hidden rounded-xl">
@@ -80,7 +80,7 @@ const RestaurantDetails: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-[1280px] mx-auto px-4 md:px-10 lg:px-40 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
+      <div className="max-w-[1280px] mx-auto px-4 md:px-10 lg:px-40 mt-6 md:mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-12">
         {/* Main Content */}
         <div className="lg:col-span-2">
           <motion.div
@@ -143,7 +143,7 @@ const RestaurantDetails: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="sticky top-28 p-6 md:p-8 rounded-2xl bg-white border border-slate-200 shadow-xl"
+            className="lg:sticky lg:top-24 p-5 md:p-8 rounded-2xl bg-white border border-slate-200 shadow-xl"
           >
             <h3 className="text-2xl font-bold text-navy mb-6">{t('restaurant.reserveTitle')}</h3>
             
@@ -185,7 +185,7 @@ const RestaurantDetails: React.FC = () => {
 
               <fieldset className="flex flex-col gap-2 border-none p-0 m-0">
                 <legend className="text-sm font-bold text-slate-700 mb-2">{t('restaurant.availableTimes')}</legend>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 gap-2">
                   {timeSlots.map(time => (
                     <button
                       key={time}
