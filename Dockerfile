@@ -44,8 +44,9 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 # Crear directorio para static files
 RUN mkdir -p /app/backend/staticfiles
 
-# Cambiar al directorio del backend
+# Cambiar al directorio del backend y ejecutar collectstatic
 WORKDIR /app/backend
+RUN SECRET_KEY=build-only python manage.py collectstatic --noinput
 
 # Servir con Gunicorn
 CMD gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
