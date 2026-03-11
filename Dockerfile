@@ -48,5 +48,5 @@ RUN mkdir -p /app/backend/staticfiles
 WORKDIR /app/backend
 RUN SECRET_KEY=build-only python manage.py collectstatic --noinput
 
-# Servir con Gunicorn
-CMD gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
+# Servir con Gunicorn (con migraciones y seed al inicio)
+CMD python manage.py migrate --noinput && python manage.py seed && gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
