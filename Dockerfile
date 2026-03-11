@@ -26,5 +26,5 @@ RUN mkdir -p /app/backend/staticfiles
 # Cambiar al directorio del backend
 WORKDIR /app/backend
 
-# Servir con Gunicorn
-CMD python manage.py migrate && gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
+# Servir con Gunicorn (sin migrate en el startup)
+CMD gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
