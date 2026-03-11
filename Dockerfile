@@ -22,5 +22,8 @@ RUN mkdir -p backend/staticfiles
 # Ejecutar migraciones y recopilar static files
 RUN cd backend && python manage.py collectstatic --noinput || true
 
+# Cambiar al directorio del backend
+WORKDIR /app/backend
+
 # Servir con Gunicorn
-CMD cd backend && python manage.py migrate && gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
+CMD python manage.py migrate && gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
