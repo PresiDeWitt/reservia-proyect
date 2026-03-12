@@ -87,12 +87,38 @@
     "French": "Francesa",
     "Fusion": "FusiÃ³n"
   },
+  "floorPlan": {
+    "title": "Elige tus Asientos",
+    "available": "Disponible",
+    "selected": "Seleccionado",
+    "occupied": "Ocupado",
+    "seatsSelected": "{{count}} de {{total}} asientos seleccionados",
+    "allSelected": "Todos los asientos seleccionados!",
+    "chooseSeat": "Elige tu mesa",
+    "seatsChosen": "asientos elegidos",
+    "editor": {
+      "title": "Editor de Plano",
+      "addRound": "Mesa Redonda",
+      "addSquare": "Mesa Cuadrada",
+      "addRect": "Mesa Rectangular",
+      "deleteTable": "Eliminar",
+      "save": "Guardar Plano",
+      "saving": "Guardando...",
+      "saved": "Plano guardado!",
+      "label": "Etiqueta",
+      "capacity": "Asientos",
+      "rotation": "Rotacion",
+      "width": "Ancho",
+      "height": "Alto",
+      "noSelection": "Haz clic en una mesa para editar"
+    }
+  },
   "chat": {
     "subtitle": "Encuentra tu restaurante perfecto",
-    "welcome": "Hola\\! Pregúntame y te ayudo a encontrar el restaurante ideal según tu cocina favorita, el ambiente, presupuesto o tu ubicación.",
-    "placeholder": "Ej: Italiano romántico para esta noche...",
-    "error": "Lo siento, algo salió mal. Inténtalo de nuevo.",
-    "locationOn": "Ubicación activada",
-    "locationOff": "Activar ubicación para sugerencias cercanas"
+    "welcome": "Hola\\! Pregï¿½ntame y te ayudo a encontrar el restaurante ideal segï¿½n tu cocina favorita, el ambiente, presupuesto o tu ubicaciï¿½n.",
+    "placeholder": "Ej: Italiano romï¿½ntico para esta noche...",
+    "error": "Lo siento, algo saliï¿½ mal. Intï¿½ntalo de nuevo.",
+    "locationOn": "Ubicaciï¿½n activada",
+    "locationOff": "Activar ubicaciï¿½n para sugerencias cercanas"
   }
 }

@@ -86,6 +86,12 @@ const MyBookings: React.FC = () => {
                         {r.guests} {t('bookings.guests')}
                       </span>
                     </div>
+                    {r.seats && r.seats.length > 0 && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-slate-500">
+                        <span className="material-symbols-outlined text-sm text-primary">chair</span>
+                        {r.seats.map(s => s.label).join(', ')}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${r.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>

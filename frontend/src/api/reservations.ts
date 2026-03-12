@@ -1,5 +1,11 @@
 import { api } from './client';
 
+export interface ReservationSeat {
+  id: number;
+  label: string;
+  tableLabel: string;
+}
+
 export interface Reservation {
   id: number;
   restaurantId: string;
@@ -12,10 +18,11 @@ export interface Reservation {
   guests: number;
   status: 'confirmed' | 'cancelled';
   created_at: string;
+  seats?: ReservationSeat[];
 }
 
 export const reservationsApi = {
-  create: (data: { restaurantId: number; date: string; time: string; guests: number }) =>
+  create: (data: { restaurantId: number; date: string; time: string; guests: number; seatIds?: number[] }) =>
     api.post<Reservation>('/reservations/', data),
 
   myReservations: () => api.get<Reservation[]>('/reservations/my/'),

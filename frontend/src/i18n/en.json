@@ -87,6 +87,32 @@
     "French": "French",
     "Fusion": "Fusion"
   },
+  "floorPlan": {
+    "title": "Select Your Seats",
+    "available": "Available",
+    "selected": "Selected",
+    "occupied": "Occupied",
+    "seatsSelected": "{{count}} of {{total}} seats selected",
+    "allSelected": "All seats selected!",
+    "chooseSeat": "Choose your table",
+    "seatsChosen": "seats chosen",
+    "editor": {
+      "title": "Floor Plan Editor",
+      "addRound": "Round Table",
+      "addSquare": "Square Table",
+      "addRect": "Rectangular Table",
+      "deleteTable": "Delete",
+      "save": "Save Layout",
+      "saving": "Saving...",
+      "saved": "Layout saved!",
+      "label": "Label",
+      "capacity": "Seats",
+      "rotation": "Rotation",
+      "width": "Width",
+      "height": "Height",
+      "noSelection": "Click a table to edit"
+    }
+  },
   "chat": {
     "subtitle": "Find your perfect restaurant",
     "welcome": "Hi\\! Ask me to find a restaurant for you. I can help based on cuisine, mood, budget or your location.",

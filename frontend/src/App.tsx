@@ -6,6 +6,7 @@ import RestaurantDetails from './pages/RestaurantDetails';
 import MapExplorer from './pages/MapExplorer';
 import MyBookings from './pages/MyBookings';
 import NotFound from './pages/NotFound';
+import FloorPlanEditorPage from './pages/FloorPlanEditorPage';
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider } from './context/AuthContext';
@@ -24,6 +25,7 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/restaurant/:id" element={<RestaurantDetails />} />
+              <Route path="/restaurant/:id/floor-plan" element={<FloorPlanEditorPage />} />
               <Route path="/map" element={<MapExplorer />} />
               <Route path="/my-bookings" element={<MyBookings />} />
               <Route path="*" element={<NotFound />} />
