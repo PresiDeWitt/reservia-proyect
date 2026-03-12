@@ -88,17 +88,12 @@ TIME_ZONE = 'Europe/Madrid'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/assets/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATIC_URL = '/'
+STATIC_ROOT = BASE_DIR.parent / 'frontend' / 'dist'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
-# Servir frontend React assets
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'frontend' / 'dist' / 'assets',
-]
-
-# WhiteNoise sirve los archivos estáticos
-WHITENOISE_ROOT = BASE_DIR.parent / 'frontend' / 'dist'
+# No usar STATICFILES_DIRS, solo servir dist como root
+WHITENOISE_ROOT = STATIC_ROOT
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -18,4 +18,9 @@ urlpatterns = [
     path('reservations/', views.ReservationCreateView.as_view(), name='reservation-create'),
     path('reservations/my/', views.my_reservations, name='my-reservations'),
     path('reservations/<int:pk>/', views.cancel_reservation, name='cancel-reservation'),
+
+    # Floor Plan
+    path('restaurants/<int:restaurant_id>/floor-plan/', views.floor_plan_view, name='floor-plan'),
+    path('restaurants/<int:restaurant_id>/availability/', views.seat_availability_view, name='seat-availability'),
+    path('restaurants/<int:restaurant_id>/floor-plan/edit/', views.floor_plan_editor_view, name='floor-plan-edit'),
 ]

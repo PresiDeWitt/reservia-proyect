@@ -11,7 +11,8 @@ venv/
 reservia-proyect/.env
 *.env.local
 *.env.production
-*.env.development
+frontend/.env.production
+frontend/.env.local
 # Django
 backend/db.sqlite3
 backend/staticfiles/

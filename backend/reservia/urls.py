@@ -20,5 +20,5 @@ if settings.DEBUG is False:
 
 # Servir frontend React para todas las rutas que no sean API o admin
 urlpatterns += [
-    re_path(r'^(?!api|admin|static).*$', FrontendView.as_view(), name='frontend'),
+    re_path(r'^(?!api|admin|static|assets).*$', FrontendView.as_view(), name='frontend'),
 ]

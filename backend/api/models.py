@@ -51,3 +51,72 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"{self.user.email} @ {self.restaurant.name} on {self.date}"
+
+
+class FloorPlan(models.Model):
+    restaurant = models.OneToOneField(
+        Restaurant, related_name='floor_plan', on_delete=models.CASCADE
+    )
+    width = models.IntegerField(default=1000)
+    height = models.IntegerField(default=700)
+    background_color = models.CharField(max_length=7, default='#F8F9FA')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"FloorPlan for {self.restaurant.name}"
+
+
+class Table(models.Model):
+    SHAPE_CHOICES = [
+        ('round', 'Round'),
+        ('square', 'Square'),
+        ('rectangular', 'Rectangular'),
+    ]
+    floor_plan = models.ForeignKey(
+        FloorPlan, related_name='tables', on_delete=models.CASCADE
+    )
+    label = models.CharField(max_length=10)
+    shape = models.CharField(max_length=20, choices=SHAPE_CHOICES, default='round')
+    x = models.FloatField()
+    y = models.FloatField()
+    width = models.FloatField(default=80)
+    height = models.FloatField(default=80)
+    rotation = models.FloatField(default=0)
+    capacity = models.IntegerField(default=4)
+    min_capacity = models.IntegerField(default=1)
+
+    class Meta:
+        ordering = ['label']
+
+    def __str__(self):
+        return f"{self.label} ({self.floor_plan.restaurant.name})"
+
+
+class Seat(models.Model):
+    table = models.ForeignKey(
+        Table, related_name='seats', on_delete=models.CASCADE
+    )
+    seat_index = models.IntegerField()
+    label = models.CharField(max_length=10)
+
+    class Meta:
+        ordering = ['seat_index']
+        unique_together = [('table', 'seat_index')]
+
+    def __str__(self):
+        return f"{self.label} at {self.table.label}"
+
+
+class SeatReservation(models.Model):
+    reservation = models.ForeignKey(
+        Reservation, related_name='seat_reservations', on_delete=models.CASCADE
+    )
+    seat = models.ForeignKey(
+        Seat, related_name='reservations', on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = [('reservation', 'seat')]
+
+    def __str__(self):
+        return f"Seat {self.seat.label} -> Reservation #{self.reservation.pk}"

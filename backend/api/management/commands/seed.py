@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from api.models import Restaurant, MenuItem
+from api.models import Restaurant, MenuItem, FloorPlan, Table, Seat
 
 
 RESTAURANTS = [
@@ -142,3 +142,72 @@ class Command(BaseCommand):
             self.stdout.write(f'  Created: {restaurant.name}')
 
         self.stdout.write(self.style.SUCCESS(f'Seeded {len(RESTAURANTS)} restaurants.'))
+        self._seed_floor_plans()
+
+    def _seed_floor_plans(self):
+        LABELS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+        def create_seats(table):
+            for i in range(table.capacity):
+                Seat.objects.create(
+                    table=table, seat_index=i,
+                    label=f"{table.label}-{LABELS[i % 26]}",
+                )
+
+        # Floor plan for The Golden Fork (Italian - elegant layout)
+        r1 = Restaurant.objects.filter(name='The Golden Fork').first()
+        if r1 and not FloorPlan.objects.filter(restaurant=r1).exists():
+            fp = FloorPlan.objects.create(restaurant=r1, width=1000, height=700)
+            tables = [
+                {'label': 'T1', 'shape': 'round', 'x': 150, 'y': 150, 'width': 90, 'height': 90, 'capacity': 2},
+                {'label': 'T2', 'shape': 'round', 'x': 350, 'y': 150, 'width': 90, 'height': 90, 'capacity': 2},
+                {'label': 'T3', 'shape': 'round', 'x': 550, 'y': 150, 'width': 100, 'height': 100, 'capacity': 4},
+                {'label': 'T4', 'shape': 'round', 'x': 800, 'y': 150, 'width': 100, 'height': 100, 'capacity': 4},
+                {'label': 'T5', 'shape': 'square', 'x': 150, 'y': 380, 'width': 90, 'height': 90, 'capacity': 4},
+                {'label': 'T6', 'shape': 'square', 'x': 350, 'y': 380, 'width': 90, 'height': 90, 'capacity': 4},
+                {'label': 'T7', 'shape': 'rectangular', 'x': 600, 'y': 380, 'width': 160, 'height': 90, 'capacity': 6},
+                {'label': 'T8', 'shape': 'round', 'x': 150, 'y': 570, 'width': 90, 'height': 90, 'capacity': 2},
+                {'label': 'T9', 'shape': 'round', 'x': 350, 'y': 570, 'width': 90, 'height': 90, 'capacity': 2},
+                {'label': 'T10', 'shape': 'rectangular', 'x': 650, 'y': 570, 'width': 200, 'height': 100, 'capacity': 8},
+            ]
+            for t in tables:
+                table = Table.objects.create(floor_plan=fp, **t)
+                create_seats(table)
+            self.stdout.write(f'  Floor plan: {r1.name} ({len(tables)} tables)')
+
+        # Floor plan for Sakura Gardens (Japanese - minimalist)
+        r2 = Restaurant.objects.filter(name='Sakura Gardens').first()
+        if r2 and not FloorPlan.objects.filter(restaurant=r2).exists():
+            fp = FloorPlan.objects.create(restaurant=r2, width=1000, height=700)
+            tables = [
+                {'label': 'T1', 'shape': 'rectangular', 'x': 200, 'y': 150, 'width': 140, 'height': 80, 'capacity': 4},
+                {'label': 'T2', 'shape': 'rectangular', 'x': 500, 'y': 150, 'width': 140, 'height': 80, 'capacity': 4},
+                {'label': 'T3', 'shape': 'rectangular', 'x': 800, 'y': 150, 'width': 140, 'height': 80, 'capacity': 4},
+                {'label': 'T4', 'shape': 'round', 'x': 200, 'y': 380, 'width': 100, 'height': 100, 'capacity': 4},
+                {'label': 'T5', 'shape': 'round', 'x': 500, 'y': 380, 'width': 100, 'height': 100, 'capacity': 4},
+                {'label': 'T6', 'shape': 'round', 'x': 800, 'y': 380, 'width': 80, 'height': 80, 'capacity': 2},
+                {'label': 'T7', 'shape': 'rectangular', 'x': 350, 'y': 580, 'width': 200, 'height': 90, 'capacity': 8},
+                {'label': 'T8', 'shape': 'square', 'x': 700, 'y': 580, 'width': 80, 'height': 80, 'capacity': 2},
+            ]
+            for t in tables:
+                table = Table.objects.create(floor_plan=fp, **t)
+                create_seats(table)
+            self.stdout.write(f'  Floor plan: {r2.name} ({len(tables)} tables)')
+
+        # Floor plan for Prime Cuts (Steakhouse - spacious)
+        r3 = Restaurant.objects.filter(name='Prime Cuts').first()
+        if r3 and not FloorPlan.objects.filter(restaurant=r3).exists():
+            fp = FloorPlan.objects.create(restaurant=r3, width=1000, height=700)
+            tables = [
+                {'label': 'T1', 'shape': 'round', 'x': 180, 'y': 170, 'width': 110, 'height': 110, 'capacity': 4},
+                {'label': 'T2', 'shape': 'round', 'x': 450, 'y': 170, 'width': 110, 'height': 110, 'capacity': 4},
+                {'label': 'T3', 'shape': 'round', 'x': 720, 'y': 170, 'width': 80, 'height': 80, 'capacity': 2},
+                {'label': 'T4', 'shape': 'rectangular', 'x': 180, 'y': 400, 'width': 150, 'height': 90, 'capacity': 6},
+                {'label': 'T5', 'shape': 'rectangular', 'x': 500, 'y': 400, 'width': 150, 'height': 90, 'capacity': 6},
+                {'label': 'T6', 'shape': 'round', 'x': 800, 'y': 400, 'width': 80, 'height': 80, 'capacity': 2},
+                {'label': 'T7', 'shape': 'rectangular', 'x': 500, 'y': 590, 'width': 250, 'height': 100, 'capacity': 10},
+            ]
+            for t in tables:
+                table = Table.objects.create(floor_plan=fp, **t)
+                create_seats(table)
+            self.stdout.write(f'  Floor plan: {r3.name} ({len(tables)} tables)')

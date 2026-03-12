@@ -4,11 +4,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Restaurant, Reservation
+from .models import Restaurant, Reservation, FloorPlan, Seat, SeatReservation
 from .serializers import (
     RegisterSerializer, UserSerializer,
     RestaurantListSerializer, RestaurantDetailSerializer,
-    ReservationSerializer,
+    ReservationSerializer, FloorPlanSerializer, TableEditorSerializer,
 )
 
 
@@ -182,3 +182,80 @@ def cancel_reservation(request, pk):
     reservation.status = 'cancelled'
     reservation.save()
     return Response({'message': 'Reservation cancelled'})
+
+
+# ---------- Floor Plan ----------
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def floor_plan_view(request, restaurant_id):
+    try:
+        floor_plan = FloorPlan.objects.prefetch_related(
+            'tables__seats'
+        ).get(restaurant_id=restaurant_id)
+    except FloorPlan.DoesNotExist:
+        return Response({'hasFloorPlan': False})
+    serializer = FloorPlanSerializer(floor_plan)
+    return Response({'hasFloorPlan': True, 'floorPlan': serializer.data})
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def seat_availability_view(request, restaurant_id):
+    date = request.query_params.get('date')
+    time = request.query_params.get('time')
+    if not date or not time:
+        return Response({'error': 'date and time query params required'}, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        floor_plan = FloorPlan.objects.get(restaurant_id=restaurant_id)
+    except FloorPlan.DoesNotExist:
+        return Response({'error': 'No floor plan found'}, status=status.HTTP_404_NOT_FOUND)
+
+    seats = Seat.objects.filter(table__floor_plan=floor_plan).select_related('table')
+    occupied_seat_ids = set(
+        SeatReservation.objects.filter(
+            seat__table__floor_plan=floor_plan,
+            reservation__date=date,
+            reservation__time=time,
+            reservation__status='confirmed',
+        ).values_list('seat_id', flat=True)
+    )
+    result = [
+        {
+            'id': seat.id,
+            'seatIndex': seat.seat_index,
+            'label': seat.label,
+            'tableId': seat.table_id,
+            'isOccupied': seat.id in occupied_seat_ids,
+        }
+        for seat in seats
+    ]
+    return Response({'seats': result})
+
+
+@api_view(['PUT'])
+@permission_classes([permissions.IsAuthenticated])
+def floor_plan_editor_view(request, restaurant_id):
+    try:
+        Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        return Response({'error': 'Restaurant not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    floor_plan, _ = FloorPlan.objects.get_or_create(
+        restaurant_id=restaurant_id,
+        defaults={'width': 1000, 'height': 700}
+    )
+    floor_plan.width = request.data.get('width', floor_plan.width)
+    floor_plan.height = request.data.get('height', floor_plan.height)
+    floor_plan.background_color = request.data.get('backgroundColor', floor_plan.background_color)
+    floor_plan.save()
+
+    tables_data = request.data.get('tables', [])
+    floor_plan.tables.all().delete()
+    for table_data in tables_data:
+        serializer = TableEditorSerializer(data=table_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(floor_plan=floor_plan)
+
+    floor_plan = FloorPlan.objects.prefetch_related('tables__seats').get(pk=floor_plan.pk)
+    return Response(FloorPlanSerializer(floor_plan).data)
