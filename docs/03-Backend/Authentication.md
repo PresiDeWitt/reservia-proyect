@@ -1,158 +1,147 @@
 ---
-tags: [reservia, backend, authentication, jwt, security]
+tags:
+  - reservia
+  - backend
+  - auth
+  - jwt
 ---
 
-# Authentication
+# 🔐 Authentication
 
 [[Home|← Volver al Home]]
 
-## Sistema de Autenticación
+## 🛡️ Sistema de Autenticación
 
-Reservia usa **JWT (JSON Web Tokens)** mediante la librería `djangorestframework-simplejwt`.
+Reservia usa ==JWT (JSON Web Tokens)== mediante la librería ==djangorestframework-simplejwt==.
 
 ---
 
-## 🔐 Configuración de Tokens
+## ⏱️ Configuración de Tokens
 
-```python
-# backend/reservia/settings.py
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
-}
-```
+> [!info] 🎟️ Access Token
+> - **Duración** → ==7 días==
+> - **Uso** → Autenticar cada request a la API
+> - **Se envía** → en el header ==Authorization: Bearer \<token\>==
 
-| Token | Duración | Uso |
-|-------|----------|-----|
-| Access Token | 7 días | Autenticar requests API |
-| Refresh Token | 30 días | Obtener nuevo access token |
+> [!info] 🔄 Refresh Token
+> - **Duración** → ==30 días==
+> - **Uso** → Obtener un nuevo Access Token cuando el actual expire
+> - **Configurado en** → ==settings.py== → bloque ==SIMPLE_JWT==
 
 ---
 
 ## 💾 Almacenamiento en Frontend
 
-Los tokens se guardan en `localStorage`:
-
-```typescript
-// frontend/src/context/AuthContext.tsx
-localStorage.setItem('reservia_token', token)
-localStorage.setItem('reservia_user', JSON.stringify(user))
-```
-
-| Key | Contenido |
-|-----|-----------|
-| `reservia_token` | JWT access token |
-| `reservia_user` | Objeto usuario `{id, name, email}` |
-
----
-
-## 📤 Envío de Tokens
-
-Cada request autenticada incluye el header:
-
-```
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
-
-Configurado en el cliente base:
-
-```typescript
-// frontend/src/api/client.ts
-const token = localStorage.getItem('reservia_token')
-headers['Authorization'] = `Bearer ${token}`
-```
-
----
-
-## 🔒 Endpoints Protegidos vs Públicos
-
-### Requieren Autenticación (✅)
-- `POST /api/reservations/` — Crear reserva
-- `GET /api/reservations/my/` — Ver mis reservas
-- `DELETE /api/reservations/{id}/` — Cancelar reserva
-- `PUT /api/restaurants/{id}/floor-plan/edit/` — Editar plano
-
-### Públicos (❌)
-- `POST /api/auth/register/`
-- `POST /api/auth/login/`
-- `GET /api/restaurants/`
-- `GET /api/restaurants/{id}/`
-- `GET /api/restaurants/cuisines/`
-- `GET /api/restaurants/{id}/floor-plan/`
-- `GET /api/restaurants/{id}/availability/`
-- `POST /api/chat/`
+> [!info] 🗄️ localStorage
+> Los tokens se guardan en el navegador usando ==localStorage==:
+>
+> | Clave | Contenido |
+> |-------|-----------|
+> | **reservia_token** | JWT access token |
+> | **reservia_user** | Objeto usuario con ==id==, ==name== y ==email== |
+>
+> Configurado en → [[State Management|AuthContext.tsx]]
 
 ---
 
 ## 🔄 Flujo de Autenticación
 
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant FE as Frontend
-    participant BE as Backend
-    participant DB as Database
+> [!tip] 1️⃣ El usuario introduce sus credenciales
+> El usuario ingresa su ==email== y ==password== en el formulario de login del frontend.
 
-    U->>FE: Introduce email + password
-    FE->>BE: POST /api/auth/login/
-    BE->>DB: Verifica credenciales
-    DB-->>BE: User object
-    BE-->>FE: {token, refresh, user}
-    FE->>FE: Guarda en localStorage
-    FE-->>U: Usuario autenticado
+⬇️
 
-    Note over FE,BE: Requests autenticadas posteriores
-    FE->>BE: GET /api/reservations/my/ + Authorization header
-    BE->>BE: Verifica JWT
-    BE-->>FE: Datos protegidos
-```
+> [!tip] 2️⃣ Frontend envía la petición
+> Se realiza un **POST** a ==/api/auth/login/== con las credenciales.
+
+⬇️
+
+> [!tip] 3️⃣ Backend verifica credenciales
+> Django busca al usuario en la base de datos y valida la contraseña.
+
+⬇️
+
+> [!tip] 4️⃣ Backend genera tokens JWT
+> Si las credenciales son correctas, se generan el ==access token== y el ==refresh token==.
+
+⬇️
+
+> [!tip] 5️⃣ Frontend almacena los tokens
+> Los tokens se guardan en ==localStorage== junto con los datos del usuario.
+
+⬇️
+
+> [!tip] 6️⃣ Requests autenticadas
+> Cada petición posterior incluye el header ==Authorization: Bearer \<token\>== automáticamente.
+
+---
+
+## 📤 Envío de Tokens
+
+> [!info] 📡 Header de autorización
+> Cada request autenticada incluye automáticamente:
+>
+> **Authorization** → ==Bearer== + el JWT access token
+>
+> Esto se configura en el cliente API base del frontend (==client.ts==).
+
+---
+
+## 🔒 Endpoints Protegidos vs Públicos
+
+> [!abstract] ✅ Requieren Autenticación
+> - **POST** /api/reservations/ → Crear reserva
+> - **GET** /api/reservations/my/ → Ver mis reservas
+> - **DELETE** /api/reservations/{id}/ → Cancelar reserva
+> - **PUT** /api/restaurants/{id}/floor-plan/edit/ → Editar plano
+>
+> Ver detalles en [[API Endpoints]]
+
+> [!abstract] ❌ Endpoints Públicos
+> - **POST** /api/auth/register/ y /api/auth/login/
+> - **GET** /api/restaurants/ y /api/restaurants/{id}/
+> - **GET** /api/restaurants/cuisines/
+> - **GET** /api/restaurants/{id}/floor-plan/ y /availability/
+> - **POST** /api/chat/
 
 ---
 
 ## 📝 Registro de Usuario
 
-```python
-# backend/api/views.py - RegisterView
-class RegisterView(APIView):
-    # El username de Django se usa como email
-    user = User.objects.create_user(
-        username=email,
-        email=email,
-        first_name=first_name,
-        password=password
-    )
-```
-
-> [!note] Username = Email
-> Django requiere un `username`. En Reservia, el `username` y el `email` son el mismo valor.
+> [!info] 🆕 Creación de cuenta
+> Al registrarse, Django crea un usuario donde:
+>
+> - **username** → se usa el ==email== como username (Django lo requiere)
+> - **email** → correo proporcionado
+> - **first_name** → nombre del usuario
+> - **password** → contraseña hasheada automáticamente por Django
+>
+> ℹ️ ==Username y Email son el mismo valor== en Reservia.
 
 ---
 
 ## 🚪 Logout
 
-El logout es **solo en el cliente** — se eliminan los tokens del `localStorage`:
+> [!info] 🔓 Cierre de sesión
+> El logout es ==solo en el cliente== — se eliminan los tokens del ==localStorage==:
+>
+> - Se borra **reservia_token**
+> - Se borra **reservia_user**
+> - Se establece el estado del usuario a ==null==
 
-```typescript
-// AuthContext.tsx
-const logout = () => {
-    localStorage.removeItem('reservia_token')
-    localStorage.removeItem('reservia_user')
-    setUser(null)
-}
-```
-
-> [!warning] Sin blacklist de tokens
-> Los tokens no se invalidan en el servidor al hacer logout. Permanecen válidos hasta que expiran (7 días). Esto es aceptable para esta aplicación, pero en producción crítica se debería implementar token blacklisting.
+> [!warning] ⚠️ Sin blacklist de tokens
+> Los tokens ==no se invalidan en el servidor== al hacer logout. Permanecen válidos hasta que expiran (==7 días==).
+>
+> Esto es aceptable para esta aplicación, pero en producción crítica se debería implementar ==token blacklisting==.
 
 ---
 
 ## 🛡️ Manejo de Errores
 
-| Código | Descripción |
-|--------|-------------|
-| `401` | Token ausente o inválido |
-| `400` | Email ya registrado |
-| `400` | Credenciales incorrectas |
+> [!warning] Códigos de error de autenticación
+> - ==401== → Token ausente, expirado o inválido
+> - ==400== → Email ya registrado al intentar registro
+> - ==400== → Credenciales incorrectas al intentar login
 
 ---
 

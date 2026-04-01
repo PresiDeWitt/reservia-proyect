@@ -1,184 +1,180 @@
 ---
-tags: [reservia, backend, models, django, orm]
+tags:
+  - reservia
+  - backend
+  - models
+  - django
 ---
 
-# Models
+# 🗃️ Models
 
 [[Home|← Volver al Home]]
 
-**Archivo**: `backend/api/models.py` (123 líneas)
+**Archivo** → ==backend/api/models.py== (123 líneas)
 
 > Para el diagrama ER completo ver [[Database Schema]].
 
 ---
 
-## Resumen de Modelos
+## 📊 Resumen de Modelos
 
-| Modelo | Tabla DB | Descripción |
-|--------|----------|-------------|
-| `Restaurant` | `api_restaurant` | Restaurantes disponibles |
-| `MenuItem` | `api_menuitem` | Platos del menú |
-| `Reservation` | `api_reservation` | Reservas de usuarios |
-| `FloorPlan` | `api_floorplan` | Configuración del plano de piso |
-| `Table` | `api_table` | Mesas dentro de un plano |
-| `Seat` | `api_seat` | Asientos dentro de una mesa |
-| `SeatReservation` | `api_seatreservation` | Relación asiento-reserva |
+> [!info] 🏗️ Arquitectura de datos
+>
+> | Modelo | Tabla DB | Descripción |
+> |--------|----------|-------------|
+> | **Restaurant** | api_restaurant | Restaurantes disponibles |
+> | **MenuItem** | api_menuitem | Platos del menú |
+> | **Reservation** | api_reservation | Reservas de usuarios |
+> | **FloorPlan** | api_floorplan | Configuración del plano |
+> | **Table** | api_table | Mesas dentro de un plano |
+> | **Seat** | api_seat | Asientos dentro de una mesa |
+> | **SeatReservation** | api_seatreservation | Relación asiento ↔ reserva |
 
 ---
 
 ## 🍽️ Restaurant
 
-```python
-class Restaurant(models.Model):
-    name         = models.CharField(max_length=200)
-    cuisine      = models.CharField(max_length=100)
-    location     = models.CharField(max_length=200)
-    distance     = models.FloatField(default=0)
-    rating       = models.FloatField(default=0)
-    price_range  = models.CharField(max_length=10)
-    address      = models.CharField(max_length=300)
-    description  = models.TextField(default='')
-    lat          = models.FloatField(default=0)
-    lng          = models.FloatField(default=0)
-    image_url    = models.URLField(max_length=500, default='')
-    reviews_count = models.IntegerField(default=0)
-
-    class Meta:
-        ordering = ['-rating']
-```
+> [!abstract] Modelo Restaurant
+>
+> - **name** → CharField (max 200) — nombre del restaurante
+> - **cuisine** → CharField (max 100) — tipo de cocina
+> - **location** → CharField (max 200) — zona/ubicación
+> - **distance** → FloatField — distancia en km (default: ==0==)
+> - **rating** → FloatField — puntuación promedio (default: ==0==)
+> - **price_range** → CharField (max 10) — rango de precio
+> - **address** → CharField (max 300) — dirección completa
+> - **description** → TextField — descripción del restaurante
+> - **lat** / **lng** → FloatField — coordenadas GPS
+> - **image_url** → URLField (max 500) — imagen del restaurante
+> - **reviews_count** → IntegerField — número de reseñas
+>
+> 📌 **Ordenamiento** → por ==-rating== (mayor puntuación primero)
+>
+> **Relaciones:**
+> - [[Models#🥗 MenuItem|MenuItem]] ← muchos platos pertenecen a un restaurante
+> - [[Models#📅 Reservation|Reservation]] ← muchas reservas por restaurante
+> - [[Models#🏢 FloorPlan|FloorPlan]] ← un plano por restaurante (OneToOne)
 
 ---
 
 ## 🥗 MenuItem
 
-```python
-class MenuItem(models.Model):
-    restaurant  = models.ForeignKey(Restaurant, on_delete=models.CASCADE,
-                                    related_name='menu_items')
-    name        = models.CharField(max_length=200)
-    description = models.TextField(default='')
-    price       = models.FloatField()
-```
+> [!abstract] Modelo MenuItem
+>
+> - **restaurant** → ForeignKey → [[Models#🍽️ Restaurant|Restaurant]] _(CASCADE)_
+> - **name** → CharField (max 200) — nombre del plato
+> - **description** → TextField — descripción del plato
+> - **price** → FloatField — precio
+>
+> **Relación:** MenuItem → pertenece a → [[Models#🍽️ Restaurant|Restaurant]]
 
 ---
 
 ## 📅 Reservation
 
-```python
-class Reservation(models.Model):
-    STATUS_CHOICES = [
-        ('confirmed', 'Confirmed'),
-        ('cancelled', 'Cancelled'),
-    ]
-    user       = models.ForeignKey(User, on_delete=models.CASCADE)
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE)
-    date       = models.DateField()
-    time       = models.TimeField()
-    guests     = models.IntegerField()
-    status     = models.CharField(max_length=20, choices=STATUS_CHOICES,
-                                   default='confirmed')
-    created_at = models.DateTimeField(auto_now_add=True)
+> [!abstract] Modelo Reservation
+>
+> - **user** → ForeignKey → ==User de Django== _(CASCADE)_
+> - **restaurant** → ForeignKey → [[Models#🍽️ Restaurant|Restaurant]] _(CASCADE)_
+> - **date** → DateField — fecha de la reserva
+> - **time** → TimeField — hora de la reserva
+> - **guests** → IntegerField — número de comensales
+> - **status** → CharField — opciones: =="confirmed"== | =="cancelled"==  (default: ==confirmed==)
+> - **created_at** → DateTimeField — fecha de creación (automático)
+>
+> 📌 **Ordenamiento** → por ==-date==, ==-time== (más recientes primero)
+>
+> **Relaciones:**
+> - User → un usuario tiene muchas reservas
+> - [[Models#🍽️ Restaurant|Restaurant]] → un restaurante tiene muchas reservas
+> - [[Models#🔗 SeatReservation|SeatReservation]] ← asientos asignados a esta reserva
 
-    class Meta:
-        ordering = ['-date', '-time']
-```
-
-> [!warning] Validación de `guests`
-> La validación de 1-20 comensales se hace en `ReservationSerializer`, no en el modelo.
+> [!warning] ⚠️ Validación de comensales
+> La validación de ==1-20 comensales== se hace en el ==ReservationSerializer==, no en el modelo.
 
 ---
 
 ## 🏢 FloorPlan
 
-```python
-class FloorPlan(models.Model):
-    restaurant       = models.OneToOneField(Restaurant, on_delete=models.CASCADE,
-                                             related_name='floor_plan')
-    width            = models.IntegerField(default=1000)
-    height           = models.IntegerField(default=700)
-    background_color = models.CharField(max_length=20, default='#F8F9FA')
-    updated_at       = models.DateTimeField(auto_now=True)
-```
+> [!abstract] Modelo FloorPlan
+>
+> - **restaurant** → OneToOneField → [[Models#🍽️ Restaurant|Restaurant]] _(CASCADE)_
+> - **width** → IntegerField — ancho del plano (default: ==1000==)
+> - **height** → IntegerField — alto del plano (default: ==700==)
+> - **background_color** → CharField (max 20) — color de fondo (default: ==#F8F9FA==)
+> - **updated_at** → DateTimeField — última modificación (automático)
+>
+> **Relación:** FloorPlan → pertenece a → [[Models#🍽️ Restaurant|Restaurant]] (1:1)
+> **Relación:** FloorPlan ← contiene muchas → [[Models#🪑 Table|Table]]
 
 ---
 
 ## 🪑 Table
 
-```python
-class Table(models.Model):
-    SHAPE_CHOICES = [
-        ('round', 'Round'),
-        ('square', 'Square'),
-        ('rectangular', 'Rectangular'),
-    ]
-    floor_plan   = models.ForeignKey(FloorPlan, on_delete=models.CASCADE,
-                                      related_name='tables')
-    label        = models.CharField(max_length=50)
-    shape        = models.CharField(max_length=20, choices=SHAPE_CHOICES)
-    x            = models.FloatField()
-    y            = models.FloatField()
-    width        = models.FloatField()
-    height       = models.FloatField()
-    rotation     = models.FloatField(default=0)
-    capacity     = models.IntegerField()
-    min_capacity = models.IntegerField(default=1)
-
-    class Meta:
-        ordering = ['label']
-```
+> [!abstract] Modelo Table
+>
+> - **floor_plan** → ForeignKey → [[Models#🏢 FloorPlan|FloorPlan]] _(CASCADE)_
+> - **label** → CharField (max 50) — etiqueta (ej: =="T1"==)
+> - **shape** → CharField — opciones: =="round"== | =="square"== | =="rectangular"==
+> - **x** / **y** → FloatField — posición en el plano
+> - **width** / **height** → FloatField — dimensiones
+> - **rotation** → FloatField — ángulo de rotación (default: ==0==)
+> - **capacity** → IntegerField — capacidad máxima de la mesa
+> - **min_capacity** → IntegerField — capacidad mínima (default: ==1==)
+>
+> 📌 **Ordenamiento** → por ==label==
+>
+> **Relación:** Table → pertenece a → [[Models#🏢 FloorPlan|FloorPlan]]
+> **Relación:** Table ← contiene muchos → [[Models#💺 Seat|Seat]]
 
 ---
 
 ## 💺 Seat
 
-```python
-class Seat(models.Model):
-    table      = models.ForeignKey(Table, on_delete=models.CASCADE,
-                                    related_name='seats')
-    seat_index = models.IntegerField()
-    label      = models.CharField(max_length=50)  # e.g., "T1-A"
-
-    class Meta:
-        unique_together = ['table', 'seat_index']
-        ordering = ['seat_index']
-```
-
-**Generación de etiquetas**:
-```python
-# En seed.py - genera automáticamente: T1-A, T1-B, T1-C...
-letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-label = f"{table.label}-{letters[i]}"
-```
+> [!abstract] Modelo Seat
+>
+> - **table** → ForeignKey → [[Models#🪑 Table|Table]] _(CASCADE)_
+> - **seat_index** → IntegerField — índice del asiento en la mesa
+> - **label** → CharField (max 50) — etiqueta (ej: =="T1-A"==, =="T1-B"==)
+>
+> 📌 **Restricción única** → combinación de ==table== + ==seat_index==
+> 📌 **Ordenamiento** → por ==seat_index==
+>
+> **Generación de etiquetas:** Las etiquetas se generan automáticamente con el patrón ==T1-A==, ==T1-B==, ==T1-C==... usando letras del alfabeto.
+>
+> **Relación:** Seat → pertenece a → [[Models#🪑 Table|Table]]
 
 ---
 
 ## 🔗 SeatReservation
 
-```python
-class SeatReservation(models.Model):
-    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
-    seat        = models.ForeignKey(Seat, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ['reservation', 'seat']
-```
+> [!abstract] Modelo SeatReservation (tabla intermedia)
+>
+> - **reservation** → ForeignKey → [[Models#📅 Reservation|Reservation]] _(CASCADE)_
+> - **seat** → ForeignKey → [[Models#💺 Seat|Seat]] _(CASCADE)_
+>
+> 📌 **Restricción única** → combinación de ==reservation== + ==seat==
+>
+> **Conecta:** [[Models#📅 Reservation|Reservation]] ↔ [[Models#💺 Seat|Seat]] (relación muchos a muchos)
 
 ---
 
 ## 📊 Serializers Relacionados
 
-**Archivo**: `backend/api/serializers.py` (176 líneas)
-
-| Serializer | Modelo | Uso |
-|-----------|--------|-----|
-| `RestaurantListSerializer` | Restaurant | Lista de restaurantes |
-| `RestaurantDetailSerializer` | Restaurant | Detalle con menú |
-| `MenuItemSerializer` | MenuItem | Items del menú |
-| `ReservationSerializer` | Reservation | CRUD de reservas |
-| `FloorPlanSerializer` | FloorPlan | Plano completo |
-| `TableSerializer` | Table | Mesa con asientos |
-| `SeatSerializer` | Seat | Asiento individual |
-| `SeatAvailabilitySerializer` | Seat | Disponibilidad de asiento |
+> [!info] 🔄 Serializers disponibles
+>
+> | Serializer | Modelo | Uso |
+> |-----------|--------|-----|
+> | **RestaurantListSerializer** | Restaurant | Lista de restaurantes |
+> | **RestaurantDetailSerializer** | Restaurant | Detalle con menú |
+> | **MenuItemSerializer** | MenuItem | Items del menú |
+> | **ReservationSerializer** | Reservation | CRUD de reservas |
+> | **FloorPlanSerializer** | FloorPlan | Plano completo |
+> | **TableSerializer** | Table | Mesa con asientos |
+> | **SeatSerializer** | Seat | Asiento individual |
+> | **SeatAvailabilitySerializer** | Seat | Disponibilidad |
+>
+> **Archivo** → ==backend/api/serializers.py== (176 líneas)
 
 ---
 

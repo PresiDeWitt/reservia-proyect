@@ -1,135 +1,121 @@
 ---
-tags: [reservia, deployment, environment, configuration, secrets]
+tags:
+  - reservia
+  - deployment
+  - env
+  - config
 ---
 
-# Environment Variables
+# 🔑 Environment Variables
 
 [[Home|← Volver al Home]]
 
-## Overview
+---
 
-Reservia requiere variables de entorno tanto para el backend (Django) como para el frontend (Vite). El archivo `.env.example` contiene la plantilla completa.
+## 🌊 Visión General
+
+Reservia requiere variables de entorno tanto para el ==backend (Django)== como para el ==frontend (Vite)==. El archivo .env.example contiene la plantilla completa.
 
 ---
 
-## 🔑 Backend Variables
+## 🐍 Variables del Backend
 
-**Archivo de referencia**: `.env.example`
-**Archivo real**: `.env` (no incluido en git)
+> [!info] 🔐 Seguridad y Autenticación
+>
+> | Variable | Requerida | Descripción |
+> |----------|:---------:|-------------|
+> | SECRET_KEY | ✅ | Clave secreta de Django para firmas criptográficas |
+> | ANTHROPIC_API_KEY | ✅ | Clave API de Anthropic para el chatbot IA |
+>
+> **Ejemplo SECRET_KEY:** django-insecure-... (==cambiar en producción==)
+> **Ejemplo ANTHROPIC_API_KEY:** sk-ant-api03-...
 
-| Variable | Requerida | Descripción | Ejemplo |
-|----------|-----------|-------------|---------|
-| `SECRET_KEY` | ✅ | Clave secreta Django | `django-insecure-...` |
-| `DEBUG` | ✅ | Modo debug | `False` (producción) |
-| `ALLOWED_HOSTS` | ✅ | Hosts permitidos | `localhost,*.railway.app` |
-| `DATABASE_URL` | ⚡ | URL PostgreSQL (solo producción) | `postgresql://user:pass@host/db` |
-| `CORS_ALLOWED_ORIGINS` | ✅ | Origins CORS permitidos | `http://localhost:5173` |
-| `ANTHROPIC_API_KEY` | ✅ | Clave API de Anthropic | `sk-ant-api03-...` |
-| `DB_PATH` | ❌ | Ruta SQLite (Docker) | `/data/db.sqlite3` |
+> [!info] 🌐 Red y Hosts
+>
+> | Variable | Requerida | Descripción |
+> |----------|:---------:|-------------|
+> | DEBUG | ✅ | Modo debug — ==False en producción== |
+> | ALLOWED_HOSTS | ✅ | Hosts permitidos separados por coma |
+> | CORS_ALLOWED_ORIGINS | ✅ | Origins CORS permitidos |
+>
+> **Ejemplo ALLOWED_HOSTS:** localhost,127.0.0.1,*.railway.app
+> **Ejemplo CORS:** http://localhost:5173,http://localhost:3000
 
-### Archivo `.env` completo
-
-```env
-# Django
-SECRET_KEY=django-insecure-your-secret-key-here-change-in-production
-DEBUG=True
-
-# Hosts permitidos (separados por coma)
-ALLOWED_HOSTS=localhost,127.0.0.1,backend,*.railway.app,*.onrender.com
-
-# Base de datos (omitir en desarrollo para usar SQLite)
-# DATABASE_URL=postgresql://user:password@host:5432/dbname
-
-# CORS
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
-
-# Anthropic
-ANTHROPIC_API_KEY=sk-ant-api03-your-key-here
-
-# Docker (opcional)
-DB_PATH=/data/db.sqlite3
-```
+> [!info] 🗄️ Base de Datos
+>
+> | Variable | Requerida | Descripción |
+> |----------|:---------:|-------------|
+> | DATABASE_URL | ⚡ Solo prod | URL de conexión PostgreSQL |
+> | DB_PATH | ❌ Opcional | Ruta personalizada para SQLite (Docker) |
+>
+> **Lógica:** Si ==DATABASE_URL== existe → usa PostgreSQL. Si no → usa SQLite local.
+> **Ejemplo DATABASE_URL:** postgresql://user:pass@host:5432/dbname
 
 ---
 
-## 🖥️ Frontend Variables
+## 🖥️ Variables del Frontend
 
-**Archivo de referencia**: `frontend/.env.production`
-**Para desarrollo**: `frontend/.env.local` (crear manualmente)
-
-| Variable | Descripción | Dev | Producción |
-|----------|-------------|-----|-----------|
-| `VITE_API_URL` | URL base del backend | `http://localhost:8000` | `https://reservia.up.railway.app` |
-
-> [!info] Prefijo VITE_
-> Vite solo expone al cliente las variables que empiezan con `VITE_`. Otras variables son solo de build.
+> [!info] ⚡ Vite Environment
+>
+> | Variable | Dev | Producción |
+> |----------|-----|-----------|
+> | VITE_API_URL | http://localhost:8000 | https://reservia.up.railway.app |
+>
+> ==Solo las variables con prefijo VITE_ son accesibles en el cliente.== Las demás solo están disponibles durante el build.
+>
+> **Archivo dev:** frontend/.env.local (crear manualmente)
+> **Archivo prod:** frontend/.env.production
 
 ---
 
-## ⚙️ Cómo Django usa las variables
+## ⚙️ Cómo Django Procesa las Variables
 
-```python
-# backend/reservia/settings.py
-import os
-from dotenv import load_dotenv
-import dj_database_url
-
-load_dotenv()
-
-SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-insecure-key')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
-
-# DB: PostgreSQL si DATABASE_URL existe, si no SQLite
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
-    DATABASES = {'default': dj_database_url.config(default=DATABASE_URL)}
-else:
-    DB_PATH = os.environ.get('DB_PATH', BASE_DIR / 'db.sqlite3')
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': DB_PATH,
-        }
-    }
-
-ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
-```
+> [!info] 🔄 Flujo de Carga
+>
+> 1. Django carga el archivo .env usando ==dotenv==
+> 2. Lee cada variable del entorno del sistema operativo
+> 3. Si no encuentra un valor, usa un fallback por defecto
+> 4. Para la base de datos:
+>    - Busca ==DATABASE_URL== → si existe, configura PostgreSQL con dj_database_url
+>    - Si no existe → busca ==DB_PATH== para SQLite personalizado
+>    - Si ninguno existe → usa SQLite en el directorio base del proyecto
 
 ---
 
 ## 🔐 Seguridad
 
-> [!danger] Nunca commitear secretos
-> El archivo `.env` está en `.gitignore`. Nunca incluyas credenciales reales en el repositorio.
+> [!danger] 🚫 Nunca commitear secretos
+> El archivo .env está incluido en .gitignore. ==Nunca incluyas credenciales reales en el repositorio.== Los archivos .env.example solo contienen plantillas con valores de ejemplo.
 
-> [!warning] SECRET_KEY en producción
-> La `SECRET_KEY` de Django debe ser única, larga y aleatoria en producción. Nunca usar la de desarrollo.
+> [!warning] ⚠️ SECRET_KEY en producción
+> La SECRET_KEY de Django ==debe ser única, larga y completamente aleatoria== en producción. Nunca reutilices la clave de desarrollo.
+>
+> **Para generar una clave segura:** ejecutar el utilitario get_random_secret_key de Django desde la consola de Python.
 
-**Para generar una SECRET_KEY segura**:
-```bash
-python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
-```
+> [!warning] ⚠️ ANTHROPIC_API_KEY
+> Esta clave tiene ==costo asociado por uso==. No compartirla públicamente ni incluirla en commits. Rotarla si se expone accidentalmente.
 
 ---
 
 ## 🚀 Variables en Railway
 
-En Railway, las variables se configuran en el dashboard del proyecto:
-- `SECRET_KEY`
-- `DEBUG=False`
-- `ALLOWED_HOSTS=*.railway.app`
-- `DATABASE_URL` (autogenerado por Railway si usas su PostgreSQL)
-- `ANTHROPIC_API_KEY`
-- `CORS_ALLOWED_ORIGINS=https://tu-dominio.railway.app`
-
-Ver [[Railway Deployment]] para más detalles.
+> [!info] ☁️ Configuración en la Nube
+>
+> En el panel de Railway → Service → Variables, configurar:
+>
+> - 🔐 **SECRET_KEY** → generar una clave aleatoria segura
+> - 🐛 **DEBUG** → ==False== (siempre en producción)
+> - 🌐 **ALLOWED_HOSTS** → *.railway.app,reservia.up.railway.app
+> - 🗄️ **DATABASE_URL** → ==autogenerado por Railway== si usas su plugin PostgreSQL
+> - 🤖 **ANTHROPIC_API_KEY** → tu clave de API
+> - 🔗 **CORS_ALLOWED_ORIGINS** → https://tu-dominio.railway.app
+>
+> Ver [[Railway Deployment]] para más detalles del despliegue.
 
 ---
 
 ## 🔗 Links Relacionados
 
-- [[Docker Setup]] — Cómo se inyectan en Docker
+- [[Docker Setup]] — Cómo se inyectan las variables en Docker
 - [[Railway Deployment]] — Variables en producción
-- [[Local Setup]] — Setup del `.env` en desarrollo
+- [[Local Setup]] — Configuración del .env en desarrollo

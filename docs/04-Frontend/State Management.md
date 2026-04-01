@@ -1,172 +1,132 @@
 ---
-tags: [reservia, frontend, state, context, auth, react]
+tags:
+  - reservia
+  - frontend
+  - state
 ---
 
-# State Management
+# 🧠 State Management
 
 [[Home|← Volver al Home]]
 
-## Arquitectura de Estado
+---
 
-Reservia usa un enfoque **minimalista** de gestión de estado:
-- **Estado global**: Solo para autenticación vía `AuthContext`
-- **Estado local**: `useState` en cada componente/página
-- **No hay Redux**, Zustand ni otras librerías de estado
+## 🏛️ Arquitectura de Estado
+
+> [!quote] Filosofía
+> Reservia usa un enfoque ==minimalista== de gestión de estado. Solo lo esencial es global; todo lo demás vive en el componente que lo necesita.
+
+> [!info] Estrategia de Estado
+> - 🌐 **Estado global** → Solo autenticación vía ==AuthContext==
+> - 📦 **Estado local** → useState en cada componente/página
+> - ❌ **No hay Redux**, Zustand ni otras librerías de estado
 
 ---
 
 ## 🔐 AuthContext
 
-**Archivo**: `frontend/src/context/AuthContext.tsx`
+> [!important] El único estado global de la aplicación
+> **Archivo:** ==frontend/src/context/AuthContext.tsx==
+>
+> **Estructura del contexto:**
+> - **user** → objeto User o null
+>   - **id** → número identificador
+>   - **name** → nombre del usuario
+>   - **email** → email del usuario
+> - **login(email, password)** → inicia sesión
+> - **register(name, email, password)** → crea cuenta
+> - **logout()** → cierra sesión
+> - **isLoading** → boolean de carga
 
-El único estado global de la aplicación es el estado de autenticación.
+> [!info] 🔄 Inicialización
+> Al cargar la app, el contexto intenta restaurar la sesión desde ==localStorage==:
+>
+> 1️⃣ Busca **reservia_user** y **reservia_token** en localStorage
+> ⬇️
+> 2️⃣ Si ambos existen → restaura el usuario en el estado
+> ⬇️
+> 3️⃣ Si no → el usuario queda como **null** (no autenticado)
 
-### Estructura del Contexto
+> [!success] Login
+> 1️⃣ Llama a la API de autenticación con email y password
+> ⬇️
+> 2️⃣ Guarda **token** en localStorage como ==reservia_token==
+> ⬇️
+> 3️⃣ Guarda **usuario** en localStorage como ==reservia_user==
+> ⬇️
+> 4️⃣ Actualiza el estado → **user** deja de ser null
 
-```typescript
-interface AuthContextType {
-  user: User | null
-  login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
-  logout: () => void
-  isLoading: boolean
-}
-
-interface User {
-  id: number
-  name: string
-  email: string
-}
-```
-
-### Inicialización
-
-Al cargar la app, el contexto intenta restaurar la sesión desde `localStorage`:
-
-```typescript
-const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null)
-
-  useEffect(() => {
-    // Restaurar sesión al recargar la página
-    const savedUser = localStorage.getItem('reservia_user')
-    const savedToken = localStorage.getItem('reservia_token')
-
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser))
-    }
-  }, [])
-```
-
-### Método `login`
-
-```typescript
-const login = async (email: string, password: string) => {
-  const response = await authApi.login({ email, password })
-  localStorage.setItem('reservia_token', response.token)
-  localStorage.setItem('reservia_user', JSON.stringify(response.user))
-  setUser(response.user)
-}
-```
-
-### Método `logout`
-
-```typescript
-const logout = () => {
-  localStorage.removeItem('reservia_token')
-  localStorage.removeItem('reservia_user')
-  setUser(null)
-}
-```
+> [!danger] Logout
+> 1️⃣ Elimina ==reservia_token== de localStorage
+> ⬇️
+> 2️⃣ Elimina ==reservia_user== de localStorage
+> ⬇️
+> 3️⃣ Establece **user** como null
 
 ---
 
 ## 📡 API Client Layer
 
-**Directorio**: `frontend/src/api/`
+> [!info] Cliente Base
+> **Directorio:** ==frontend/src/api/==
+>
+> El estado del servidor se gestiona directamente con **fetch** sin librerías de cache como React Query.
+>
+> **Comportamiento del cliente:**
+> - Lee el ==token== de localStorage
+> - Lo inyecta como **Authorization: Bearer** en cada petición
+> - Content-Type siempre **application/json**
+> - Si la respuesta no es OK → lanza error
 
-El estado del servidor se gestiona directamente con `fetch` sin librerías de cache como React Query.
-
-### Estructura del cliente base (`client.ts`)
-
-```typescript
-const apiCall = async (endpoint: string, options?: RequestInit) => {
-  const token = localStorage.getItem('reservia_token')
-
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options?.headers,
-    },
-  })
-
-  if (!response.ok) throw new Error(await response.text())
-  return response.json()
-}
-```
-
-### Módulos de API
-
-| Módulo | Archivo | Endpoints |
-|--------|---------|-----------|
-| Auth | `auth.ts` | login, register |
-| Restaurants | `restaurants.ts` | getAll, getById, getCuisines |
-| Reservations | `reservations.ts` | create, getMyReservations, cancel |
-| Floor Plan | `floorPlan.ts` | get, getAvailability, update |
-| Chat | `chat.ts` | sendMessage |
+> [!abstract] Módulos de API
+> - 🔐 **auth.ts** → login, register
+> - 🍽️ **restaurants.ts** → getAll, getById, getCuisines
+> - 📅 **reservations.ts** → create, getMyReservations, cancel
+> - 🗺️ **floorPlan.ts** → get, getAvailability, update
+> - 🤖 **chat.ts** → sendMessage
+>
+> Ver [[API Endpoints]] para documentación completa de endpoints.
 
 ---
 
 ## 📦 Estado Local por Página
 
-### `Home.tsx`
-```typescript
-const [restaurants, setRestaurants] = useState<Restaurant[]>([])
-const [cuisines, setCuisines] = useState<string[]>([])
-const [searchQuery, setSearchQuery] = useState('')
-const [selectedCuisine, setSelectedCuisine] = useState<string | null>(null)
-const [isLoading, setIsLoading] = useState(true)
-```
+> [!example] 🏠 Home → [[Pages & Routing#🏠 Home|Home]]
+> - **restaurants** → lista de restaurantes
+> - **cuisines** → lista de tipos de cocina
+> - **searchQuery** → texto de búsqueda
+> - **selectedCuisine** → filtro de cocina activo (o null)
+> - **isLoading** → estado de carga
 
-### `RestaurantDetails.tsx`
-```typescript
-const [restaurant, setRestaurant] = useState<Restaurant | null>(null)
-const [floorPlan, setFloorPlan] = useState<FloorPlanData | null>(null)
-const [availability, setAvailability] = useState<SeatAvailability[]>([])
-const [selectedSeats, setSelectedSeats] = useState<number[]>([])
-const [date, setDate] = useState('')
-const [time, setTime] = useState('')
-const [guests, setGuests] = useState(2)
-const [bookingSuccess, setBookingSuccess] = useState(false)
-```
+> [!example] 🍽️ RestaurantDetails → [[Pages & Routing#🍽️ RestaurantDetails|RestaurantDetails]]
+> - **restaurant** → datos del restaurante (o null)
+> - **floorPlan** → datos del plano (o null)
+> - **availability** → disponibilidad de asientos
+> - **selectedSeats** → IDs de asientos seleccionados
+> - **date** → fecha seleccionada
+> - **time** → hora seleccionada
+> - **guests** → número de comensales (default: 2)
+> - **bookingSuccess** → si la reserva fue exitosa
 
-### `MyBookings.tsx`
-```typescript
-const [reservations, setReservations] = useState<Reservation[]>([])
-const [isLoading, setIsLoading] = useState(true)
-```
+> [!example] 📅 MyBookings → [[Pages & Routing#📅 MyBookings|MyBookings]]
+> - **reservations** → lista de reservas
+> - **isLoading** → estado de carga
 
 ---
 
 ## 🔄 Flujo de Datos
 
-```mermaid
-graph TD
-    LocalStorage["localStorage\n(token + user)"]
-    AuthContext["AuthContext\n(user state)"]
-    Header["Header.tsx"]
-    AuthModal["AuthModal.tsx"]
-    ProtectedRoutes["Rutas Protegidas\n(/my-bookings, /floor-plan)"]
-    Pages["Páginas\n(estado local + API calls)"]
-
-    LocalStorage -->|"init"| AuthContext
-    AuthContext -->|"user"| Header
-    AuthContext -->|"login/register"| AuthModal
-    AuthContext -->|"user !== null"| ProtectedRoutes
-    AuthContext -->|"useContext"| Pages
-```
+> [!info] Diagrama de flujo
+>
+> **localStorage** (token + user)
+> ⬇️ init
+> **AuthContext** (user state)
+> ⬇️ se distribuye a...
+>
+> → 🧭 [[Components#🧭 Header|Header]] ← recibe **user**
+> → 🔐 [[Components#🔐 AuthModal|AuthModal]] ← usa **login/register**
+> → 🛡️ [[Pages & Routing|Rutas Protegidas]] ← verifica **user !== null**
+> → 📄 Páginas ← usan **useContext** + estado local + API calls
 
 ---
 

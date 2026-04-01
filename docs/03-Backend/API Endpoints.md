@@ -1,287 +1,216 @@
 ---
-tags: [reservia, backend, api, endpoints, rest]
+tags:
+  - reservia
+  - backend
+  - api
 ---
 
-# API Endpoints
+# 🌐 API Endpoints
 
 [[Home|← Volver al Home]]
 
-> [!info] Base URL
-> - **Desarrollo**: `http://localhost:8000/api/`
-> - **Producción**: `https://reservia.up.railway.app/api/`
+> [!info] 🔗 Base URL
+> - **Desarrollo** → ==http://localhost:8000/api/==
+> - **Producción** → ==https://reservia.up.railway.app/api/==
 
 ---
 
 ## 🔐 Autenticación
 
-| Método | Endpoint | Auth | Descripción |
-|--------|----------|------|-------------|
-| `POST` | `/api/auth/register/` | ❌ | Registrar nuevo usuario |
-| `POST` | `/api/auth/login/` | ❌ | Iniciar sesión |
-| `POST` | `/api/auth/token/refresh/` | ❌ | Renovar access token |
+> [!abstract] Endpoints de Auth
+>
+> | Método | Endpoint | Auth | Descripción |
+> |--------|----------|------|-------------|
+> | **POST** | /api/auth/register/ | ❌ | Registrar nuevo usuario |
+> | **POST** | /api/auth/login/ | ❌ | Iniciar sesión |
+> | **POST** | /api/auth/token/refresh/ | ❌ | Renovar access token |
 
-### `POST /api/auth/register/`
+> [!example] 📝 **POST** /api/auth/register/
+>
+> **Enviar:**
+> - **first_name** → nombre del usuario (ej: =="Ana"==)
+> - **email** → correo electrónico (ej: =="ana@ejemplo.com"==)
+> - **password** → contraseña elegida
+>
+> **Respuesta exitosa** ✅ ==201==
+> - **token** → JWT access token
+> - **refresh** → JWT refresh token
+> - **user** → objeto con ==id==, ==name== y ==email== del usuario creado
 
-**Request**:
-```json
-{
-  "first_name": "Ana",
-  "email": "ana@ejemplo.com",
-  "password": "mipassword123"
-}
-```
+> [!example] 🔑 **POST** /api/auth/login/
+>
+> **Enviar:**
+> - **email** → correo registrado
+> - **password** → contraseña del usuario
+>
+> **Respuesta exitosa** ✅ ==200==
+> - **token** → JWT access token
+> - **refresh** → JWT refresh token
+> - **user** → objeto con ==id==, ==name== y ==email==
 
-**Response** `201`:
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "name": "Ana",
-    "email": "ana@ejemplo.com"
-  }
-}
-```
-
-### `POST /api/auth/login/`
-
-**Request**:
-```json
-{
-  "email": "ana@ejemplo.com",
-  "password": "mipassword123"
-}
-```
-
-**Response** `200`:
-```json
-{
-  "token": "eyJ...",
-  "refresh": "eyJ...",
-  "user": { "id": 1, "name": "Ana", "email": "ana@ejemplo.com" }
-}
-```
+> [!warning] Errores comunes
+> - ==400== → Email ya registrado o credenciales incorrectas
+> - ==401== → Token inválido o expirado
 
 ---
 
 ## 🍽️ Restaurantes
 
-| Método | Endpoint | Auth | Descripción |
-|--------|----------|------|-------------|
-| `GET` | `/api/restaurants/` | ❌ | Listar todos los restaurantes |
-| `GET` | `/api/restaurants/{id}/` | ❌ | Detalle de un restaurante |
-| `GET` | `/api/restaurants/cuisines/` | ❌ | Listar cocinas únicas |
+> [!abstract] Endpoints de Restaurantes
+>
+> | Método | Endpoint | Auth | Descripción |
+> |--------|----------|------|-------------|
+> | **GET** | /api/restaurants/ | ❌ | Listar todos los restaurantes |
+> | **GET** | /api/restaurants/{id}/ | ❌ | Detalle de un restaurante |
+> | **GET** | /api/restaurants/cuisines/ | ❌ | Listar cocinas únicas |
 
-### `GET /api/restaurants/`
+> [!example] 📋 **GET** /api/restaurants/
+>
+> **Parámetros de búsqueda opcionales:**
+> - **search** _(string)_ → Buscar por nombre
+> - **cuisine** _(string)_ → Filtrar por tipo de cocina
+>
+> **Respuesta exitosa** ✅ ==200==
+> - **restaurants** → lista de restaurantes, cada uno con:
+>   - **id** → identificador único
+>   - **name** → nombre del restaurante (ej: =="The Golden Fork"==)
+>   - **cuisine** → tipo de cocina (ej: =="Italian"==)
+>   - **location** → zona (ej: =="Downtown"==)
+>   - **rating** → puntuación (ej: ==4.8==)
+>   - **price_range** → rango de precio (ej: =="$$"==)
+>   - **image_url** → URL de la imagen
+>   - **distance** → distancia en km
+> - **total** → número total de resultados
 
-**Query params**:
-| Param | Tipo | Descripción |
-|-------|------|-------------|
-| `search` | string | Buscar por nombre |
-| `cuisine` | string | Filtrar por tipo de cocina |
+> [!example] 🔍 **GET** /api/restaurants/{id}/
+>
+> **Respuesta exitosa** ✅ ==200==
+> - **id**, **name**, **cuisine**, **description**, **address**
+> - **lat** / **lng** → coordenadas GPS
+> - **rating** → puntuación promedio
+> - **reviews_count** → número de reseñas
+> - **menuItems** → lista de platos, cada uno con ==id==, ==name== y ==price==
 
-**Response** `200`:
-```json
-{
-  "restaurants": [
-    {
-      "id": 1,
-      "name": "The Golden Fork",
-      "cuisine": "Italian",
-      "location": "Downtown",
-      "rating": 4.8,
-      "price_range": "$$",
-      "image_url": "https://...",
-      "distance": 0.5
-    }
-  ],
-  "total": 6
-}
-```
-
-### `GET /api/restaurants/{id}/`
-
-**Response** `200`:
-```json
-{
-  "id": 1,
-  "name": "The Golden Fork",
-  "cuisine": "Italian",
-  "description": "...",
-  "address": "123 Main St",
-  "lat": 40.7128,
-  "lng": -74.0060,
-  "rating": 4.8,
-  "reviews_count": 234,
-  "menuItems": [
-    { "id": 1, "name": "Pasta Carbonara", "price": 18.5 }
-  ]
-}
-```
-
-### `GET /api/restaurants/cuisines/`
-
-**Response** `200`:
-```json
-["Italian", "Japanese", "Steakhouse", "Fusion", "Healthy", "French"]
-```
+> [!example] 🍳 **GET** /api/restaurants/cuisines/
+>
+> **Respuesta exitosa** ✅ ==200==
+> - Devuelve una lista de strings con los tipos de cocina disponibles
+> - Ejemplo: =="Italian"==, =="Japanese"==, =="Steakhouse"==, =="Fusion"==, =="Healthy"==, =="French"==
 
 ---
 
 ## 📅 Reservas
 
-| Método | Endpoint | Auth | Descripción |
-|--------|----------|------|-------------|
-| `POST` | `/api/reservations/` | ✅ | Crear reserva |
-| `GET` | `/api/reservations/my/` | ✅ | Mis reservas |
-| `DELETE` | `/api/reservations/{id}/` | ✅ | Cancelar reserva |
+> [!abstract] Endpoints de Reservas
+>
+> | Método | Endpoint | Auth | Descripción |
+> |--------|----------|------|-------------|
+> | **POST** | /api/reservations/ | ✅ | Crear reserva |
+> | **GET** | /api/reservations/my/ | ✅ | Mis reservas |
+> | **DELETE** | /api/reservations/{id}/ | ✅ | Cancelar reserva |
 
-### `POST /api/reservations/`
+> [!example] ➕ **POST** /api/reservations/
+>
+> **Header requerido:** ==Authorization: Bearer \<token\>==
+>
+> **Enviar:**
+> - **restaurantId** → ID del restaurante
+> - **date** → fecha en formato ==YYYY-MM-DD==
+> - **time** → hora en formato ==HH:MM==
+> - **guests** → número de comensales
+> - **seatIds** _(opcional)_ → lista de IDs de asientos seleccionados
+>
+> **Respuesta exitosa** ✅ ==201==
+> - **id** → ID de la reserva creada
+> - **restaurant** → objeto con ==id== y ==name==
+> - **date**, **time**, **guests**
+> - **status** → =="confirmed"==
+> - **created_at** → fecha y hora de creación
 
-**Headers**: `Authorization: Bearer <token>`
+> [!info] 💺 Sobre seatIds
+> Si se omite ==seatIds==, la reserva se crea sin asientos asignados. Ver [[Reservation System]] para el flujo completo.
 
-**Request**:
-```json
-{
-  "restaurantId": 1,
-  "date": "2025-12-25",
-  "time": "20:00",
-  "guests": 2,
-  "seatIds": [5, 6]
-}
-```
+> [!warning] Errores al crear reserva
+> - ==400== → Asientos ya ocupados o cantidad de comensales inválida
+> - ==401== → Usuario no autenticado
 
-> [!note] `seatIds` es opcional
-> Si se omite `seatIds`, la reserva se crea sin asientos asignados.
+> [!example] 📄 **GET** /api/reservations/my/
+>
+> **Respuesta exitosa** ✅ ==200==
+> - Lista de reservas del usuario autenticado
+> - Cada reserva incluye: ==id==, ==restaurant==, ==date==, ==time==, ==guests==, ==status==
 
-**Response** `201`:
-```json
-{
-  "id": 42,
-  "restaurant": { "id": 1, "name": "The Golden Fork" },
-  "date": "2025-12-25",
-  "time": "20:00",
-  "guests": 2,
-  "status": "confirmed",
-  "created_at": "2025-11-01T12:00:00Z"
-}
-```
+> [!example] ❌ **DELETE** /api/reservations/{id}/
+>
+> **Respuesta exitosa** ✅ ==200==
+> - **message** → =="Reservation cancelled"==
 
-**Errores comunes**:
-| Código | Descripción |
-|--------|-------------|
-| `400` | Asientos ya ocupados o cantidad inválida |
-| `401` | No autenticado |
-
-### `GET /api/reservations/my/`
-
-**Response** `200`:
-```json
-[
-  {
-    "id": 42,
-    "restaurant": { "id": 1, "name": "The Golden Fork" },
-    "date": "2025-12-25",
-    "time": "20:00",
-    "guests": 2,
-    "status": "confirmed"
-  }
-]
-```
-
-### `DELETE /api/reservations/{id}/`
-
-**Response** `200`:
-```json
-{ "message": "Reservation cancelled" }
-```
-
-> [!warning] Cancelación
-> En realidad cambia el `status` a `cancelled`, no borra el registro de la base de datos.
+> [!warning] ⚠️ Cancelación
+> En realidad cambia el ==status== a =="cancelled"==, no borra el registro de la base de datos.
 
 ---
 
 ## 🏢 Planos de Piso
 
-| Método | Endpoint | Auth | Descripción |
-|--------|----------|------|-------------|
-| `GET` | `/api/restaurants/{id}/floor-plan/` | ❌ | Obtener plano |
-| `GET` | `/api/restaurants/{id}/availability/` | ❌ | Disponibilidad de asientos |
-| `PUT` | `/api/restaurants/{id}/floor-plan/edit/` | ✅ | Guardar plano |
+> [!abstract] Endpoints de Floor Plans
+>
+> | Método | Endpoint | Auth | Descripción |
+> |--------|----------|------|-------------|
+> | **GET** | /api/restaurants/{id}/floor-plan/ | ❌ | Obtener plano |
+> | **GET** | /api/restaurants/{id}/availability/ | ❌ | Disponibilidad de asientos |
+> | **PUT** | /api/restaurants/{id}/floor-plan/edit/ | ✅ | Guardar plano |
 
-### `GET /api/restaurants/{id}/availability/`
+> [!example] 📐 **GET** /api/restaurants/{id}/availability/
+>
+> **Parámetros requeridos:**
+> - **date** _(string)_ → formato ==YYYY-MM-DD==
+> - **time** _(string)_ → formato ==HH:MM==
+>
+> **Respuesta exitosa** ✅ ==200==
+> - **seats** → lista de asientos, cada uno con:
+>   - **id** → identificador del asiento
+>   - **label** → etiqueta (ej: =="T1-A"==)
+>   - **tableLabel** → mesa a la que pertenece (ej: =="T1"==)
+>   - **isOccupied** → ==true== o ==false==
 
-**Query params**:
-| Param | Tipo | Requerido | Descripción |
-|-------|------|-----------|-------------|
-| `date` | string | ✅ | Formato `YYYY-MM-DD` |
-| `time` | string | ✅ | Formato `HH:MM` |
-
-**Response** `200`:
-```json
-{
-  "seats": [
-    { "id": 1, "label": "T1-A", "tableLabel": "T1", "isOccupied": false },
-    { "id": 2, "label": "T1-B", "tableLabel": "T1", "isOccupied": true }
-  ]
-}
-```
-
-### `PUT /api/restaurants/{id}/floor-plan/edit/`
-
-**Request**:
-```json
-{
-  "width": 1000,
-  "height": 700,
-  "backgroundColor": "#F8F9FA",
-  "tables": [
-    {
-      "label": "T1",
-      "shape": "round",
-      "x": 100, "y": 200,
-      "width": 80, "height": 80,
-      "rotation": 0,
-      "capacity": 4,
-      "min_capacity": 1
-    }
-  ]
-}
-```
+> [!example] ✏️ **PUT** /api/restaurants/{id}/floor-plan/edit/
+>
+> **Enviar:**
+> - **width** → ancho del plano (ej: ==1000==)
+> - **height** → alto del plano (ej: ==700==)
+> - **backgroundColor** → color de fondo (ej: =="#F8F9FA"==)
+> - **tables** → lista de mesas, cada una con:
+>   - **label** → etiqueta de la mesa
+>   - **shape** → =="round"==, =="square"== o =="rectangular"==
+>   - **x**, **y** → posición en el plano
+>   - **width**, **height** → dimensiones
+>   - **rotation** → ángulo de rotación
+>   - **capacity** / **min_capacity** → capacidad máxima y mínima
 
 ---
 
 ## 🤖 Chat IA
 
-| Método | Endpoint | Auth | Descripción |
-|--------|----------|------|-------------|
-| `POST` | `/api/chat/` | ❌ | Enviar mensaje al chatbot |
+> [!abstract] Endpoint del Chatbot
+>
+> | Método | Endpoint | Auth | Descripción |
+> |--------|----------|------|-------------|
+> | **POST** | /api/chat/ | ❌ | Enviar mensaje al chatbot |
 
-### `POST /api/chat/`
+> [!example] 💬 **POST** /api/chat/
+>
+> **Enviar:**
+> - **message** → texto del usuario (ej: =="¿Qué restaurante japonés me recomiendas?"==)
+> - **history** _(opcional)_ → lista de mensajes previos con ==role== y ==content==
+> - **lat** / **lng** _(opcional)_ → coordenadas GPS del usuario
+>
+> **Respuesta exitosa** ✅ ==200==
+> - **reply** → respuesta generada por el asistente IA
 
-**Request**:
-```json
-{
-  "message": "¿Qué restaurante japonés me recomiendas?",
-  "history": [
-    { "role": "user", "content": "Hola" },
-    { "role": "assistant", "content": "¡Hola! ¿En qué puedo ayudarte?" }
-  ],
-  "lat": 40.7128,
-  "lng": -74.0060
-}
-```
-
-> [!note] Campos opcionales
-> `history`, `lat` y `lng` son opcionales. El historial se limita a las últimas 10 interacciones.
-
-**Response** `200`:
-```json
-{
-  "reply": "Te recomiendo Sakura Gardens, especializado en cocina japonesa con un ambiente minimalista y auténtico. ¡Tienen un menú de sushi excelente!"
-}
-```
+> [!info] 📌 Notas
+> - El historial se limita a las ==últimas 10 interacciones==
+> - ==lat== y ==lng== son opcionales, mejoran las recomendaciones por cercanía
+> - Ver [[AI Chat Integration]] para detalles de implementación
 
 ---
 

@@ -1,150 +1,113 @@
 ---
-tags: [reservia, features, restaurants, search, discovery]
+tags:
+  - reservia
+  - features
+  - search
+  - discovery
 ---
 
-# Restaurant Discovery
+# 🔍 Restaurant Discovery
 
 [[Home|← Volver al Home]]
 
-## Overview
-
-La funcionalidad de descubrimiento permite a los usuarios explorar, buscar y filtrar los restaurantes disponibles en Reservia.
-
----
-
-## 🖥️ Interfaz
-
-**Página**: `Home.tsx` (`/`)
-
-La página de inicio contiene:
-1. **Hero con buscador** — Campo de búsqueda prominente
-2. **Categorías de cocina** — Filtros visuales por tipo
-3. **Grid de restaurantes** — Cards de todos los restaurantes
+> [!abstract] Vista General
+> La funcionalidad de descubrimiento permite a los usuarios ==explorar, buscar y filtrar== los restaurantes disponibles en Reservia a través de múltiples métodos.
 
 ---
 
-## 🔍 Búsqueda
+## 🖥️ Interfaz Principal
 
-### Frontend
-```typescript
-// Home.tsx
-const [searchQuery, setSearchQuery] = useState('')
+> [!info] Página de Inicio
+> La página principal (==/==) contiene tres secciones clave:
+>
+> 1. 🔍 **Hero con buscador** — Campo de búsqueda ==prominente y central==
+> 2. 🏷️ **Categorías de cocina** — Filtros visuales por tipo de comida
+> 3. 🃏 **Grid de restaurantes** — Tarjetas con todos los restaurantes disponibles
 
-// Filtrado en tiempo real o al enviar el formulario
-const handleSearch = (query: string) => {
-  setSearchQuery(query)
-  fetchRestaurants({ search: query, cuisine: selectedCuisine })
-}
-```
+---
 
-### Backend
-```python
-# api/views.py - RestaurantListView
-class RestaurantListView(APIView):
-    def get(self, request):
-        queryset = Restaurant.objects.all()
+## 🔍 Búsqueda de Restaurantes
 
-        search = request.query_params.get('search')
-        if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) |
-                Q(cuisine__icontains=search) |
-                Q(location__icontains=search)
-            )
-
-        cuisine = request.query_params.get('cuisine')
-        if cuisine:
-            queryset = queryset.filter(cuisine__iexact=cuisine)
-
-        serializer = RestaurantListSerializer(queryset, many=True)
-        return Response({
-            'restaurants': serializer.data,
-            'total': queryset.count()
-        })
-```
-
-**Búsqueda por**: nombre, tipo de cocina, o ubicación (case-insensitive).
+> [!tip] Búsqueda en Tiempo Real
+> El sistema busca de forma ==instantánea== mientras el usuario escribe.
+>
+> **Se puede buscar por:**
+> - 🏷️ **Nombre** del restaurante
+> - 🍽️ **Tipo de cocina** (Italiana, Japonesa, etc.)
+> - 📍 **Ubicación** del restaurante
+>
+> Todas las búsquedas son ==case-insensitive== (no importan mayúsculas/minúsculas).
 
 ---
 
 ## 🏷️ Filtrado por Cocina
 
-```mermaid
-flowchart LR
-    AllCuisines["GET /api/restaurants/cuisines/"]
-    CategoryCards["CategoryCard components"]
-    FilterClick["Click en categoría"]
-    FilteredList["Lista filtrada"]
-
-    AllCuisines -->|"cuisines[]"| CategoryCards
-    CategoryCards --> FilterClick
-    FilterClick -->|"cuisine=Italian"| FilteredList
-```
-
-El endpoint `GET /api/restaurants/cuisines/` devuelve las cocinas únicas disponibles, calculadas dinámicamente:
-
-```python
-class CuisineListView(APIView):
-    def get(self, request):
-        cuisines = Restaurant.objects.values_list('cuisine', flat=True).distinct()
-        return Response(list(cuisines))
-```
+> [!tip] Categorías Dinámicas
+> Las categorías de cocina se ==calculan dinámicamente== desde los restaurantes disponibles.
+>
+> **Flujo:**
+> 1. 📥 Se obtienen las cocinas únicas disponibles
+> 2. 🃏 Se muestran como tarjetas de categoría visuales
+> 3. 👆 Click en una categoría → ==filtra la lista== de restaurantes
+> 4. 🔄 Click de nuevo → ==quita el filtro==
 
 ---
 
-## 🃏 RestaurantCard
+## 🃏 Tarjeta de Restaurante
 
-Cada restaurante se muestra como una tarjeta con:
-
-| Campo | Descripción |
-|-------|-------------|
-| Imagen | `image_url` del restaurante |
-| Nombre | `name` |
-| Cocina | `cuisine` (traducida con i18n) |
-| Rating | `rating` con estrellas ⭐ |
-| Precio | `price_range` ($, $$, $$$) |
-| Ubicación | `location` |
-| Distancia | `distance` en km |
-
-**Click** en la tarjeta → navega a `/restaurant/:id`
+> [!example] Información Mostrada en Cada Tarjeta
+> | Emoji | Campo | Descripción |
+> |-------|-------|-------------|
+> | 🖼️ | **Imagen** | Foto del restaurante |
+> | 🏷️ | **Nombre** | Nombre del restaurante |
+> | 🍽️ | **Cocina** | Tipo de cocina (traducida con i18n) |
+> | ⭐ | **Rating** | Puntuación con estrellas |
+> | 💰 | **Precio** | Rango de precios ($, $$, $$$) |
+> | 📍 | **Ubicación** | Dirección o zona |
+> | 📏 | **Distancia** | Distancia en km desde el usuario |
+>
+> 👆 Click en la tarjeta → navega a la ==página de detalle== del restaurante.
 
 ---
 
 ## 📊 Ordenamiento
 
-Los restaurantes se ordenan por **rating descendente** (mayor primero) por defecto, definido en el modelo:
-
-```python
-class Restaurant(models.Model):
-    class Meta:
-        ordering = ['-rating']
-```
+> [!info] Orden por Defecto
+> Los restaurantes se muestran ordenados por ==rating descendente== (mejores primero). Este orden viene definido directamente en el modelo de datos.
 
 ---
 
-## 🤖 Búsqueda con IA
+## 🤖 Búsqueda con Inteligencia Artificial
 
-Además de la búsqueda directa, los usuarios pueden usar el **chatbot** para encontrar restaurantes en lenguaje natural:
-
-- "Quiero algo romántico y no muy caro"
-- "¿Qué hay de sushi por aquí cerca?"
-- "Recomiéndame el mejor para una cena de negocios"
-
-Ver [[AI Chat Integration]] para más detalles.
+> [!abstract] Descubrimiento con IA
+> Además de la búsqueda directa, los usuarios pueden usar el ==chatbot== para encontrar restaurantes en ==lenguaje natural==:
+>
+> - 💬 *"Quiero algo romántico y no muy caro"*
+> - 🍣 *"¿Qué hay de sushi por aquí cerca?"*
+> - 💼 *"Recomiéndame el mejor para una cena de negocios"*
+>
+> El chatbot entiende contexto, preferencias y ubicación para dar ==recomendaciones personalizadas==.
+>
+> Ver [[AI Chat Integration]] para más detalles.
 
 ---
 
 ## 🗺️ Exploración por Mapa
 
-Alternativa a la lista: el **Map Explorer** (`/map`) muestra todos los restaurantes en un mapa interactivo con coordenadas GPS reales.
-
-Ver [[Map Explorer]] para más detalles.
+> [!tip] Alternativa Visual
+> Como alternativa a la lista, el ==Map Explorer== muestra todos los restaurantes en un mapa interactivo con coordenadas GPS reales.
+>
+> - 📍 Markers en posiciones reales de Manhattan
+> - 👤 Marker especial para la ubicación del usuario
+> - 💬 Popups con información del restaurante
+>
+> Ver [[Map Explorer]] para más detalles.
 
 ---
 
 ## 🔗 Links Relacionados
 
-- [[API Endpoints]] — `GET /api/restaurants/`
+- [[API Endpoints]] — Endpoints de restaurantes
 - [[Map Explorer]] — Descubrimiento por mapa
 - [[AI Chat Integration]] — Búsqueda con IA
 - [[Reservation System]] — Siguiente paso tras descubrir un restaurante

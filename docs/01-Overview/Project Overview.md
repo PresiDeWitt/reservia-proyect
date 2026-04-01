@@ -1,71 +1,108 @@
 ---
-tags: [reservia, overview, features]
+tags:
+  - reservia
+  - overview
+  - project
 ---
 
-# Project Overview
+# 🍽️ Project Overview
 
 [[Home|← Volver al Home]]
 
-## ¿Qué es Reservia?
+---
 
-**ReserVia** es una plataforma web full-stack para la gestión de reservas en restaurantes. Combina una experiencia de usuario moderna con capacidades de IA para hacer el proceso de descubrir y reservar restaurantes más intuitivo.
+> [!abstract] 🌟 ¿Qué es Reservia?
+> **ReserVia** es una plataforma web ==full-stack== para la gestión de reservas en restaurantes. Combina una experiencia de usuario moderna con capacidades de **inteligencia artificial** para hacer el proceso de descubrir y reservar restaurantes más intuitivo.
 
 ---
 
 ## 🎯 Objetivos del Proyecto
 
-- Permitir a los usuarios **descubrir restaurantes** por cocina, nombre o ubicación
-- Facilitar **reservas de mesas** con selección visual de asientos
-- Ofrecer un **chatbot con IA** (Claude) para recomendaciones personalizadas
-- Proveer un **mapa interactivo** para explorar restaurantes cercanos
-- Dar a los restaurantes una herramienta de **editor de planos** para configurar su distribución
+> [!target] 🔍 Descubrimiento
+> Permitir a los usuarios **descubrir restaurantes** por cocina, nombre o ubicación
+
+> [!target] 🪑 Reservas Visuales
+> Facilitar **reservas de mesas** con selección visual de asientos en planos interactivos
+
+> [!target] 🤖 Asistencia IA
+> Ofrecer un **chatbot con IA** (Claude) para recomendaciones personalizadas en lenguaje natural
+
+> [!target] 🗺️ Exploración Geográfica
+> Proveer un **mapa interactivo** para explorar restaurantes cercanos con geolocalización
+
+> [!target] ✏️ Herramientas para Restaurantes
+> Dar a los restaurantes una herramienta de **editor de planos** para configurar su distribución de mesas
 
 ---
 
 ## ✨ Funcionalidades Principales
 
-### Para Usuarios
+### 👤 Para Usuarios
 
-| Funcionalidad | Descripción |
-|--------------|-------------|
-| 🔍 Búsqueda | Filtrar por nombre y tipo de cocina |
-| 📅 Reservas | Seleccionar fecha, hora y número de comensales |
-| 💺 Selección de asientos | Visualizar y elegir asientos específicos en el plano |
-| 📋 Mis Reservas | Ver y cancelar reservas existentes |
-| 🤖 Chatbot IA | Pedir recomendaciones en lenguaje natural |
-| 🗺️ Mapa | Explorar restaurantes en un mapa con geolocalización |
-| 🌐 Idiomas | Interfaz en Español e Inglés |
+> [!tip] 🔍 Búsqueda Inteligente
+> Filtrar restaurantes por **nombre** y **tipo de cocina** con resultados instantáneos
 
-### Para Administradores
+> [!tip] 📅 Sistema de Reservas
+> Seleccionar **fecha**, **hora** y **número de comensales** de forma sencilla
 
-| Funcionalidad | Descripción |
-|--------------|-------------|
-| ✏️ Editor de planos | Crear/editar distribución de mesas con forma, posición y capacidad |
-| 👁️ Vista de disponibilidad | Ver qué asientos están ocupados en tiempo real |
+> [!tip] 💺 Selección de Asientos
+> Visualizar y elegir ==asientos específicos== directamente en el plano del restaurante
+
+> [!tip] 📋 Mis Reservas
+> Ver y **cancelar** reservas existentes desde el panel personal
+
+> [!tip] 🤖 Chatbot IA
+> Pedir recomendaciones en **lenguaje natural** — el chatbot conoce todos los restaurantes disponibles
+
+> [!tip] 🗺️ Mapa Interactivo
+> Explorar restaurantes en un mapa con **geolocalización** y marcadores interactivos
+
+> [!tip] 🌐 Multilingüe
+> Interfaz completa en **Español** e **Inglés**
+
+---
+
+### 🛡️ Para Administradores
+
+> [!example] ✏️ Editor de Planos
+> Crear y editar la distribución de mesas con **forma**, **posición** y **capacidad** personalizable
+
+> [!example] 👁️ Vista de Disponibilidad
+> Ver qué asientos están ==ocupados en tiempo real== para cada horario
 
 ---
 
 ## 🍽️ Restaurantes Disponibles
 
-Reservia viene pre-cargado con 6 restaurantes de ejemplo:
+Reservia viene pre-cargado con **6 restaurantes de ejemplo**:
 
-| # | Restaurante | Cocina | Características |
-|---|-------------|--------|----------------|
-| 1 | The Golden Fork | Italiana | Clásico europeo, 10 mesas |
-| 2 | Sakura Gardens | Japonesa | Minimalista, 8 mesas |
-| 3 | Prime Cuts | Steakhouse | Espacioso, 7 mesas grandes |
-| 4 | El Centro Fusion | Fusión | Combinaciones diversas, 40 opciones |
-| 5 | Green Leaf | Saludable/Vegana | Farm-to-table orgánico |
-| 6 | Petit Paris Bistro | Francesa | Bistró clásico parisino |
+> [!note] 🇮🇹 The Golden Fork
+> **Cocina:** Italiana · **Estilo:** Clásico europeo · **Capacidad:** 10 mesas
 
-> [!info] Seeding
-> Todos los restaurantes se crean automáticamente al iniciar el servidor mediante el comando `python manage.py seed`. Ver [[Database Seeding]].
+> [!note] 🇯🇵 Sakura Gardens
+> **Cocina:** Japonesa · **Estilo:** Minimalista · **Capacidad:** 8 mesas
+
+> [!note] 🥩 Prime Cuts
+> **Cocina:** Steakhouse · **Estilo:** Espacioso · **Capacidad:** 7 mesas grandes
+
+> [!note] 🌮 El Centro Fusion
+> **Cocina:** Fusión · **Estilo:** Combinaciones diversas · **Capacidad:** 40 opciones
+
+> [!note] 🥗 Green Leaf
+> **Cocina:** Saludable/Vegana · **Estilo:** Farm-to-table orgánico
+
+> [!note] 🇫🇷 Petit Paris Bistro
+> **Cocina:** Francesa · **Estilo:** Bistró clásico parisino
+
+> [!info] 🌱 Seeding Automático
+> Todos los restaurantes se crean automáticamente al iniciar el servidor mediante el comando de seed. Ver [[Database Seeding]].
 
 ---
 
 ## 🔗 Links Relacionados
 
-- [[Tech Stack]] — Stack tecnológico completo
-- [[System Architecture]] — Cómo encajan todas las piezas
-- [[Reservation System]] — Flujo detallado de reservas
-- [[AI Chat Integration]] — Cómo funciona el chatbot
+> [!quote] 📚 Sigue Explorando
+> - 🧰 [[Tech Stack]] — Stack tecnológico completo
+> - 🏛️ [[System Architecture]] — Cómo encajan todas las piezas
+> - 📅 [[Reservation System]] — Flujo detallado de reservas
+> - 🤖 [[AI Chat Integration]] — Cómo funciona el chatbot

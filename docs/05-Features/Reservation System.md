@@ -1,177 +1,109 @@
 ---
-tags: [reservia, features, reservations, booking, seats]
+tags:
+  - reservia
+  - features
+  - reservations
+  - booking
 ---
 
-# Reservation System
+# 🎫 Reservation System
 
 [[Home|← Volver al Home]]
 
-## Overview
-
-El sistema de reservas permite a los usuarios registrados reservar mesas en restaurantes, opcionalmente seleccionando asientos específicos en el plano de piso.
+> [!abstract] Vista General
+> El sistema de reservas permite a los usuarios registrados ==reservar mesas== en restaurantes, opcionalmente ==seleccionando asientos específicos== en el plano de piso.
 
 ---
 
 ## 🔄 Flujo Completo de Reserva
 
-```mermaid
-flowchart TD
-    Start(["Usuario en /restaurant/:id"])
-    Auth{"¿Autenticado?"}
-    Login["Abrir AuthModal"]
-    Form["Formulario de Reserva\n(fecha, hora, comensales)"]
-    HasFloorPlan{"¿Tiene plano?"}
-    LoadAvail["GET /availability/\n?date=&time="]
-    SeatPicker["SeatPicker\n(Selección visual)"]
-    NoSeats["Sin selección\nde asientos"]
-    Validate{"¿Asientos = Comensales?"}
-    Submit["POST /api/reservations/"]
-    Success["✅ Reserva Confirmada"]
-    Error["❌ Error\n(asientos ocupados)"]
+> [!note] Paso 1 — Autenticación
+> 🔐 El usuario debe estar ==autenticado== para reservar.
+> Si no lo está, se abre el ==AuthModal== para iniciar sesión o registrarse.
 
-    Start --> Auth
-    Auth -->|No| Login
-    Auth -->|Sí| Form
-    Login --> Form
-    Form --> HasFloorPlan
-    HasFloorPlan -->|Sí| LoadAvail
-    HasFloorPlan -->|No| NoSeats
-    LoadAvail --> SeatPicker
-    SeatPicker --> Validate
-    Validate -->|No| SeatPicker
-    Validate -->|Sí| Submit
-    NoSeats --> Submit
-    Submit -->|200| Success
-    Submit -->|400| Error
-```
+> [!note] Paso 2 — Formulario de Reserva
+> 📋 El usuario completa el formulario en la página del restaurante:
+>
+> | Campo | Descripción |
+> |-------|-------------|
+> | 📅 **Fecha** | Debe ser una ==fecha futura== |
+> | 🕐 **Hora** | Hora de la reserva |
+> | 👥 **Comensales** | Entre ==1 y 20== personas |
+
+> [!note] Paso 3 — Selección de Asientos (Opcional)
+> 💺 Si el restaurante tiene un ==plano configurado==:
+>
+> - Se carga la disponibilidad para la fecha y hora elegidas
+> - Se muestra el ==SeatPicker== con el plano visual
+> - 🟢 Asientos disponibles → click para seleccionar
+> - 🔴 Asientos ocupados → no clickeables
+> - 🟠 Asientos seleccionados → click para deseleccionar
+> - El usuario debe seleccionar ==exactamente== tantos asientos como comensales
+
+> [!note] Paso 4 — Confirmación
+> 📤 Se envía la reserva al backend:
+> - ✅ **Éxito** → Reserva confirmada y visible en "Mis Reservas"
+> - ❌ **Error** → Asientos ya ocupados u otro problema de validación
 
 ---
 
-## 📋 Formulario de Reserva
+## ⚠️ Validaciones
 
-**Ubicación**: `RestaurantDetails.tsx`
+> [!warning] Reglas de Validación — Frontend
+> - 📅 Fecha y hora son ==obligatorias==
+> - 👥 Comensales debe ser entre ==1 y 20==
+> - 💺 Si hay plano: asientos seleccionados ==debe ser igual== al número de comensales
 
-Campos del formulario:
-
-| Campo | Tipo | Validación |
-|-------|------|-----------|
-| Fecha | `date` input | Fecha futura, requerido |
-| Hora | `time` input | Requerido |
-| Comensales | `number` input | 1-20 |
-
----
-
-## 💺 Selección de Asientos (Opcional)
-
-Si el restaurante tiene un plano configurado:
-
-1. Se carga la disponibilidad via `GET /api/restaurants/:id/availability/?date=&time=`
-2. Se muestra el `<SeatPicker />` con el plano visual
-3. Los asientos ocupados se muestran en rojo 🔴
-4. Los disponibles en verde 🟢
-5. Los seleccionados en amarillo 🟡
-6. El usuario selecciona exactamente `guests` asientos
-
-> [!warning] Validación de conteo
-> El número de asientos seleccionados debe ser igual al número de comensales antes de poder enviar la reserva.
-
----
-
-## ✅ Validaciones
-
-### Frontend
-- Fecha y hora son requeridas
-- Comensales: 1-20
-- Si hay plano: asientos seleccionados = comensales
-
-### Backend
-```python
-# api/serializers.py - ReservationSerializer
-class ReservationSerializer(serializers.ModelSerializer):
-    def validate_guests(self, value):
-        if not 1 <= value <= 20:
-            raise serializers.ValidationError("Guests must be between 1 and 20")
-        return value
-
-    def validate(self, data):
-        seat_ids = self.context.get('seat_ids', [])
-        if seat_ids:
-            # Verificar que los asientos no están ocupados
-            occupied = SeatReservation.objects.filter(
-                seat_id__in=seat_ids,
-                reservation__status='confirmed',
-                reservation__date=data['date'],
-                reservation__time=data['time']
-            )
-            if occupied.exists():
-                raise serializers.ValidationError("Some seats are already occupied")
-        return data
-```
-
----
-
-## 📡 API de Reservas
-
-### Crear Reserva
-
-```http
-POST /api/reservations/
-Authorization: Bearer <token>
-
-{
-  "restaurantId": 1,
-  "date": "2025-12-25",
-  "time": "20:00",
-  "guests": 2,
-  "seatIds": [5, 6]
-}
-```
-
-**Proceso interno**:
-1. Valida autenticación (JWT)
-2. Valida los datos del serializer
-3. Crea `Reservation` con `status='confirmed'`
-4. Si hay `seatIds`, crea registros `SeatReservation` para cada asiento
-5. Devuelve la reserva creada
-
-### Ver Mis Reservas
-
-```http
-GET /api/reservations/my/
-Authorization: Bearer <token>
-```
-
-Devuelve todas las reservas del usuario, ordenadas por fecha descendente.
-
-### Cancelar Reserva
-
-```http
-DELETE /api/reservations/{id}/
-Authorization: Bearer <token>
-```
-
-**Nota**: Cambia `status` a `'cancelled'` — no borra el registro.
-
----
-
-## 🗄️ Modelos Involucrados
-
-| Modelo | Rol |
-|--------|-----|
-| `Reservation` | Reserva principal |
-| `SeatReservation` | Junction table asiento-reserva |
-| `Seat` | Asiento individual |
-
-Ver [[Database Schema]] para el diagrama ER completo.
+> [!warning] Reglas de Validación — Backend
+> - 🔐 Se requiere ==autenticación JWT== válida
+> - 👥 Comensales entre ==1 y 20== (validación duplicada por seguridad)
+> - 💺 Si se envían asientos, se verifica que ==no estén ocupados== para esa fecha y hora
+> - 🔒 Si algún asiento ya fue reservado por otro usuario, se rechaza la solicitud
 
 ---
 
 ## 📊 Estados de una Reserva
 
-| Estado | Descripción |
-|--------|-------------|
-| `confirmed` | Reserva activa |
-| `cancelled` | Reserva cancelada por el usuario |
+> [!example] Ciclo de Vida
+> | Emoji | Estado | Descripción |
+> |-------|--------|-------------|
+> | ✅ | **Confirmed** | Reserva ==activa y vigente== |
+> | ❌ | **Cancelled** | Reserva ==cancelada== por el usuario |
+>
+> Al cancelar, el registro ==no se borra==, solo cambia de estado.
+
+---
+
+## 📡 Operaciones de la API
+
+> [!info] Crear Reserva
+> Se envía al backend: restaurante, fecha, hora, comensales, y opcionalmente los IDs de asientos seleccionados.
+>
+> **Proceso interno:**
+> 1. ✅ Valida autenticación (JWT)
+> 2. ✅ Valida datos del formulario
+> 3. 📝 Crea la reserva con estado ==confirmed==
+> 4. 💺 Si hay asientos, crea registros de SeatReservation
+> 5. 📤 Devuelve la reserva creada
+
+> [!info] Ver Mis Reservas
+> Devuelve todas las reservas del usuario, ordenadas por ==fecha descendente== (más recientes primero).
+
+> [!info] Cancelar Reserva
+> Cambia el estado a ==cancelled==. El registro se mantiene en la base de datos para historial.
+
+---
+
+## 🗄️ Modelos Involucrados
+
+> [!abstract] Estructura de Datos
+> | Modelo | Rol |
+> |--------|-----|
+> | 🎫 **Reservation** | Reserva principal (fecha, hora, comensales, estado) |
+> | 💺 **SeatReservation** | Tabla intermedia que conecta asientos con reservas |
+> | 🪑 **Seat** | Asiento individual dentro de una mesa |
+>
+> Ver [[Database Schema]] para el diagrama ER completo.
 
 ---
 

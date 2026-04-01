@@ -1,146 +1,170 @@
 ---
-tags: [reservia, architecture, system-design]
+tags:
+  - reservia
+  - architecture
+  - system
 ---
 
-# System Architecture
+# 🏛️ System Architecture
 
 [[Home|← Volver al Home]]
 
-## Visión General
+---
 
-Reservia es una arquitectura **monolítica desplegada en un solo contenedor**, donde Django sirve tanto la API REST como el bundle estático del frontend React.
+## 🌐 Visión General
+
+> [!quote] Filosofía de Despliegue
+> Reservia es una arquitectura **monolítica desplegada en un solo contenedor**, donde ==Django sirve tanto la API REST como el bundle estático del frontend React==.
 
 ---
 
 ## 🏗️ Diagrama de Arquitectura
 
-```mermaid
-graph TB
-    subgraph Cliente
-        Browser["🌐 Browser"]
-    end
+> [!abstract] 🌐 Capa Cliente — **Browser**
+> El usuario accede a la aplicación desde cualquier navegador moderno.
+>
+> > [!tip] 📱 Frontend — **React App (SPA)**
+> > Servida como archivos estáticos dentro del mismo contenedor Docker.
+> >
+> > - **React Router** → Navegación del lado del cliente
+> > - **Pages** → Vistas de la aplicación
+> > - **Components** → Piezas reutilizables de UI
+> > - **API Client Layer** → Comunicación con el backend
+> >
+> > > [!info] ⚙️ Backend — **Django + DRF**
+> > > Procesa todas las peticiones REST y sirve el SPA.
+> > >
+> > > - **URL Router** → Enrutamiento de URLs
+> > > - **API Views** → Lógica de los endpoints
+> > > - **Serializers** → Validación y transformación de datos
+> > > - **Django Models** → Lógica de negocio
+> > > - **JWT Auth** → Autenticación con tokens
+> > > - **Chat View** → Integración con IA
+> > >
+> > > > [!example] 🗄️ Almacenamiento
+> > > > - **SQLite3** → Base de datos de desarrollo
+> > > > - **PostgreSQL** → Base de datos de producción
 
-    subgraph Docker Container / Railway
-        subgraph Frontend["React App (SPA)"]
-            Router["React Router"]
-            Pages["Pages"]
-            Components["Components"]
-            APIClient["API Client Layer"]
-        end
+---
 
-        subgraph Backend["Django + DRF"]
-            URLs["URL Router"]
-            Views["API Views"]
-            Serializers["Serializers"]
-            Models["Django Models"]
-            Auth["JWT Auth"]
-            AIView["Chat View"]
-        end
-
-        subgraph Storage
-            SQLite["SQLite3 (dev)"]
-            PG["PostgreSQL (prod)"]
-        end
-    end
-
-    subgraph External
-        Anthropic["🤖 Anthropic API\n(Claude Haiku)"]
-        Leaflet["🗺️ OpenStreetMap\n(Leaflet tiles)"]
-    end
-
-    Browser -->|HTTP/HTTPS| Frontend
-    APIClient -->|REST API /api/*| Views
-    Views --> Serializers
-    Serializers --> Models
-    Models --> SQLite
-    Models --> PG
-    Auth --> Views
-    AIView -->|HTTPS| Anthropic
-    Browser --> Leaflet
-```
+> [!note] 🔌 Servicios Externos
+> - 🤖 **Anthropic API** (Claude Haiku) → Chatbot inteligente con IA
+> - 🗺️ **OpenStreetMap** (Leaflet tiles) → Mapas interactivos
 
 ---
 
 ## 🔄 Flujo de Peticiones
 
-### Request Típico (ej: listar restaurantes)
+### 📋 Request Típico — Listar Restaurantes
 
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant R as React App
-    participant A as API Client
-    participant D as Django View
-    participant DB as Database
+> [!example] Flujo paso a paso
+>
+> > [!info] 1️⃣ Navegación
+> > 🌐 **Browser** → Navega a `/`
+>
+> > [!info] 2️⃣ Llamada al API Client
+> > 📱 **React App** → llama a `restaurants.getAll()`
+>
+> > [!info] 3️⃣ Petición HTTP
+> > 📡 **API Client** → `GET /api/restaurants/`
+>
+> > [!info] 4️⃣ Consulta a la Base de Datos
+> > ⚙️ **Django View** → `Restaurant.objects.all()` → 🗄️ **Database**
+>
+> > [!success] 5️⃣ Respuesta
+> > 🗄️ **Database** → ==QuerySet== → ⚙️ **Django** → ==JSON Response== → 📡 **API Client** → ==Restaurant[]== → 📱 **React** → ==Render Home==
 
-    B->>R: Navega a /
-    R->>A: restaurants.getAll()
-    A->>D: GET /api/restaurants/
-    D->>DB: Restaurant.objects.all()
-    DB-->>D: QuerySet
-    D-->>A: JSON Response
-    A-->>R: Restaurant[]
-    R-->>B: Render Home.tsx
-```
+---
 
-### Flujo de Reserva con Asientos
+### 🪑 Flujo de Reserva con Asientos
 
-```mermaid
-sequenceDiagram
-    participant U as Usuario
-    participant FE as Frontend
-    participant BE as Backend
-    participant DB as Database
-
-    U->>FE: Selecciona fecha, hora, comensales
-    FE->>BE: GET /api/restaurants/:id/availability/?date=&time=
-    BE->>DB: SeatReservation query
-    DB-->>BE: asientos ocupados
-    BE-->>FE: {seats: [{id, isOccupied}]}
-    FE->>U: Muestra plano con asientos disponibles
-    U->>FE: Selecciona asientos
-    FE->>BE: POST /api/reservations/ (con seatIds)
-    BE->>DB: CREATE Reservation + SeatReservation
-    DB-->>BE: OK
-    BE-->>FE: Reservation object
-    FE->>U: Confirmación de reserva
-```
+> [!example] Flujo completo de reserva
+>
+> > [!info] 1️⃣ Selección
+> > 👤 **Usuario** → Selecciona ==fecha==, ==hora==, ==comensales==
+>
+> > [!info] 2️⃣ Consulta de Disponibilidad
+> > 📱 **Frontend** → `GET /api/restaurants/:id/availability/?date=&time=`
+> > ⚙️ **Backend** → consulta ==SeatReservation== en la DB
+> > 🗄️ **Database** → devuelve asientos ocupados
+>
+> > [!info] 3️⃣ Visualización
+> > ⚙️ **Backend** → responde `{seats: [{id, isOccupied}]}`
+> > 📱 **Frontend** → ==Muestra plano con asientos disponibles==
+>
+> > [!info] 4️⃣ Selección de Asientos
+> > 👤 **Usuario** → Selecciona asientos en el plano interactivo
+>
+> > [!success] 5️⃣ Confirmación
+> > 📱 **Frontend** → `POST /api/reservations/` (con seatIds)
+> > ⚙️ **Backend** → crea ==Reservation== + ==SeatReservation==
+> > 📱 **Frontend** → muestra ✅ **Confirmación de reserva**
 
 ---
 
 ## 📁 Separación de Capas
 
-| Capa | Ubicación | Responsabilidad |
-|------|-----------|----------------|
-| Presentación | `frontend/src/pages/` | UI, routing |
-| Lógica UI | `frontend/src/components/` | Componentes reutilizables |
-| API Client | `frontend/src/api/` | Comunicación con backend |
-| Estado global | `frontend/src/context/` | Auth state |
-| API REST | `backend/api/views.py` | Endpoints HTTP |
-| Serialización | `backend/api/serializers.py` | Validación y transformación |
-| Modelos | `backend/api/models.py` | Lógica de negocio y DB |
-| Configuración | `backend/reservia/settings.py` | Config Django |
+> [!abstract] 🎨 Presentación
+> **Ubicación:** `frontend/src/pages/`
+> **Responsabilidad:** UI, routing
+
+> [!abstract] 🧩 Lógica UI
+> **Ubicación:** `frontend/src/components/`
+> **Responsabilidad:** Componentes reutilizables
+
+> [!abstract] 📡 API Client
+> **Ubicación:** `frontend/src/api/`
+> **Responsabilidad:** Comunicación con backend
+
+> [!abstract] 🔐 Estado Global
+> **Ubicación:** `frontend/src/context/`
+> **Responsabilidad:** Auth state (ver [[Authentication]])
+
+> [!abstract] ⚙️ API REST
+> **Ubicación:** `backend/api/views.py`
+> **Responsabilidad:** Endpoints HTTP (ver [[API Endpoints]])
+
+> [!abstract] 🔄 Serialización
+> **Ubicación:** `backend/api/serializers.py`
+> **Responsabilidad:** Validación y transformación
+
+> [!abstract] 🗄️ Modelos
+> **Ubicación:** `backend/api/models.py`
+> **Responsabilidad:** Lógica de negocio y DB (ver [[Database Schema]])
+
+> [!abstract] ⚙️ Configuración
+> **Ubicación:** `backend/reservia/settings.py`
+> **Responsabilidad:** Config Django
 
 ---
 
 ## 🌐 Estrategia de Despliegue
 
 Django actúa como **servidor único** que:
-1. Sirve la API en `/api/*`
-2. Sirve los archivos estáticos del frontend en `/static/`
-3. Para cualquier ruta que no sea `/api/*`, devuelve el `index.html` del SPA (`views_frontend.py`)
+
+1. Sirve la ==API== en `/api/*`
+2. Sirve los ==archivos estáticos== del frontend en `/static/`
+3. Para cualquier otra ruta, devuelve el `index.html` del SPA
 
 > [!info] Sin servidor separado para el frontend
-> No hay Nginx ni servidor de archivos separado. WhiteNoise maneja los estáticos y Django sirve el SPA.
+> No hay Nginx ni servidor de archivos separado. ==WhiteNoise== maneja los estáticos y Django sirve el SPA a través de `views_frontend.py`.
 
 ---
 
 ## 🔐 Seguridad
 
-- **CORS**: Configurado con `django-cors-headers`, permitiendo solo orígenes conocidos
-- **JWT**: Tokens con expiración de 7 días (access) / 30 días (refresh)
-- **HTTPS**: Gestionado por Railway en producción
-- **SECRET_KEY**: Inyectado vía variable de entorno
+> [!warning] 🛡️ CORS
+> Configurado con `django-cors-headers`, permitiendo ==solo orígenes conocidos==.
+
+> [!warning] 🔑 JWT Tokens
+> - **Access Token** → expiración de ==7 días==
+> - **Refresh Token** → expiración de ==30 días==
+
+> [!warning] 🔒 HTTPS
+> Gestionado por ==Railway== en producción. Todo el tráfico es cifrado.
+
+> [!warning] 🗝️ SECRET_KEY
+> Inyectado vía ==variable de entorno==. Nunca hardcodeado en el código.
 
 ---
 
@@ -150,3 +174,4 @@ Django actúa como **servidor único** que:
 - [[API Endpoints]] — Todas las rutas REST
 - [[Docker Setup]] — Cómo se empaqueta todo
 - [[Authentication]] — Sistema de autenticación
+- [[Database Schema]] — Esquema de la base de datos
