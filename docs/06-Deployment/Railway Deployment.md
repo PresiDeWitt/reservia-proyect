@@ -1,165 +1,147 @@
 ---
-tags: [reservia, deployment, railway, production, hosting]
+tags:
+  - reservia
+  - deployment
+  - railway
+  - cloud
 ---
 
-# Railway Deployment
+# 🚂 Railway Deployment
 
 [[Home|← Volver al Home]]
 
-## Overview
+---
 
-Reservia está desplegado en **Railway.app**, una plataforma de cloud hosting que soporta Docker nativo y auto-deploy desde GitHub.
+## 🌊 Visión General
 
-**URL de producción**: https://reservia.up.railway.app
+Reservia está desplegado en ==Railway.app==, una plataforma de cloud hosting con soporte nativo para Docker y auto-deploy desde GitHub.
+
+🌐 **URL de producción:** https://reservia.up.railway.app
 
 ---
 
-## 🚂 ¿Por qué Railway?
+## 💡 ¿Por qué Railway?
 
-| Ventaja | Descripción |
-|---------|-------------|
-| Docker nativo | Usa el `Dockerfile` del repo directamente |
-| Auto-deploy | Push a `main` → deploy automático |
-| PostgreSQL incluido | Servicio de base de datos integrado |
-| Variables de entorno | Panel de configuración visual |
-| SSL automático | HTTPS sin configuración |
-| Sin costo fijo | Pay-as-you-go |
-
----
-
-## 🛠️ Configuración del Proyecto
-
-### Estructura en Railway
-
-```
-Railway Project: reservia
-├── Service: backend (Web)
-│   ├── Source: GitHub repo
-│   ├── Build: Dockerfile
-│   └── Variables: todas las env vars
-└── Service: database (opcional)
-    └── PostgreSQL plugin
-```
+> [!success] ✅ Ventajas de Railway
+>
+> - 🐳 **Docker nativo** → usa el Dockerfile del repo directamente, sin configuración extra
+> - 🔄 **Auto-deploy** → cada push a ==main== lanza un deploy automático
+> - 🗄️ **PostgreSQL incluido** → servicio de base de datos integrado como plugin
+> - ⚙️ **Variables de entorno** → panel de configuración visual e intuitivo
+> - 🔒 **SSL automático** → HTTPS sin ninguna configuración manual
+> - 💰 **Sin costo fijo** → modelo pay-as-you-go
 
 ---
 
-## ⚙️ Variables de Entorno en Railway
+## 🏗️ Estructura del Proyecto en Railway
 
-Configurar en el panel de Railway → Service → Variables:
+> [!info] 📂 Arquitectura del Servicio
+>
+> 🚂 **Railway Project: reservia**
+> ├── 🌐 **Service: backend** (Web)
+> │   ├── 📦 Source → repositorio GitHub conectado
+> │   ├── 🐳 Build → usa el Dockerfile multi-stage
+> │   └── ⚙️ Variables → todas las env vars configuradas
+> └── 🗄️ **Service: database** (opcional)
+>     └── 🐘 Plugin PostgreSQL integrado
 
-```
-SECRET_KEY=<generar con python manage.py generate_secret_key>
-DEBUG=False
-ALLOWED_HOSTS=*.railway.app,reservia.up.railway.app
-DATABASE_URL=${{Postgres.DATABASE_URL}}  # Referencia al plugin PostgreSQL
-CORS_ALLOWED_ORIGINS=https://reservia.up.railway.app
-ANTHROPIC_API_KEY=sk-ant-api03-...
-PORT=8000
-```
+---
 
-> [!info] `${{Postgres.DATABASE_URL}}`
-> Railway permite referenciar variables de otros servicios. Esta sintaxis inserta automáticamente la URL de PostgreSQL.
+## ⚙️ Variables de Entorno
+
+> [!info] 🔧 Configurar en Railway → Service → Variables
+>
+> - 🔐 **SECRET_KEY** → clave aleatoria generada de forma segura
+> - 🐛 **DEBUG** → ==False==
+> - 🌐 **ALLOWED_HOSTS** → *.railway.app,reservia.up.railway.app
+> - 🗄️ **DATABASE_URL** → referencia al plugin PostgreSQL (Railway lo resuelve automáticamente)
+> - 🔗 **CORS_ALLOWED_ORIGINS** → https://reservia.up.railway.app
+> - 🤖 **ANTHROPIC_API_KEY** → tu clave de API de Anthropic
+> - 🌐 **PORT** → 8000
+>
+> ==Railway permite referenciar variables de otros servicios== con su sintaxis especial, insertando automáticamente la URL de PostgreSQL.
 
 ---
 
 ## 🚀 Proceso de Deploy
 
-```mermaid
-flowchart LR
-    Push["git push origin main"]
-    GH["GitHub Repository"]
-    Railway["Railway detects push"]
-    Build["docker build\n(Multi-stage)"]
-    NodeBuild["npm run build\n(Frontend)"]
-    PythonBuild["pip install\n(Backend)"]
-    Migrate["python manage.py migrate"]
-    Seed["python manage.py seed"]
-    Gunicorn["gunicorn -w 3\nreservia.wsgi"]
-    Live["✅ App en vivo"]
+> [!success] 1️⃣ Push al Repositorio
+> El desarrollador hace push a la rama ==main== en GitHub
 
-    Push --> GH
-    GH --> Railway
-    Railway --> Build
-    Build --> NodeBuild
-    Build --> PythonBuild
-    NodeBuild --> Migrate
-    PythonBuild --> Migrate
-    Migrate --> Seed
-    Seed --> Gunicorn
-    Gunicorn --> Live
-```
+⬇️
+
+> [!success] 2️⃣ Railway Detecta el Cambio
+> Railway está conectado al repositorio y detecta automáticamente el nuevo commit
+
+⬇️
+
+> [!success] 3️⃣ Build Multi-Stage
+> Se ejecuta el Dockerfile:
+> - 📦 Se compila el frontend con Vite (Node.js)
+> - 🐍 Se instalan dependencias Python (pip install)
+> - 🔗 Se integran los archivos estáticos
+
+⬇️
+
+> [!success] 4️⃣ Arranque del Servidor
+> - 🔄 Se ejecutan las migraciones de base de datos
+> - 🌱 Se ejecuta el seed de datos
+> - 🚀 Se inicia Gunicorn con ==3 workers==
+
+⬇️
+
+> [!success] 5️⃣ ¡App en Vivo!
+> La aplicación está disponible en https://reservia.up.railway.app con ==SSL automático==
 
 ---
 
 ## 📋 Checklist de Despliegue
 
 - [ ] Conectar repositorio GitHub a Railway
-- [ ] Configurar variables de entorno
-- [ ] Añadir PostgreSQL plugin (o usar SQLite)
-- [ ] Verificar que `ALLOWED_HOSTS` incluye el dominio Railway
-- [ ] Verificar que `CORS_ALLOWED_ORIGINS` incluye el dominio Railway
-- [ ] Hacer push del código
-- [ ] Verificar logs del build
-- [ ] Probar la URL de producción
+- [ ] Configurar todas las [[Environment Variables|variables de entorno]]
+- [ ] Añadir plugin PostgreSQL (o confirmar uso de SQLite)
+- [ ] Verificar que ==ALLOWED_HOSTS== incluye el dominio Railway
+- [ ] Verificar que ==CORS_ALLOWED_ORIGINS== incluye el dominio Railway
+- [ ] Hacer push del código a la rama main
+- [ ] Revisar los logs del build en el panel de Railway
+- [ ] Probar la URL de producción en el navegador
+- [ ] Verificar que el chatbot funciona (requiere ANTHROPIC_API_KEY)
+- [ ] Confirmar que los 6 restaurantes aparecen correctamente
 
 ---
 
 ## 🔍 Monitoreo y Logs
 
-**Ver logs en tiempo real**:
-```bash
-# Via Railway CLI
-railway logs
+> [!info] 📊 Ver Logs en Tiempo Real
+>
+> **Desde el panel web:**
+> Railway → Service → Deployments → seleccionar deployment → ==Ver logs==
+>
+> **Desde la CLI de Railway:**
+> Ejecutar el comando de logs desde la terminal tras autenticarse
+>
+> **Logs de inicio esperados:**
+> 1. ✅ Running migrations...
+> 2. 🌱 Seeding database...
+> 3. 🚀 Starting Gunicorn con 3 workers
+> 4. 👂 Listening en el puerto asignado
 
-# Via GitHub + Railway
-# Panel de Railway → Service → Deployments → Ver logs
-```
-
-**Logs de inicio esperados**:
-```
-Running migrations...
-Seeding database...
-[2025-01-01 12:00:00] [1] [INFO] Starting gunicorn 21.2.0
-[2025-01-01 12:00:00] [1] [INFO] Listening at: http://0.0.0.0:8000
-[2025-01-01 12:00:00] [9] [INFO] Booting worker with pid: 9
-```
-
----
-
-## 🔧 Railway CLI
-
-```bash
-# Instalar
-npm install -g @railway/cli
-
-# Login
-railway login
-
-# Conectar al proyecto
-railway link
-
-# Ver variables
-railway variables
-
-# Deploy manual
-railway up
-
-# Ver logs
-railway logs
-```
+> [!info] 🛠️ Railway CLI
+>
+> Herramientas disponibles desde la terminal:
+> - **Instalar** → via npm de forma global
+> - **Autenticarse** → comando login
+> - **Conectar al proyecto** → comando link
+> - **Ver variables** → comando variables
+> - **Deploy manual** → comando up
+> - **Ver logs** → comando logs
 
 ---
 
 ## ⚡ Configuración de Puerto
 
-Railway inyecta automáticamente la variable `PORT`. El Dockerfile lo usa:
-
-```dockerfile
-CMD gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:$PORT
-```
-
-> [!warning] No hardcodear el puerto
-> Railway asigna el puerto dinámicamente. Siempre usar `$PORT`.
+> [!warning] 🌐 Puerto Dinámico
+> Railway ==asigna el puerto dinámicamente== a través de la variable PORT. El Dockerfile está configurado para usar esta variable al iniciar Gunicorn. ==Nunca hardcodear el número de puerto== ya que Railway lo cambia según disponibilidad.
 
 ---
 
