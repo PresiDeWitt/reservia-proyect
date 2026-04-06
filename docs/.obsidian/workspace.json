@@ -11,17 +11,14 @@
             "id": "1eea65513606a8e2",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "Reservia Map.canvas",
-                "viewState": {
-                  "x": 345,
-                  "y": 706.9179766665732,
-                  "zoom": -0.8163250755621569
-                }
+                "file": "09-Notify/Telegram Notifications.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "Reservia Map"
+              "icon": "lucide-file",
+              "title": "Telegram Notifications"
             }
           }
         ]
@@ -171,21 +168,28 @@
   },
   "active": "1eea65513606a8e2",
   "lastOpenFiles": [
+    "09-Notify/Telegram Notifications.md",
+    "01-Overview/Project Overview.md",
+    "09-Notify",
+    "Notify",
+    "08-Security/Notify",
+    "03-Backend/Authentication.md",
+    "01-Overview/Tech Stack.md",
+    "02-Architecture/Project Structure.md",
+    "04-Frontend/Pages & Routing.md",
+    "04-Frontend/Internationalization.md",
+    "08-Security/Security Incidents.md",
+    "Reservia Map.canvas",
+    "03-Backend/AI Chat Integration.md",
+    "03-Backend/API Endpoints.md",
     "Home.md",
     "06-Deployment/Environment Variables.md",
     "06-Deployment/Railway Deployment.md",
-    "08-Security/Security Incidents.md",
-    "03-Backend/AI Chat Integration.md",
     "Home.md.tmp.27764.1775498073285",
-    "03-Backend/Authentication.md",
     "08-Security",
-    "03-Backend/API Endpoints.md",
     "05-Features/Restaurant Discovery.md",
     "05-Features/Reservation System.md",
-    "04-Frontend/Internationalization.md",
-    "04-Frontend/Pages & Routing.md",
     "06-Deployment/Docker Setup.md",
-    "04-Frontend/Components.md",
-    "02-Architecture/Project Structure.md"
+    "04-Frontend/Components.md"
   ]
 }
