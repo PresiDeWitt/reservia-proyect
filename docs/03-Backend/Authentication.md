@@ -136,6 +136,16 @@ Reservia usa ==JWT (JSON Web Tokens)== mediante la librería ==djangorestframewo
 
 ---
 
+## ⚠️ Vulnerabilidades Conocidas
+
+> [!success] ✅ Rate Limiting en Login
+> El endpoint ==/api/auth/login/== tiene límite de intentos por IP mediante ==AnonRateThrottle==, previniendo ataques de fuerza bruta.
+
+> [!success] ✅ Rate Limiting en Registro
+> El endpoint ==/api/auth/register/== cuenta con throttling activo para evitar la creación masiva de cuentas y la enumeración de emails.
+
+---
+
 ## 🛡️ Manejo de Errores
 
 > [!warning] Códigos de error de autenticación

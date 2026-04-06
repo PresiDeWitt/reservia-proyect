@@ -1,0 +1,191 @@
+{
+  "main": {
+    "id": "a0016b1891d5adba",
+    "type": "split",
+    "children": [
+      {
+        "id": "e4a115ba31911bf5",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1eea65513606a8e2",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "Reservia Map.canvas",
+                "viewState": {
+                  "x": 345,
+                  "y": 706.9179766665732,
+                  "zoom": -0.8163250755621569
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "Reservia Map"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "3785e9dfd726c95b",
+    "type": "split",
+    "children": [
+      {
+        "id": "64b6b7b5a22f3f54",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b21587ae2636e9a5",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de archivos"
+            }
+          },
+          {
+            "id": "7b8a187a2bf77dcc",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Buscar"
+            }
+          },
+          {
+            "id": "367c4030eb75eaab",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "a795ff5360730969",
+    "type": "split",
+    "children": [
+      {
+        "id": "c3a337786a7cb6e7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9763e05bcd23ae32",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Enlaces entrantes"
+            }
+          },
+          {
+            "id": "e510b5980ff342cc",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "a81efe43724175d9",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas las propiedades"
+            }
+          },
+          {
+            "id": "e148cee0bc7724b5",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Esquema"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "markdown-importer:Abrir el importador de Markdown": false,
+      "bases:Crear nueva base": false
+    }
+  },
+  "active": "1eea65513606a8e2",
+  "lastOpenFiles": [
+    "Home.md",
+    "06-Deployment/Environment Variables.md",
+    "06-Deployment/Railway Deployment.md",
+    "08-Security/Security Incidents.md",
+    "03-Backend/AI Chat Integration.md",
+    "Home.md.tmp.27764.1775498073285",
+    "03-Backend/Authentication.md",
+    "08-Security",
+    "03-Backend/API Endpoints.md",
+    "05-Features/Restaurant Discovery.md",
+    "05-Features/Reservation System.md",
+    "04-Frontend/Internationalization.md",
+    "04-Frontend/Pages & Routing.md",
+    "06-Deployment/Docker Setup.md",
+    "04-Frontend/Components.md",
+    "02-Architecture/Project Structure.md"
+  ]
+}
