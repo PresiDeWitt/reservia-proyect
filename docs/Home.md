@@ -80,6 +80,13 @@ cssclasses:
 
 ---
 
+## 🔐 Seguridad
+
+> [!danger] 🚨 Incidencias y Riesgos
+> - 🚨 [[Security Incidents]] — Vulnerabilidades identificadas y su estado
+
+---
+
 ## 🩺 Troubleshooting & Decisiones
 
 > [!danger] 🛠️ Bitácora de Problemas Resueltos

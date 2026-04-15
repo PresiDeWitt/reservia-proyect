@@ -148,6 +148,9 @@ tags:
 > [!warning] ⚠️ Cancelación
 > En realidad cambia el ==status== a =="cancelled"==, no borra el registro de la base de datos.
 
+> [!success] ✅ Autorización a nivel objeto
+> El endpoint ==DELETE /api/reservations/{id}/== valida que la reserva pertenezca al usuario autenticado antes de cancelarla, evitando que un usuario cancele reservas ajenas.
+
 ---
 
 ## 🏢 Planos de Piso
