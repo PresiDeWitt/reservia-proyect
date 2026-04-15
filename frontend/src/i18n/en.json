@@ -61,7 +61,9 @@
     "signIn": "Sign In",
     "register": "Register",
     "createAccount": "Create Account",
-    "namePlaceholder": "Your name",
+    "namePlaceholder": "First name",
+    "lastNamePlaceholder": "Last name",
+    "phonePlaceholder": "Phone",
     "emailPlaceholder": "Email address",
     "passwordPlaceholder": "Password (min. 6 characters)"
   },
