@@ -98,7 +98,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <span className="font-black tracking-tight text-lg">ReserVia</span>
                 </div>
                 <span className="text-[10px] tracking-[0.3em] uppercase text-background-light/60 font-semibold">
-                  Est. 2024
+                  Est. 2026
                 </span>
               </div>
 
