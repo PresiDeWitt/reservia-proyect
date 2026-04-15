@@ -3,18 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import ProfileMenu from './ProfileMenu';
+import LanguageMenu from './LanguageMenu';
 
 const Header: React.FC = () => {
-  const { t, i18n } = useTranslation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [headerSearch, setHeaderSearch] = useState('');
   const navigate = useNavigate();
-
-  const toggleLanguage = () => {
-    const nextLang = i18n.language === 'en' ? 'es' : 'en';
-    i18n.changeLanguage(nextLang);
-  };
 
   return (
     <>
@@ -56,25 +53,10 @@ const Header: React.FC = () => {
             )}
           </nav>
 
-          <div className="flex items-center gap-4 border-l border-slate-700 pl-6 ml-2">
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-2 text-slate-300 hover:text-white transition-all text-xs font-bold uppercase tracking-wider bg-slate-800/50 px-3 py-1.5 rounded-full border border-slate-700 hover:border-primary"
-            >
-              <span className="material-symbols-outlined text-base">language</span>
-              {i18n.language.split('-')[0]}
-            </button>
-
+          <div className="flex items-center gap-3 border-l border-slate-700 pl-6 ml-2">
+            <LanguageMenu />
             {isAuthenticated ? (
-              <div className="flex items-center gap-3">
-                <span className="text-slate-300 text-sm font-medium hidden sm:block">{user?.name}</span>
-                <button
-                  onClick={logout}
-                  className="flex items-center justify-center rounded-lg h-10 px-4 bg-slate-700 hover:bg-slate-600 transition-colors text-white text-sm font-bold"
-                >
-                  <span className="material-symbols-outlined text-[18px]">logout</span>
-                </button>
-              </div>
+              <ProfileMenu />
             ) : (
               <button
                 onClick={() => setAuthOpen(true)}

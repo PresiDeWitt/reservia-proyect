@@ -67,6 +67,24 @@
     "emailPlaceholder": "Email address",
     "passwordPlaceholder": "Password (min. 6 characters)"
   },
+  "profile": {
+    "menu": "Profile menu",
+    "verified": "Verified account",
+    "newBooking": "Book",
+    "account": "My account",
+    "accountHint": "Personal details and preferences",
+    "bookings": "My bookings",
+    "bookingsHint": "History and upcoming visits",
+    "favorites": "Favorites",
+    "favoritesHint": "Saved restaurants",
+    "explore": "Explore map",
+    "exploreHint": "Discover near you",
+    "language": "Language",
+    "help": "Help & support",
+    "logout": "Log out",
+    "logoutHint": "We'll miss you",
+    "tagline": "See you soon"
+  },
   "bookings": {
     "title": "My Bookings",
     "empty": "You have no reservations yet.",

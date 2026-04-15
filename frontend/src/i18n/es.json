@@ -67,6 +67,24 @@
     "emailPlaceholder": "Correo electrónico",
     "passwordPlaceholder": "Contraseña (mín. 6 caracteres)"
   },
+  "profile": {
+    "menu": "Menú de perfil",
+    "verified": "Cuenta verificada",
+    "newBooking": "Reservar",
+    "account": "Mi cuenta",
+    "accountHint": "Datos personales y preferencias",
+    "bookings": "Mis reservas",
+    "bookingsHint": "Historial y próximas visitas",
+    "favorites": "Favoritos",
+    "favoritesHint": "Restaurantes guardados",
+    "explore": "Explorar mapa",
+    "exploreHint": "Descubre cerca de ti",
+    "language": "Idioma",
+    "help": "Ayuda y soporte",
+    "logout": "Cerrar sesión",
+    "logoutHint": "Te echaremos de menos",
+    "tagline": "Hasta pronto"
+  },
   "bookings": {
     "title": "Mis Reservas",
     "empty": "No tienes reservas todavía.",
