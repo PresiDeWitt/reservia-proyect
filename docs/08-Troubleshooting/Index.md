@@ -24,6 +24,7 @@ tags:
 > | Fecha       | Tema                                                 | Área              |
 > |-------------|------------------------------------------------------|-------------------|
 > | 2026-04-15  | [[Auth Redesign & Proxy Fix]]                        | Auth · Frontend · Infra |
+> | 2026-04-16  | [[Invalid Token & 401 on Public Endpoints]]           | Auth · Frontend |
 
 ---
 
