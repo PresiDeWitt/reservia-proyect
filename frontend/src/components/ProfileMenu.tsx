@@ -91,7 +91,7 @@ const ProfileMenu: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-            className="absolute right-0 top-[calc(100%+10px)] w-[300px] origin-top-right bg-background-light rounded-2xl shadow-[0_30px_80px_-20px_rgba(15,23,42,0.5)] ring-1 ring-navy/10 overflow-hidden"
+            className="absolute right-0 top-[calc(100%+10px)] w-[280px] sm:w-[300px] max-w-[calc(100vw-2rem)] origin-top-right bg-background-light rounded-2xl shadow-[0_30px_80px_-20px_rgba(15,23,42,0.5)] ring-1 ring-navy/10 overflow-hidden"
             style={{ transformOrigin: 'top right' }}
           >
             {/* Header */}

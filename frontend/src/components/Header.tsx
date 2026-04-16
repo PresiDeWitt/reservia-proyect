@@ -53,14 +53,14 @@ const Header: React.FC = () => {
             )}
           </nav>
 
-          <div className="flex items-center gap-3 border-l border-slate-700 pl-6 ml-2">
+          <div className="flex items-center gap-2 sm:gap-3 border-l border-slate-700 pl-3 sm:pl-6 ml-1 sm:ml-2">
             <LanguageMenu />
             {isAuthenticated ? (
               <ProfileMenu />
             ) : (
               <button
                 onClick={() => setAuthOpen(true)}
-                className="flex min-w-[84px] items-center justify-center rounded-lg h-10 px-6 bg-primary hover:bg-orange-600 transition-colors text-white text-sm font-bold shadow-sm"
+                className="flex items-center justify-center rounded-lg h-9 sm:h-10 px-3 sm:px-6 bg-primary hover:bg-orange-600 transition-colors text-white text-xs sm:text-sm font-bold shadow-sm whitespace-nowrap"
               >
                 {t('header.signIn')}
               </button>

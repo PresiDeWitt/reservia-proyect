@@ -76,7 +76,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.97, opacity: 0, y: 8 }}
             transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}
-            className="relative w-full max-w-5xl bg-background-light rounded-[28px] shadow-[0_40px_120px_-20px_rgba(15,23,42,0.45)] overflow-hidden grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] max-h-[92vh]"
+            className="relative w-full max-w-5xl bg-background-light rounded-2xl sm:rounded-[28px] shadow-[0_40px_120px_-20px_rgba(15,23,42,0.45)] overflow-hidden grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* ── Editorial panel (left) ───────────────────────────── */}
@@ -108,7 +108,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 </span>
                 <h2
                   id="auth-title"
-                  className="auth-editorial text-[44px] xl:text-[56px] leading-[0.95] tracking-tight"
+                  className="auth-editorial text-[36px] lg:text-[44px] xl:text-[56px] leading-[0.95] tracking-tight"
                   style={{ fontWeight: 300, fontVariationSettings: "'SOFT' 50, 'opsz' 144" }}
                 >
                   {isRegister ? (
@@ -189,7 +189,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                     {stepLabel}
                   </span>
                   <h2
-                    className="auth-editorial text-navy text-4xl leading-none"
+                    className="auth-editorial text-navy text-2xl sm:text-4xl leading-none"
                     style={{ fontWeight: 400 }}
                   >
                     {isRegister ? (

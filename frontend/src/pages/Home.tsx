@@ -83,7 +83,7 @@ const Home: React.FC = () => {
       <section className="pt-32 pb-12 px-4 md:px-10 lg:px-40">
         <div className="max-w-[1280px] mx-auto">
           <motion.h3 variants={itemVariants} className="text-slate-900 text-xl font-bold mb-8">{t('home.browseByCraving')}</motion.h3>
-          <motion.div variants={itemVariants} className="flex overflow-x-auto pb-6 gap-8 scrollbar-hide snap-x">
+          <motion.div variants={itemVariants} className="flex overflow-x-auto pb-6 gap-4 sm:gap-8 scrollbar-hide snap-x">
             {CATEGORIES.map(cat => (
               <CategoryCard
                 key={cat.key}
