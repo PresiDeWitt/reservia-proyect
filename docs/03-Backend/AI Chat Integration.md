@@ -45,6 +45,9 @@ Reservia integra ==Anthropic Claude== para ofrecer un chatbot conversacional que
 >
 > Ver detalles completos en [[API Endpoints#🤖 Chat IA]]
 
+> [!success] ✅ Rate Limiting
+> El endpoint está protegido con throttling mediante ==AnonRateThrottle== de Django REST Framework, limitando las peticiones por IP para evitar abusos de coste sobre la ==ANTHROPIC_API_KEY==.
+
 ---
 
 ## 💬 Flujo de Conversación
