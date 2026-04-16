@@ -61,9 +61,29 @@
     "signIn": "Iniciar SesiÃ³n",
     "register": "Registrarse",
     "createAccount": "Crear Cuenta",
-    "namePlaceholder": "Tu nombre",
+    "namePlaceholder": "Nombre",
+    "lastNamePlaceholder": "Apellidos",
+    "phonePlaceholder": "TelÃ©fono",
     "emailPlaceholder": "Correo electrÃ³nico",
     "passwordPlaceholder": "ContraseÃ±a (mÃ­n. 6 caracteres)"
+  },
+  "profile": {
+    "menu": "MenÃº de perfil",
+    "verified": "Cuenta verificada",
+    "newBooking": "Reservar",
+    "account": "Mi cuenta",
+    "accountHint": "Datos personales y preferencias",
+    "bookings": "Mis reservas",
+    "bookingsHint": "Historial y prÃ³ximas visitas",
+    "favorites": "Favoritos",
+    "favoritesHint": "Restaurantes guardados",
+    "explore": "Explorar mapa",
+    "exploreHint": "Descubre cerca de ti",
+    "language": "Idioma",
+    "help": "Ayuda y soporte",
+    "logout": "Cerrar sesiÃ³n",
+    "logoutHint": "Te echaremos de menos",
+    "tagline": "Hasta pronto"
   },
   "bookings": {
     "title": "Mis Reservas",
@@ -89,10 +109,10 @@
   },
   "chat": {
     "subtitle": "Encuentra tu restaurante perfecto",
-    "welcome": "Hola\\! Pregúntame y te ayudo a encontrar el restaurante ideal según tu cocina favorita, el ambiente, presupuesto o tu ubicación.",
-    "placeholder": "Ej: Italiano romántico para esta noche...",
-    "error": "Lo siento, algo salió mal. Inténtalo de nuevo.",
-    "locationOn": "Ubicación activada",
-    "locationOff": "Activar ubicación para sugerencias cercanas"
+    "welcome": "Hola\\! Pregï¿½ntame y te ayudo a encontrar el restaurante ideal segï¿½n tu cocina favorita, el ambiente, presupuesto o tu ubicaciï¿½n.",
+    "placeholder": "Ej: Italiano romï¿½ntico para esta noche...",
+    "error": "Lo siento, algo saliï¿½ mal. Intï¿½ntalo de nuevo.",
+    "locationOn": "Ubicaciï¿½n activada",
+    "locationOff": "Activar ubicaciï¿½n para sugerencias cercanas"
   }
 }

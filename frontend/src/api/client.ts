@@ -17,6 +17,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
   const data = await res.json();
 
+  if (res.status === 401 && token) {
+    localStorage.removeItem('reservia_token');
+    localStorage.removeItem('reservia_user');
+    window.location.reload();
+    throw new Error('Session expired');
+  }
   if (!res.ok) {
     throw new Error(data.error || 'Request failed');
   }

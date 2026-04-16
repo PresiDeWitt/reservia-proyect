@@ -90,7 +90,7 @@ const RestaurantDetails: React.FC = () => {
           >
             <div className="flex justify-between items-start">
               <div>
-                <h1 className="text-4xl font-black text-navy">{restaurant.name}</h1>
+                <h1 className="text-2xl sm:text-4xl font-black text-navy">{restaurant.name}</h1>
                 <div className="flex items-center gap-3 mt-2 text-slate-600">
                   <span className="flex items-center gap-1 font-bold text-primary">
                     <span className="material-symbols-outlined text-sm">stars</span>
@@ -143,7 +143,7 @@ const RestaurantDetails: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="sticky top-28 p-6 md:p-8 rounded-2xl bg-white border border-slate-200 shadow-xl"
+            className="lg:sticky lg:top-28 p-6 md:p-8 rounded-2xl bg-white border border-slate-200 shadow-xl"
           >
             <h3 className="text-2xl font-bold text-navy mb-6">{t('restaurant.reserveTitle')}</h3>
             
@@ -185,7 +185,7 @@ const RestaurantDetails: React.FC = () => {
 
               <fieldset className="flex flex-col gap-2 border-none p-0 m-0">
                 <legend className="text-sm font-bold text-slate-700 mb-2">{t('restaurant.availableTimes')}</legend>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {timeSlots.map(time => (
                     <button
                       key={time}

@@ -87,6 +87,14 @@ cssclasses:
 
 ---
 
+## 🩺 Troubleshooting & Decisiones
+
+> [!danger] 🛠️ Bitácora de Problemas Resueltos
+> - 📒 [[Index|Troubleshooting Index]] — Lista completa de incidencias documentadas
+> - 🔐 [[Auth Redesign & Proxy Fix]] — Rediseño del modal de auth + bug del proxy IPv6 (2026-04-15)
+
+---
+
 ## 🔑 Quick Reference
 
 > [!abstract] 🧰 Stack Tecnológico de un Vistazo

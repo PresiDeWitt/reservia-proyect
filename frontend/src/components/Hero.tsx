@@ -22,7 +22,7 @@ const Hero: React.FC = () => {
 
   return (
     <section
-      className="relative flex min-h-[600px] flex-col items-center justify-center bg-cover bg-center bg-no-repeat p-4 md:p-10"
+      className="relative flex min-h-[480px] sm:min-h-[600px] flex-col items-center justify-center bg-cover bg-center bg-no-repeat p-4 md:p-10"
       style={{ backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.7) 0%, rgba(15, 23, 42, 0.4) 100%), url(${heroImg})` }}
     >
       <div className="flex flex-col gap-6 text-center max-w-5xl z-10 mb-10">
@@ -64,7 +64,7 @@ const Hero: React.FC = () => {
               <span className="material-symbols-outlined text-2xl">search</span>
             </div>
             <input
-              className="w-full h-16 pl-14 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-lg font-medium"
+              className="w-full h-12 sm:h-16 pl-12 sm:pl-14 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-base sm:text-lg font-medium"
               placeholder={t('hero.searchPlaceholder')}
               type="text"
               value={query}
