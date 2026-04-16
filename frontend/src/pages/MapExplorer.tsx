@@ -48,9 +48,9 @@ const MapExplorer: React.FC = () => {
   const activeRestaurant = restaurants.find(r => r.id === selectedId);
 
   return (
-    <div className="flex h-[calc(100vh-73px)] w-full overflow-hidden bg-slate-50">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-73px)] w-full overflow-hidden bg-slate-50">
       {/* Sidebar List */}
-      <div className="w-full md:w-96 h-full overflow-y-auto bg-white border-r border-slate-200 z-10 shadow-xl scrollbar-hide">
+      <div className="w-full md:w-96 h-1/2 md:h-full overflow-y-auto bg-white border-b md:border-b-0 md:border-r border-slate-200 z-10 shadow-xl scrollbar-hide">
         <div className="p-6">
           <h2 className="text-2xl font-black text-navy mb-2">{t('home.topRatedTitle')}</h2>
           <p className="text-slate-500 text-sm mb-6">{restaurants.length} {t('home.topRatedSubtitle')}</p>
@@ -107,10 +107,10 @@ const MapExplorer: React.FC = () => {
         </MapContainer>
 
         {/* Floating Category Filter */}
-        <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 flex gap-2 flex-wrap justify-center px-4">
+        <div className="absolute top-3 sm:top-6 left-1/2 -translate-x-1/2 z-50 flex gap-1.5 sm:gap-2 flex-wrap justify-center px-2 sm:px-4 max-w-full">
           <button
             onClick={() => setCuisineFilter('')}
-            className={`backdrop-blur-md px-4 py-2 rounded-full shadow-lg border text-sm font-bold transition-all ${!cuisineFilter ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
+            className={`backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg border text-xs sm:text-sm font-bold transition-all ${!cuisineFilter ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
           >
             All
           </button>
@@ -118,7 +118,7 @@ const MapExplorer: React.FC = () => {
             <button
               key={cat}
               onClick={() => setCuisineFilter(cuisineFilter === cat ? '' : cat)}
-              className={`backdrop-blur-md px-4 py-2 rounded-full shadow-lg border text-sm font-bold transition-all ${cuisineFilter === cat ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
+              className={`backdrop-blur-md px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-lg border text-xs sm:text-sm font-bold transition-all ${cuisineFilter === cat ? 'bg-primary text-white border-primary' : 'bg-white/90 border-slate-200 text-slate-700 hover:bg-primary hover:text-white'}`}
             >
               {t(`cuisines.${cat}`, { defaultValue: cat })}
             </button>

@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+venv/
+reservia-proyect/.env
+*.env.local
+*.env.production
+*.env.development
+# Django
+backend/db.sqlite3
+backend/staticfiles/
+backend/venv/
+backend/api/__pycache__/
+backend/reservia/__pycache__/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.local
+.env.example
+
+# Claude
+CLAUDE.md
+.claude/

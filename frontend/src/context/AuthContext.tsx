@@ -18,9 +18,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const storedToken = localStorage.getItem('reservia_token');
     const storedUser = localStorage.getItem('reservia_user');
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+    if (storedToken && storedUser && storedUser !== 'undefined' && storedToken !== 'undefined') {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setToken(storedToken);
+        setUser(parsed);
+      } catch {
+        localStorage.removeItem('reservia_token');
+        localStorage.removeItem('reservia_user');
+      }
+    } else {
+      localStorage.removeItem('reservia_token');
+      localStorage.removeItem('reservia_user');
     }
   }, []);
 
