@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "09-Notify/Telegram Notifications.md",
+                "file": "07-Development/Resultados de tests - 2026-04-20.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Telegram Notifications"
+              "title": "Resultados de tests - 2026-04-20"
             }
           }
         ]
@@ -168,6 +168,9 @@
   },
   "active": "1eea65513606a8e2",
   "lastOpenFiles": [
+    "07-Development/Seguimiento Fase 2 - Ejecucion y Pruebas.md",
+    "Home.md",
+    "07-Development/Resultados de tests - 2026-04-20.md",
     "09-Notify/Telegram Notifications.md",
     "01-Overview/Project Overview.md",
     "09-Notify",
@@ -182,7 +185,6 @@
     "Reservia Map.canvas",
     "03-Backend/AI Chat Integration.md",
     "03-Backend/API Endpoints.md",
-    "Home.md",
     "06-Deployment/Environment Variables.md",
     "06-Deployment/Railway Deployment.md",
     "Home.md.tmp.27764.1775498073285",
