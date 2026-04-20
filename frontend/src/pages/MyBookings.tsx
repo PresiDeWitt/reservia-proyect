@@ -7,17 +7,32 @@ import { useAuth } from '../context/AuthContext';
 
 const MyBookings: React.FC = () => {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, token } = useAuth();
   const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadedToken, setLoadedToken] = useState<string | null>(null);
+  const loading = !!(isAuthenticated && token && loadedToken !== token);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      reservationsApi.myReservations().then(setReservations).catch(console.error).finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [isAuthenticated]);
+    if (!isAuthenticated || !token) return;
+
+    let isActive = true;
+
+    reservationsApi
+      .myReservations()
+      .then((data) => {
+        if (!isActive) return;
+        setReservations(data);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (!isActive) return;
+        setLoadedToken(token);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [isAuthenticated, token]);
 
   const handleCancel = async (id: number) => {
     try {

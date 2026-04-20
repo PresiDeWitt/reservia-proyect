@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import type { AuthUser } from '../api/auth';
 
 interface AuthContextType {
@@ -11,49 +11,64 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+interface AuthState {
+  user: AuthUser | null;
+  token: string | null;
+}
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem('reservia_token');
-    const storedUser = localStorage.getItem('reservia_user');
-    if (storedToken && storedUser && storedUser !== 'undefined' && storedToken !== 'undefined') {
-      try {
-        const parsed = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsed);
-      } catch {
-        localStorage.removeItem('reservia_token');
-        localStorage.removeItem('reservia_user');
-      }
-    } else {
+const getInitialAuthState = (): AuthState => {
+  const storedToken = localStorage.getItem('reservia_token');
+  const storedUser = localStorage.getItem('reservia_user');
+
+  if (storedToken && storedUser && storedUser !== 'undefined' && storedToken !== 'undefined') {
+    try {
+      return {
+        token: storedToken,
+        user: JSON.parse(storedUser) as AuthUser,
+      };
+    } catch {
       localStorage.removeItem('reservia_token');
       localStorage.removeItem('reservia_user');
+      return { token: null, user: null };
     }
-  }, []);
+  }
+
+  localStorage.removeItem('reservia_token');
+  localStorage.removeItem('reservia_user');
+  return { token: null, user: null };
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [authState, setAuthState] = useState<AuthState>(() => getInitialAuthState());
 
   const login = (newToken: string, newUser: AuthUser) => {
     localStorage.setItem('reservia_token', newToken);
     localStorage.setItem('reservia_user', JSON.stringify(newUser));
-    setToken(newToken);
-    setUser(newUser);
+    setAuthState({ token: newToken, user: newUser });
   };
 
   const logout = () => {
     localStorage.removeItem('reservia_token');
     localStorage.removeItem('reservia_user');
-    setToken(null);
-    setUser(null);
+    setAuthState({ token: null, user: null });
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider
+      value={{
+        user: authState.user,
+        token: authState.token,
+        login,
+        logout,
+        isAuthenticated: !!authState.user,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
