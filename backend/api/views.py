@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Restaurant, Reservation
+from .throttling import ChatRateThrottle, LoginRateThrottle, RegisterRateThrottle
 from .serializers import (
     RegisterSerializer, UserSerializer,
     RestaurantListSerializer, RestaurantDetailSerializer,
@@ -18,6 +19,7 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [RegisterRateThrottle]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -33,6 +35,7 @@ class RegisterView(generics.CreateAPIView):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([LoginRateThrottle])
 def login_view(request):
     from django.contrib.auth import authenticate
     email = request.data.get('email', '')
@@ -107,6 +110,7 @@ def my_reservations(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([ChatRateThrottle])
 def chat_view(request):
     import anthropic
     from django.conf import settings as django_settings

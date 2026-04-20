@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from datetime import timedelta
 from dotenv import load_dotenv
@@ -8,7 +9,16 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-reservia-dev-key-change-in-production')
+IS_TEST = any(arg.startswith('test') for arg in sys.argv)
+
+
+def env_bool(name: str, default: bool) -> bool:
+    return os.environ.get(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
+
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'reservia-dev-local-key-change-this-before-production-2026-safe-fallback'
+)
 
 # DEBUG should be False in production
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
@@ -92,15 +102,31 @@ STATIC_URL = '/assets/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+frontend_dist_dir = BASE_DIR.parent / 'frontend' / 'dist'
+frontend_assets_dir = frontend_dist_dir / 'assets'
+
 # Servir frontend React assets
-STATICFILES_DIRS = [
-    BASE_DIR.parent / 'frontend' / 'dist' / 'assets',
-]
+STATICFILES_DIRS = [frontend_assets_dir] if frontend_assets_dir.exists() else []
 
 # WhiteNoise sirve los archivos estáticos
-WHITENOISE_ROOT = BASE_DIR.parent / 'frontend' / 'dist'
+WHITENOISE_ROOT = str(frontend_dist_dir) if frontend_dist_dir.exists() else None
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Security hardening
+SECURE_HSTS_SECONDS = int(
+    os.environ.get('SECURE_HSTS_SECONDS', '31536000' if not DEBUG and not IS_TEST else '0')
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool(
+    'SECURE_HSTS_INCLUDE_SUBDOMAINS',
+    not DEBUG and not IS_TEST,
+)
+SECURE_HSTS_PRELOAD = env_bool('SECURE_HSTS_PRELOAD', not DEBUG and not IS_TEST)
+SECURE_SSL_REDIRECT = env_bool('SECURE_SSL_REDIRECT', not DEBUG and not IS_TEST)
+SESSION_COOKIE_SECURE = env_bool('SESSION_COOKIE_SECURE', not DEBUG and not IS_TEST)
+CSRF_COOKIE_SECURE = env_bool('CSRF_COOKIE_SECURE', not DEBUG and not IS_TEST)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+X_FRAME_OPTIONS = 'DENY'
 
 # Django REST Framework
 REST_FRAMEWORK = {
@@ -110,6 +136,17 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': os.environ.get('DRF_THROTTLE_ANON', '120/minute'),
+        'user': os.environ.get('DRF_THROTTLE_USER', '300/minute'),
+        'register': os.environ.get('DRF_THROTTLE_REGISTER', '20/hour'),
+        'login': os.environ.get('DRF_THROTTLE_LOGIN', '30/hour'),
+        'chat': os.environ.get('DRF_THROTTLE_CHAT', '60/hour'),
+    },
 }
 
 # SimpleJWT

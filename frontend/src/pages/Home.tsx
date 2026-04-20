@@ -33,18 +33,32 @@ const Home: React.FC = () => {
   const [searchParams] = useSearchParams();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loadedQueryKey, setLoadedQueryKey] = useState<string | null>(null);
 
   const search = searchParams.get('search') || '';
   const cuisine = searchParams.get('cuisine') || '';
+  const queryKey = `${search}::${cuisine}`;
+  const loading = loadedQueryKey !== queryKey;
 
   useEffect(() => {
-    setLoading(true);
+    let isActive = true;
+
     restaurantsApi.list({ search: search || undefined, cuisine: cuisine || undefined })
-      .then((data) => { setRestaurants(data.restaurants); setTotal(data.total); })
+      .then((data) => {
+        if (!isActive) return;
+        setRestaurants(data.restaurants);
+        setTotal(data.total);
+      })
       .catch(console.error)
-      .finally(() => setLoading(false));
-  }, [search, cuisine]);
+      .finally(() => {
+        if (!isActive) return;
+        setLoadedQueryKey(queryKey);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [search, cuisine, queryKey]);
 
   const handleCategoryClick = (key: string) => {
     const params = new URLSearchParams();
