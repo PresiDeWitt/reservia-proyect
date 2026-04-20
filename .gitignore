@@ -41,3 +41,12 @@ Thumbs.db
 # Claude
 CLAUDE.md
 .claude/
+
+# Local development artifacts
+.venv/
+**/__pycache__/
+.pytest_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+docs/.obsidian/

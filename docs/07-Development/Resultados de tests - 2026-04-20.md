@@ -1,5 +1,9 @@
 # Resultados de tests - 20/04/2026 (actualizado)
 
+[[Home|<- Volver al Home]]
+
+---
+
 ## Resumen ejecutivo
 
 Estado general: Aprobado.
@@ -153,3 +157,8 @@ La remediacion solicitada queda completada:
 - Se resolvieron las vulnerabilidades detectadas por `npm audit`.
 - Se documentaron resultados con evidencia antes/despues.
 - Se validaron pruebas backend y frontend sin regresiones.
+
+## Links Relacionados
+
+- [[Seguimiento Fase 2 - Ejecucion y Pruebas]]
+- [[Frontend Testing - Vitest + Testing Library]]

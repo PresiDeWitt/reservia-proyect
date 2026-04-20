@@ -1,4 +1,75 @@
+---
+tags:
+  - reservia
+  - development
+  - phase-2
+  - execution
+  - testing
+aliases:
+  - Seguimiento Fase 2
+cssclasses:
+  - wide-page
+---
+
 # SEGUIMIENTO FASE 2: EJECUCION DEL PROYECTO Y PRUEBAS
+
+[[Home|<- Volver al Home]]
+
+---
+
+> [!abstract] Objetivo del documento
+> Este documento define la puesta en funcionamiento de Fase 2 y el sistema de seguimiento/control operativo del proyecto.
+>
+> 1. Planificar la ejecucion con plan de intervencion, despliegue y rollback.
+> 2. Definir variables de control, KPIs e instrumentos para seguimiento continuo.
+
+## Navegacion Obsidian (Mapa de Conexiones)
+
+> [!tip] Lectura recomendada por bloques
+> **Contexto y arquitectura:** [[Project Overview]] · [[Tech Stack]] · [[System Architecture]] · [[Project Structure]] · [[Database Schema]]
+>
+> **Backend:** [[API Endpoints]] · [[Authentication]] · [[Models]] · [[AI Chat Integration]]
+>
+> **Frontend:** [[Pages & Routing]] · [[Components]] · [[State Management]] · [[Internationalization]]
+>
+> **Infraestructura:** [[Docker Setup]] · [[Environment Variables]] · [[Railway Deployment]]
+>
+> **Ejecucion y evidencia:** [[Local Setup]] · [[Database Seeding]] · [[Frontend Testing - Vitest + Testing Library]] · [[Resultados de tests - 2026-04-20]]
+
+## Vista Visual de Fase 2
+
+```mermaid
+flowchart LR
+    A[Plan de intervencion] --> B[Rollout Staging]
+    B --> C[Canary Produccion]
+    C --> D[Monitoreo KPI/SLO]
+    D --> E{Cumple umbrales?}
+    E -- Si --> F[Continuar despliegue]
+    E -- No --> G[Rollback]
+    G --> H[Post Incident Review]
+    F --> I[Reporte final y cierre]
+```
+
+```mermaid
+mindmap
+  root((Seguimiento Fase 2))
+    Intervencion
+      Rollout
+      Rollback
+      Runbook
+    Pruebas
+      Unit
+      Integracion
+      E2E
+      Seguridad
+    Control
+      KPI
+      Umbrales
+      Responsables
+      Frecuencias
+```
+
+---
 
 ## 0) Contexto operativo del proyecto
 
@@ -145,9 +216,9 @@ Objetivo de balance recomendado:
 
 | Tipo de prueba | Herramienta recomendada | Objetivo | Entorno de ejecucion | Ejemplo conceptual | Metrica de exito |
 |---|---|---|---|---|---|
-| Unit Testing Backend | pytest + pytest-django + coverage.py | Validar logica aislada de serializers, servicios y utilidades | CI + local | Calculo de disponibilidad de reserva para franja horaria | >= 80% cobertura backend y 0 fallos |
+| Unit Testing Backend | Django Test Runner (`manage.py test`) + unittest/APITestCase + coverage.py | Validar logica aislada de serializers, servicios y utilidades | CI + local | Calculo de disponibilidad de reserva para franja horaria | >= 80% cobertura backend y 0 fallos |
 | Unit Testing Frontend | Vitest + Testing Library | Validar componentes y hooks de forma aislada | CI + local | Componente de tarjeta muestra estado y CTA correcto | >= 75% cobertura frontend critica |
-| Integracion Backend | pytest-django con DB temporal | Validar integracion entre capa API, ORM y autenticacion | CI + staging | Crear reserva via endpoint y verificar persistencia | 100% casos criticos en verde |
+| Integracion Backend | Django Test Runner + APITestCase con DB temporal de pruebas | Validar integracion entre capa API, ORM y autenticacion | CI + staging | Crear reserva via endpoint y verificar persistencia | 100% casos criticos en verde |
 | API Testing | Postman/Newman o Schemathesis | Validar contratos, codigos HTTP y schema de respuestas | CI + staging | Endpoint /api/restaurants devuelve estructura acordada | 0 regresiones de contrato |
 | Pruebas de Componentes UI | Playwright Component Testing (opcional) | Validar UI con estado realista y eventos | CI + local | Modal auth maneja errores y estados loading | 100% rutas UI criticas cubiertas |
 | System Testing | Playwright + datos seed | Validar sistema completo con servicios integrados | Staging pre-release | Usuario registra, busca, reserva, consulta historial | Escenarios core aprobados >= 95% |
@@ -245,21 +316,21 @@ Objetivo de balance recomendado:
 
 ### 3.1 KPIs y variables de control
 
-| KPI / Variable | Definicion | Meta objetivo Fase 2 | Fuente / Herramienta | Frecuencia |
-|---|---|---|---|---|
-| Cobertura backend | % lineas cubiertas por tests backend | >= 80% | coverage.py + CI | Por PR |
-| Cobertura frontend | % lineas/branches criticas cubiertas | >= 75% | Vitest coverage | Por PR |
-| Pass rate CI | % pipelines exitosas | >= 95% | GitHub Actions | Diario |
-| Defect leakage | Defectos detectados en prod / total defectos | <= 10% | Jira + Sentry | Semanal |
-| MTTD | Tiempo medio de deteccion de incidente | < 10 min | Datadog/Grafana/Sentry | Semanal |
-| MTTR | Tiempo medio de recuperacion | < 30 min | Incident log | Semanal |
-| MTBF | Tiempo medio entre fallos | Tendencia creciente | Ops dashboard | Mensual |
-| P95 latencia API | Percentil 95 por endpoint critico | <= 400-700 ms segun endpoint | APM (Datadog/New Relic) | Continuo |
-| Error rate API | % respuestas 5xx/total | <= 1% | APM + logs | Continuo |
-| Tasa de regresion | % fallos en suite regresion | <= 5% | Playwright/Newman | Por release |
-| Vulnerabilidades abiertas High/Critical | Conteo por release | 0 | SonarQube/Semgrep/ZAP | Por PR y pre-release |
-| Crash-free sessions frontend | % sesiones sin error no controlado | >= 99.5% | Sentry | Diario |
-| Exito de despliegue | Releases sin rollback | >= 95% | Pipeline + release logs | Mensual |
+| KPI / Variable | Definicion | Meta objetivo Fase 2 | Umbral de alerta (trigger) | Responsable | Fuente / Herramienta | Frecuencia |
+|---|---|---|---|---|---|---|
+| Cobertura backend | % lineas cubiertas por tests backend | >= 80% | < 75% en PR | Backend Lead + QA Lead | coverage.py + CI | Por PR |
+| Cobertura frontend | % lineas/branches criticas cubiertas | >= 75% | < 70% en PR | Frontend Lead + QA Lead | Vitest coverage | Por PR |
+| Pass rate CI | % pipelines exitosas | >= 95% | < 90% diario | DevOps + Tech Lead | GitHub Actions | Diario |
+| Defect leakage | Defectos detectados en prod / total defectos | <= 10% | > 15% semanal | QA Lead + PM | Jira + Sentry | Semanal |
+| MTTD | Tiempo medio de deteccion de incidente | < 10 min | > 15 min semanal | DevOps On-call | Datadog/Grafana/Sentry | Semanal |
+| MTTR | Tiempo medio de recuperacion | < 30 min | > 45 min semanal | DevOps On-call + Tech Lead | Incident log | Semanal |
+| MTBF | Tiempo medio entre fallos | Tendencia creciente | Caida > 20% vs mes anterior | Arquitecto + DevOps | Ops dashboard | Mensual |
+| P95 latencia API | Percentil 95 por endpoint critico | <= 400-700 ms segun endpoint | > 900 ms en endpoints criticos por 10 min | Tech Lead Backend | APM (Datadog/New Relic) | Continuo |
+| Error rate API | % respuestas 5xx/total | <= 1% | > 2% durante 5 min | DevOps On-call | APM + logs | Continuo |
+| Tasa de regresion | % fallos en suite regresion | <= 5% | > 8% por release | QA Lead | Playwright/Newman | Por release |
+| Vulnerabilidades abiertas High/Critical | Conteo por release | 0 | >= 1 abierta en PR/release | Security Champion + Tech Lead | SonarQube/Semgrep/ZAP | Por PR y pre-release |
+| Crash-free sessions frontend | % sesiones sin error no controlado | >= 99.5% | < 99.0% diario | Frontend Lead + QA Lead | Sentry | Diario |
+| Exito de despliegue | Releases sin rollback | >= 95% | < 90% mensual | DevOps Lead + PM | Pipeline + release logs | Mensual |
 
 ### 3.2 Justificacion de KPIs
 
@@ -270,6 +341,8 @@ Objetivo de balance recomendado:
 - Vulnerabilidades: aseguran cumplimiento de seguridad por defecto.
 - Crash-free sessions: indicador directo de calidad percibida en frontend.
 - Exito de despliegue: valida robustez del proceso de release.
+- Umbral de alerta: permite actuar antes de incumplir la meta formal del KPI.
+- Responsable por KPI: evita ambiguedad operativa y acelera la respuesta.
 
 ### 3.3 Instrumentos y configuracion en CI/CD
 
@@ -322,7 +395,7 @@ jobs:
       - name: Backend deps
         run: |
           pip install -r backend/requirements.txt
-          pip install pytest pytest-django coverage bandit
+          pip install coverage bandit
       - name: Frontend deps
         run: |
           cd frontend
@@ -330,7 +403,7 @@ jobs:
       - name: Backend tests
         run: |
           cd backend
-          coverage run -m pytest
+          coverage run manage.py test tests --verbosity 2
           coverage report --fail-under=80
       - name: Frontend tests
         run: |
@@ -389,6 +462,29 @@ export default function () {
 
 ## 4) Plan de ejecucion de Fase 2 (roadmap operativo)
 
+```mermaid
+gantt
+  title Roadmap de Ejecucion - Fase 2
+  dateFormat  YYYY-MM-DD
+  axisFormat  %d/%m
+
+  section Semana 1
+  RTM y catalogo de pruebas           :done, s1a, 2026-04-01, 3d
+  Pipeline PR + quality gates         :done, s1b, after s1a, 4d
+
+  section Semana 2
+  Integracion/API + E2E smoke         :active, s2a, 2026-04-08, 4d
+  SAST/DAST baseline                  :active, s2b, after s2a, 2d
+
+  section Semana 3
+  Regresion automatizada              :s3a, 2026-04-15, 3d
+  Performance baseline y tuning       :s3b, after s3a, 3d
+
+  section Semana 4
+  Canary controlado + UAT beta        :s4a, 2026-04-22, 4d
+  Cierre e informe ejecutivo          :s4b, after s4a, 2d
+```
+
 ### Sprint 1 (Semana 1)
 - Definir RTM y catalogo de casos de prueba.
 - Montar pipeline PR con quality gates.
@@ -444,3 +540,13 @@ Frecuencia de control:
 - Daily tecnico: estado de ejecucion y bloqueos.
 - Semanal de calidad: KPIs, defectos, deuda tecnica y riesgos.
 - Post-release review: resultados, incidentes y mejoras.
+
+---
+
+## Links Relacionados
+
+- [[Home]]
+- [[Frontend Testing - Vitest + Testing Library]]
+- [[Resultados de tests - 2026-04-20]]
+- [[Local Setup]]
+- [[Database Seeding]]

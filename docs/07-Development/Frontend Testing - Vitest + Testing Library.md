@@ -1,5 +1,9 @@
 # Frontend Testing - Vitest + Testing Library
 
+[[Home|<- Volver al Home]]
+
+---
+
 ## Objetivo
 
 Definir y ejecutar una suite de pruebas frontend separada en `frontend/tests`, cubriendo:
@@ -141,3 +145,8 @@ Si se anaden nuevos componentes/paginas:
 1. Crear pruebas en `frontend/tests/unit` o `frontend/tests/flow` segun corresponda.
 2. Mockear APIs externas en `frontend/tests/setup.ts` o por archivo de test.
 3. Mantener un criterio estable de datos de prueba y assertions sobre comportamiento observable.
+
+## Links Relacionados
+
+- [[Seguimiento Fase 2 - Ejecucion y Pruebas]]
+- [[Resultados de tests - 2026-04-20]]
