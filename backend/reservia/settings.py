@@ -101,7 +101,6 @@ USE_TZ = True
 STATIC_URL = '/assets/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT.mkdir(parents=True, exist_ok=True)
 
 frontend_dist_dir = BASE_DIR.parent / 'frontend' / 'dist'
 frontend_assets_dir = frontend_dist_dir / 'assets'
