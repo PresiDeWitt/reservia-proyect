@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Hero from '../components/Hero';
@@ -40,6 +40,8 @@ const Home: React.FC = () => {
   const queryKey = `${search}::${cuisine}`;
   const loading = loadedQueryKey !== queryKey;
 
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     let isActive = true;
 
@@ -57,6 +59,9 @@ const Home: React.FC = () => {
 
     return () => {
       isActive = false;
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
     };
   }, [search, cuisine, queryKey]);
 
@@ -64,7 +69,15 @@ const Home: React.FC = () => {
     const params = new URLSearchParams();
     if (cuisine !== key) params.set('cuisine', key);
     navigate(`/?${params.toString()}`);
-    setTimeout(() => document.getElementById('restaurant-list')?.scrollIntoView({ behavior: 'smooth' }), 50);
+    
+    // Clear previous timeout if any
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (typeof document !== 'undefined') {
+        document.getElementById('restaurant-list')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
   };
 
   const containerVariants: Variants = {

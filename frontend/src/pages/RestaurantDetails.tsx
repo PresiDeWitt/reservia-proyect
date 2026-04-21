@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -21,10 +21,17 @@ const RestaurantDetails: React.FC = () => {
   const [bookingError, setBookingError] = useState('');
   const [bookingLoading, setBookingLoading] = useState(false);
 
+  const bookingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (id) {
       restaurantsApi.get(id).then(setRestaurant).catch(console.error).finally(() => setLoading(false));
     }
+    return () => {
+      if (bookingTimeoutRef.current) {
+        clearTimeout(bookingTimeoutRef.current);
+      }
+    };
   }, [id]);
 
   const handleBooking = async (e: React.FormEvent) => {
@@ -40,7 +47,9 @@ const RestaurantDetails: React.FC = () => {
         guests,
       });
       setIsBooked(true);
-      setTimeout(() => setIsBooked(false), 5000);
+      
+      if (bookingTimeoutRef.current) clearTimeout(bookingTimeoutRef.current);
+      bookingTimeoutRef.current = setTimeout(() => setIsBooked(false), 5000);
     } catch (err: unknown) {
       setBookingError(err instanceof Error ? err.message : 'Booking failed');
     } finally {
