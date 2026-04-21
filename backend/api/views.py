@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Restaurant, Reservation
+from .throttling import ChatRateThrottle, LoginRateThrottle, RegisterRateThrottle
 from .serializers import (
     RegisterSerializer, UserSerializer,
     RestaurantListSerializer, RestaurantDetailSerializer,
@@ -18,6 +19,7 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [RegisterRateThrottle]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -33,6 +35,7 @@ class RegisterView(generics.CreateAPIView):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([LoginRateThrottle])
 def login_view(request):
     from django.contrib.auth import authenticate
     email = request.data.get('email', '')
@@ -107,8 +110,9 @@ def my_reservations(request):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([ChatRateThrottle])
 def chat_view(request):
-    import anthropic
+    import requests as http_requests
     from django.conf import settings as django_settings
 
     message = request.data.get('message', '').strip()
@@ -119,7 +123,7 @@ def chat_view(request):
     if not message:
         return Response({'error': 'Message required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    api_key = getattr(django_settings, 'ANTHROPIC_API_KEY', '')
+    api_key = getattr(django_settings, 'OPENROUTER_API_KEY', '')
     if not api_key:
         return Response({'error': 'AI service not configured'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
@@ -160,16 +164,29 @@ def chat_view(request):
         for m in history
         if m.get('role') in ('user', 'assistant') and m.get('content')
     ]
+    safe_history.insert(0, {'role': 'system', 'content': system_prompt})
     safe_history.append({'role': 'user', 'content': message})
 
-    client = anthropic.Anthropic(api_key=api_key)
-    response = client.messages.create(
-        model='claude-haiku-4-5-20251001',
-        max_tokens=400,
-        system=system_prompt,
-        messages=safe_history,
-    )
-    return Response({'reply': response.content[0].text})
+    try:
+        resp = http_requests.post(
+            'https://openrouter.ai/api/v1/chat/completions',
+            headers={
+                'Authorization': f'Bearer {api_key}',
+                'Content-Type': 'application/json',
+            },
+            json={
+                'model': 'google/gemma-3-4b-it:free',
+                'messages': safe_history,
+                'max_tokens': 400,
+            },
+            timeout=30,
+        )
+        data = resp.json()
+        reply = data['choices'][0]['message']['content']
+    except Exception as e:
+        return Response({'error': f'AI service error: {str(e)}'}, status=status.HTTP_502_BAD_GATEWAY)
+
+    return Response({'reply': reply})
 
 
 @api_view(['DELETE'])
