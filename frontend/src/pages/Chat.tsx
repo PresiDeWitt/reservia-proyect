@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { chatApi, type ChatMessage } from '../api/chat';
 
 type Convo = { id: string; name: string; lastMsg: string; time: string; unread: number; online: boolean; type: 'restaurant' | 'support' };
 type Msg = { id: number; from: 'me' | 'them'; text: string; time: string };

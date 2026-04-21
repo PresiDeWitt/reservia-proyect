@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Hero from '../components/Hero';
-import CategoryCard from '../components/CategoryCard';
 import RestaurantCard from '../components/RestaurantCard';
-import { motion } from 'framer-motion';
 import { restaurantsApi, type Restaurant } from '../api/restaurants';
 
 import italianImg from '../assets/images/cuisine_italian_pasta_1769099701383.png';
@@ -15,23 +13,17 @@ import burgerImg from '../assets/images/cuisine_burger_gourmet_1769099791338.png
 import healthyImg from '../assets/images/cuisine_healthy_salad_1769099807481.png';
 import bakeryImg from '../assets/images/cuisine_bakery_bread_1769099834160.png';
 import asianImg from '../assets/images/cuisine_asian_noodles_dimsum_1769099849081.png';
-import heroImg from '../assets/images/reservia_hero_dining_1769099684622.png';
 
 const CATEGORIES = [
-  { key: 'Italian',  image: italianImg,  color: '#b9441b' },
-  { key: 'Sushi',    image: sushiImg,    color: '#0f172a' },
-  { key: 'Steak',    image: steakImg,    color: '#5b2a13' },
-  { key: 'Mexican',  image: mexicanImg,  color: '#c5421e' },
-  { key: 'Burgers',  image: burgerImg,   color: '#3d2010' },
-  { key: 'Healthy',  image: healthyImg,  color: '#2a5d3a' },
-  { key: 'Bakery',   image: bakeryImg,   color: '#8a5a2b' },
-  { key: 'Asian',    image: asianImg,    color: '#a63519' },
+  { key: 'Italian', image: italianImg, color: '#7c3d1c' },
+  { key: 'Sushi', image: sushiImg, color: '#1c2c4c' },
+  { key: 'Steak', image: steakImg, color: '#3d1c1c' },
+  { key: 'Mexican', image: mexicanImg, color: '#1c3d1c' },
+  { key: 'Burgers', image: burgerImg, color: '#2c1c0c' },
+  { key: 'Healthy', image: healthyImg, color: '#1c3c2c' },
+  { key: 'Bakery', image: bakeryImg, color: '#3c2c1c' },
+  { key: 'Asian', image: asianImg, color: '#1c1c3c' },
 ];
-
-const itemVariants = {
-  hidden: { y: 20, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -49,13 +41,9 @@ const Home: React.FC = () => {
   useEffect(() => {
     let isActive = true;
     restaurantsApi.list({ search: search || undefined, cuisine: cuisine || undefined })
-      .then(data => {
-        if (!isActive) return;
-        setRestaurants(data.restaurants);
-        setTotal(data.total);
-      })
+      .then((data) => { if (!isActive) return; setRestaurants(data.restaurants); setTotal(data.total); })
       .catch(console.error)
-      .finally(() => { if (isActive) setLoadedQueryKey(queryKey); });
+      .finally(() => { if (!isActive) return; setLoadedQueryKey(queryKey); });
     return () => { isActive = false; };
   }, [search, cuisine, queryKey]);
 
@@ -66,386 +54,260 @@ const Home: React.FC = () => {
     setTimeout(() => document.getElementById('restaurant-list')?.scrollIntoView({ behavior: 'smooth' }), 50);
   };
 
-  // "For you" data
-  const near = [...restaurants].sort((a, b) => parseFloat(a.distance || '99') - parseFloat(b.distance || '99')).slice(0, 4);
+  const nearBy = [...restaurants].slice(0, 4);
   const trending = [...restaurants].sort((a, b) => b.rating - a.rating).slice(0, 4);
 
   return (
     <div>
       <Hero />
 
-      {/* ── For You: Cerca de ti ── */}
-      {!loading && near.length > 0 && (
-        <section style={{ padding: '64px 0', background: 'var(--cream)', borderTop: '1px solid var(--border)' }}>
-          <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <div className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--primary)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 13 }}>near_me</span> Cerca de ti
+      {/* ForYou — Cerca de ti */}
+      {!search && !cuisine && restaurants.length > 0 && (
+        <>
+          <section style={{ padding: '56px 0', background: 'var(--surface)', borderTop: '1px solid var(--border)' }}>
+            <div className="container">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--primary)' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13 }}>near_me</span> Cerca de ti
+                  </div>
+                  <h2 className="editorial" style={{ fontSize: 'clamp(32px,3.5vw,44px)', fontWeight: 300, letterSpacing: '-0.025em', marginTop: 6, lineHeight: 1.05 }}>
+                    A un <span className="italic-accent">paso</span> de tu mesa.
+                  </h2>
                 </div>
-                <h2 className="editorial" style={{ fontSize: 'clamp(30px,3.5vw,44px)', fontWeight: 300, letterSpacing: '-0.025em', marginTop: 6, lineHeight: 1.05 }}>
-                  A un <span className="italic-accent">paso</span> de tu mesa.
-                </h2>
-                <p style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 6 }}>Madrid, Chamberí · basado en tu ubicación</p>
+                <Link to="/map" className="btn btn-ghost" style={{ height: 36, fontSize: 13, textDecoration: 'none' }}>
+                  <span>Ver en el mapa</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: 14, position: 'relative', zIndex: 1 }}>arrow_forward</span>
+                </Link>
               </div>
-              <Link to="/map" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, height: 38, padding: '0 16px', borderRadius: 12, border: '1px solid var(--border-strong)', fontSize: 13, fontWeight: 700, color: 'var(--navy)', textDecoration: 'none' }}>
-                <span>Ver en el mapa</span>
-                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-              </Link>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+                {nearBy.map(r => (
+                  <RestaurantCard key={r.id} {...r} cuisine={t(`cuisines.${r.cuisine}`, { defaultValue: r.cuisine })} location={r.address} />
+                ))}
+              </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-              {near.map((rest, i) => (
-                <motion.div key={rest.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
-                  <RestaurantCard {...rest} cuisine={t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} />
-                </motion.div>
-              ))}
+          </section>
+
+          {/* Trending */}
+          <section style={{ padding: '56px 0', background: 'var(--cream-2)', borderTop: '1px solid var(--border)' }}>
+            <div className="container">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--primary)' }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: 13 }}>trending_up</span> Todos hablan de ellos
+                  </div>
+                  <h2 className="editorial" style={{ fontSize: 'clamp(32px,3.5vw,44px)', fontWeight: 300, letterSpacing: '-0.025em', marginTop: 6, lineHeight: 1.05 }}>
+                    En <span className="italic-accent">boca</span> de todos.
+                  </h2>
+                </div>
+                <Link to="/search" className="btn btn-ghost" style={{ height: 36, fontSize: 13, textDecoration: 'none' }}>
+                  <span>Ver más</span>
+                  <span className="material-symbols-outlined" style={{ fontSize: 14, position: 'relative', zIndex: 1 }}>arrow_forward</span>
+                </Link>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+                {trending.map(r => (
+                  <RestaurantCard key={r.id} {...r} cuisine={t(`cuisines.${r.cuisine}`, { defaultValue: r.cuisine })} location={r.address} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </>
       )}
 
-      {/* ── For You: Trending ── */}
-      {!loading && trending.length > 0 && (
-        <section style={{ padding: '64px 0', background: '#fff', borderTop: '1px solid var(--border)' }}>
-          <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
-              <div>
-                <div className="eyebrow" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--primary)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 13 }}>trending_up</span> Todos hablan de ellos
-                </div>
-                <h2 className="editorial" style={{ fontSize: 'clamp(30px,3.5vw,44px)', fontWeight: 300, letterSpacing: '-0.025em', marginTop: 6, lineHeight: 1.05 }}>
-                  En <span className="italic-accent">boca</span> de todos.
-                </h2>
-                <p style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 6 }}>Los más reservados esta semana en Madrid.</p>
-              </div>
-              <Link to="/search" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, height: 38, padding: '0 16px', borderRadius: 12, border: '1px solid var(--border-strong)', fontSize: 13, fontWeight: 700, color: 'var(--navy)', textDecoration: 'none' }}>
-                <span>Ver más</span>
-                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>arrow_forward</span>
-              </Link>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-              {trending.map((rest, i) => (
-                <motion.div key={rest.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}>
-                  <RestaurantCard {...rest} cuisine={t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} />
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── Cuisine ribbon ── */}
-      <section style={{ padding: '96px 0 48px', background: 'var(--cream)' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={itemVariants}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}
-          >
+      {/* Cuisine ribbon */}
+      <section style={{ padding: 'var(--d-section) 0 40px', background: 'var(--surface)' }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
             <div>
               <div className="eyebrow">01 — Explora por antojo</div>
-              <h2
-                className="editorial"
-                style={{ fontSize: 'clamp(38px,5vw,60px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.05, marginTop: 10, margin: '10px 0 0' }}
-              >
+              <h2 className="editorial" style={{ fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.05, marginTop: 10 }}>
                 ¿Qué te <span className="italic-accent">apetece</span> esta noche?
               </h2>
             </div>
-            <Link
-              to="/map"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                height: 44, padding: '0 20px', borderRadius: 14,
-                border: '1px solid var(--border-strong)',
-                fontSize: 13, fontWeight: 700, color: 'var(--navy)',
-                textDecoration: 'none', transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--ink-5)')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
-            >
-              <span>Ver en mapa</span>
-              <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
+            <Link to="/search" className="btn btn-ghost" style={{ textDecoration: 'none' }}>
+              <span>Ver todas las cocinas</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 16, position: 'relative', zIndex: 1 }}>arrow_forward</span>
             </Link>
-          </motion.div>
-
+          </div>
           <div className="scroll-x" style={{ display: 'flex', gap: 16, paddingBottom: 12 }}>
             {CATEGORIES.map(cat => (
-              <CategoryCard
+              <button
                 key={cat.key}
-                name={t(`cuisines.${cat.key}`, { defaultValue: cat.key })}
-                image={cat.image}
-                color={cat.color}
-                active={cuisine === cat.key}
                 onClick={() => handleCategoryClick(cat.key)}
-              />
+                style={{
+                  flexShrink: 0, width: 180, height: 240, borderRadius: 'var(--r-xl)',
+                  overflow: 'hidden', position: 'relative', scrollSnapAlign: 'start',
+                  border: cuisine === cat.key ? '3px solid var(--primary)' : '3px solid transparent',
+                  cursor: 'pointer', background: 'none', padding: 0,
+                  transition: 'transform 0.3s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1.04)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'scale(1)'; }}
+              >
+                <img src={cat.image} alt={cat.key} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.7)' }} />
+                <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(180deg, transparent 40%, ${cat.color}dd 100%)` }} />
+                <div style={{ position: 'absolute', bottom: 16, left: 16, color: '#fff' }}>
+                  <div className="editorial" style={{ fontSize: 22, fontWeight: 400, letterSpacing: '-0.01em' }}>
+                    {t(`cuisines.${cat.key}`, { defaultValue: cat.key })}
+                  </div>
+                </div>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Editorial pull quote ── */}
+      {/* Editorial manifesto */}
       <section style={{ padding: '64px 0', background: 'var(--cream-2)', position: 'relative' }} className="grain">
-        <div style={{ maxWidth: 980, margin: '0 auto', padding: '0 24px', textAlign: 'center', position: 'relative', zIndex: 2 }}>
-          <div className="eyebrow" style={{ color: 'var(--primary)', display: 'block', marginBottom: 24 }}>Manifiesto</div>
-          <motion.blockquote
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }} transition={{ duration: 0.7 }}
-            className="editorial"
-            style={{
-              fontSize: 'clamp(28px,4vw,52px)', fontWeight: 300,
-              lineHeight: 1.2, letterSpacing: '-0.02em',
-              margin: '0 0 24px', color: 'var(--navy)',
-            }}
-          >
-            Creemos que una buena cena empieza{' '}
-            <em className="italic-accent">antes</em> de pisar el restaurante —
-            con la expectativa, con la promesa,
-            con la <em className="italic-accent">sobremesa</em> que ya imaginas.
-          </motion.blockquote>
-          <p style={{ fontSize: 13, color: 'var(--ink-55)' }}>
-            — El equipo editorial de <strong>ReserVia</strong>
-          </p>
+        <div className="container-narrow" style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
+          <div className="eyebrow" style={{ color: 'var(--primary)' }}>Manifiesto</div>
+          <blockquote className="editorial" style={{ fontSize: 'clamp(28px,4vw,52px)', fontWeight: 300, lineHeight: 1.15, letterSpacing: '-0.02em', margin: '24px 0', color: 'var(--ink)' }}>
+            Creemos que una buena cena empieza <em className="italic-accent">antes</em> de pisar el restaurante —
+            con la expectativa, con la promesa, con la <em className="italic-accent">sobremesa</em> que ya te estás imaginando.
+          </blockquote>
+          <div style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 24 }}>
+            — El equipo editorial de <span style={{ fontWeight: 700 }}>ReserVia</span>
+          </div>
         </div>
       </section>
 
-      {/* ── Restaurant list ── */}
-      <section id="restaurant-list" style={{ padding: '96px 0', background: '#fff' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true }}
-            variants={itemVariants}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40, flexWrap: 'wrap', gap: 16 }}
-          >
+      {/* Restaurant list */}
+      <section id="restaurant-list" style={{ padding: 'var(--d-section) 0', background: 'var(--surface)' }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 40, flexWrap: 'wrap', gap: 16 }}>
             <div>
               <div className="eyebrow">02 — Curado esta semana</div>
-              <h2
-                className="editorial"
-                style={{ fontSize: 'clamp(38px,5vw,60px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.05, margin: '10px 0 0' }}
-              >
+              <h2 className="editorial" style={{ fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.05, marginTop: 10 }}>
                 {cuisine
-                  ? <>{t(`cuisines.${cuisine}`, { defaultValue: cuisine })} · <span className="italic-accent">mesas</span></>
+                  ? <>{t(`cuisines.${cuisine}`, { defaultValue: cuisine })} con <span className="italic-accent">alma</span>.</>
                   : search
-                    ? <>Resultados para <span className="italic-accent">"{search}"</span></>
-                    : <>Mesas con <span className="italic-accent">alma</span>.</>
-                }
+                    ? <>"{search}"</>
+                    : <>Mesas con <span className="italic-accent">alma</span>.</>}
               </h2>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {(search || cuisine) && (
-                <Link
-                  to="/"
-                  style={{
-                    fontSize: 13, color: 'var(--ink-55)', display: 'flex', alignItems: 'center', gap: 4,
-                    fontWeight: 600, textDecoration: 'none',
-                  }}
-                >
+                <Link to="/" style={{ fontSize: 13, color: 'var(--ink-55)', display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600, textDecoration: 'none' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: 16 }}>close</span>
                   {t('home.clearFilters')}
                 </Link>
               )}
-              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--primary)' }}>
-                {total} {t('home.results')}
-              </span>
+              <span style={{ color: 'var(--primary)', fontWeight: 700, fontSize: 14 }}>{total} {t('home.results')}</span>
             </div>
-          </motion.div>
+          </div>
 
           {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-              {[1, 2, 3].map(i => (
-                <div key={i} style={{ height: 380, borderRadius: 28 }} className="shimmer-bg" />
-              ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+              {[1, 2, 3].map(i => <div key={i} style={{ height: 380, borderRadius: 'var(--r-xl)', background: 'var(--ink-5)' }} className="shimmer-bg" />)}
             </div>
           ) : restaurants.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--ink-55)' }}>
-              <span className="material-symbols-outlined" style={{ fontSize: 48, display: 'block', marginBottom: 12 }}>search_off</span>
-              <p className="editorial" style={{ fontSize: 24, fontWeight: 300 }}>{t('home.noResults')}</p>
-              <Link to="/" style={{ marginTop: 16, display: 'inline-block', fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>
-                {t('home.clearFilters')}
+            <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--ink-55)' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 56, display: 'block', marginBottom: 16, opacity: 0.4 }}>search_off</span>
+              <p className="editorial" style={{ fontSize: 28, fontWeight: 300 }}>{t('home.noResults')}</p>
+              <Link to="/" className="btn btn-primary" style={{ marginTop: 20, textDecoration: 'none', display: 'inline-flex' }}>
+                <span>{t('home.clearFilters')}</span>
               </Link>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 24 }}>
-              {restaurants.map((rest, i) => (
-                <motion.div
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 24 }}>
+              {restaurants.map(rest => (
+                <RestaurantCard
                   key={rest.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.05 }}
-                >
-                  <RestaurantCard
-                    {...rest}
-                    cuisine={t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })}
-                  />
-                </motion.div>
+                  {...rest}
+                  cuisine={t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })}
+                  location={rest.address}
+                />
               ))}
             </div>
           )}
         </div>
       </section>
 
-      {/* ── For restaurateurs (navy section) ── */}
-      <section style={{ padding: '96px 0', background: 'var(--navy)', color: '#fff', position: 'relative' }} className="grain">
-        <div style={{
-          maxWidth: 1320, margin: '0 auto', padding: '0 24px',
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64,
-          alignItems: 'center', position: 'relative', zIndex: 2,
-        }} className="owner-grid">
+      {/* Owner section */}
+      <section style={{ padding: 'var(--d-section) 0', background: 'var(--navy)', color: 'var(--cream)' }} className="grain">
+        <div className="container owner-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center', position: 'relative', zIndex: 2 }}>
           <div>
-            <div className="eyebrow" style={{ color: 'var(--primary)', marginBottom: 8 }}>Para restauradores</div>
-            <h2
-              className="editorial"
-              style={{ fontSize: 'clamp(38px,5vw,68px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.02, margin: '0 0 24px' }}
-            >
+            <div className="eyebrow" style={{ color: 'var(--primary)' }}>Para restauradores</div>
+            <h2 className="editorial" style={{ fontSize: 'clamp(36px,5vw,68px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.02, marginTop: 14 }}>
               Que tu cocina se <span className="italic-accent">llene</span> — sin complicarte.
             </h2>
-            <p style={{ fontSize: 16, opacity: 0.8, lineHeight: 1.65, maxWidth: 480, marginBottom: 32 }}>
-              Plan de mesas en tiempo real, lista de espera, recordatorios automáticos,
-              pre-pago opcional y análisis de cobertura — todo en un panel que aprende de tu servicio.
+            <p style={{ fontSize: 16, opacity: 0.8, marginTop: 20, lineHeight: 1.6, maxWidth: 480 }}>
+              Plan de mesas en tiempo real, lista de espera, recordatorios automáticos, pre-pago opcional. Todo en un panel que aprende de tu servicio.
             </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <button style={{
-                height: 48, padding: '0 24px', borderRadius: 14,
-                background: 'var(--primary)', color: '#fff',
-                border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 8,
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--primary-700)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'var(--primary)')}>
-                <span>Más información</span>
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span>
-              </button>
-              <button style={{
-                height: 48, padding: '0 24px', borderRadius: 14,
-                background: 'rgba(255,255,255,0.08)', color: '#fff',
-                border: '1px solid rgba(255,255,255,0.2)',
-                fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                backdropFilter: 'blur(10px)',
-                transition: 'background 0.2s',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.16)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.08)')}>
-                Hablar con ventas
-              </button>
+            <div style={{ display: 'flex', gap: 12, marginTop: 28 }}>
+              <button className="btn btn-ember"><span>Más información</span><span className="material-symbols-outlined" style={{ fontSize: 16 }}>arrow_forward</span></button>
+              <button className="btn btn-dark">Hablar con ventas</button>
             </div>
-            <div style={{ display: 'flex', gap: 48, marginTop: 48 }}>
-              {[{ v: '32%', l: 'más covers/mes' }, { v: '4.9', l: '★ de propietarios' }].map(s => (
-                <div key={s.l}>
-                  <div className="editorial" style={{ fontSize: 52, fontWeight: 300, fontStyle: 'italic', color: 'var(--primary)', lineHeight: 1 }}>{s.v}</div>
-                  <div className="eyebrow" style={{ color: '#fff', opacity: 0.6, marginTop: 8 }}>{s.l}</div>
-                </div>
-              ))}
+            <div style={{ display: 'flex', gap: 40, marginTop: 40 }}>
+              <div>
+                <div className="editorial mono-num" style={{ fontSize: 40, fontWeight: 300 }}>32<span style={{ fontSize: 24, fontStyle: 'italic', color: 'var(--primary)' }}>%</span></div>
+                <div style={{ fontSize: 11, opacity: 0.65, marginTop: 4 }}>Más covers por mes</div>
+              </div>
+              <div>
+                <div className="editorial mono-num" style={{ fontSize: 40, fontWeight: 300 }}>4.9<span style={{ fontSize: 18, fontStyle: 'italic', color: 'var(--primary)' }}>★</span></div>
+                <div style={{ fontSize: 11, opacity: 0.65, marginTop: 4 }}>De sus dueños</div>
+              </div>
             </div>
           </div>
           <div style={{ position: 'relative' }}>
-            <div style={{ borderRadius: 28, overflow: 'hidden', boxShadow: 'var(--sh-lg)' }}>
-              <img src={heroImg} alt="Restaurant owner" style={{ width: '100%', aspectRatio: '4/5', objectFit: 'cover' }} />
+            <div style={{ borderRadius: 'var(--r-xl)', overflow: 'hidden', background: 'var(--navy-800)', aspectRatio: '4/5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: 80, opacity: 0.15 }}>storefront</span>
             </div>
-            <div style={{
-              position: 'absolute', bottom: -28, left: -28,
-              padding: '18px 22px',
-              background: 'var(--cream)', color: 'var(--navy)',
-              borderRadius: 20, boxShadow: 'var(--sh-lg)', minWidth: 220,
-            }}>
-              <div className="eyebrow" style={{ marginBottom: 8 }}>Hoy</div>
-              <div className="editorial" style={{ fontSize: 48, fontWeight: 300, lineHeight: 1 }}>
-                84{' '}
-                <span style={{ fontStyle: 'italic', color: 'var(--primary)', fontSize: '0.5em' }}>covers</span>
+            <div style={{ position: 'absolute', bottom: -24, left: -24, padding: 18, background: 'var(--cream)', color: 'var(--ink)', minWidth: 200, borderRadius: 'var(--r-lg)', boxShadow: 'var(--sh-lg)' }}>
+              <div className="eyebrow">Hoy</div>
+              <div className="editorial mono-num" style={{ fontSize: 44, fontWeight: 400, lineHeight: 1, marginTop: 6 }}>
+                84 <span style={{ fontStyle: 'italic', color: 'var(--primary)', fontSize: '0.5em' }}>covers</span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 6 }}>+18% vs. martes pasado</div>
             </div>
           </div>
         </div>
-
-        <style>{`
-          @media (max-width: 900px) {
-            .owner-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
-          }
-        `}</style>
+        <style>{`@media(max-width:900px){.owner-grid{grid-template-columns:1fr!important}}`}</style>
       </section>
 
-      {/* ── How it works ── */}
-      <section style={{ padding: '96px 0', background: 'var(--cream)' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="eyebrow" style={{ marginBottom: 12 }}>Así funciona</div>
-            <h2 className="editorial" style={{ fontSize: 'clamp(36px,5vw,60px)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0 }}>
+      {/* How it works */}
+      <section style={{ padding: 'var(--d-section) 0', background: 'var(--surface)' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div className="eyebrow">Así funciona</div>
+            <h2 className="editorial" style={{ fontSize: 'clamp(32px,5vw,56px)', fontWeight: 300, letterSpacing: '-0.02em', marginTop: 10 }}>
               Tres pasos. <span className="italic-accent">Cero esperas.</span>
             </h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
             {[
-              { n: '01', t: 'Descubre', d: 'Pregunta a la IA por un ambiente, no solo un nombre. Te proponemos mesas con criterio editorial.', i: 'auto_awesome' },
+              { n: '01', t: 'Descubre', d: 'Pregunta a la IA por un ambiente, no por un nombre. Te proponemos mesas con criterio editorial.', i: 'auto_awesome' },
               { n: '02', t: 'Reserva', d: 'Dos toques y confirmado. Sin formularios, sin llamadas, sin fricción.', i: 'touch_app' },
-              { n: '03', t: 'Disfruta', d: 'Llegas, te sientas, comes. Si hay cambios, te avisamos. Si no, silencio absoluto.', i: 'restaurant' },
-            ].map(step => (
-              <motion.div
-                key={step.n}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5 }}
-                style={{
-                  padding: 32, borderRadius: 28,
-                  background: '#fff',
-                  border: '1px solid var(--border)',
-                }}
-              >
-                <div className="eyebrow" style={{ color: 'var(--primary)', marginBottom: 20 }}>{step.n}</div>
-                <span className="material-symbols-outlined" style={{ fontSize: 44, color: 'var(--navy)' }}>{step.i}</span>
-                <h3 className="editorial" style={{ fontSize: 32, fontWeight: 400, letterSpacing: '-0.02em', margin: '18px 0 10px' }}>{step.t}</h3>
-                <p style={{ fontSize: 14, color: 'var(--ink-55)', lineHeight: 1.65, margin: 0 }}>{step.d}</p>
-              </motion.div>
+              { n: '03', t: 'Disfruta', d: 'Llegas, te sientas, comes. Si hay cambios, te avisamos. Nada más.', i: 'restaurant' },
+            ].map(s => (
+              <div key={s.n} className="card" style={{ padding: 32, background: 'var(--surface-3)' }}>
+                <div className="eyebrow" style={{ color: 'var(--primary)' }}>{s.n}</div>
+                <span className="material-symbols-outlined" style={{ fontSize: 44, color: 'var(--ink)', marginTop: 20, display: 'block' }}>{s.i}</span>
+                <h3 className="editorial" style={{ fontSize: 30, fontWeight: 400, marginTop: 18, letterSpacing: '-0.02em' }}>{s.t}</h3>
+                <p style={{ fontSize: 14, color: 'var(--ink-55)', lineHeight: 1.6, marginTop: 10 }}>{s.d}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── CTA banner ── */}
-      <section style={{ padding: '0 0 96px' }}>
-        <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
-          <div style={{
-            position: 'relative', borderRadius: 28, overflow: 'hidden', minHeight: 420,
-          }}>
-            <img
-              src={heroImg}
-              alt=""
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.5)' }}
-            />
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(90deg, rgba(35,23,15,0.85) 30%, transparent)',
-            }} />
-            <div style={{
-              position: 'relative', zIndex: 2,
-              padding: '80px 48px', color: '#fff', maxWidth: 620,
-            }}>
-              <h2 className="editorial" style={{
-                fontSize: 'clamp(38px,5vw,68px)', fontWeight: 300,
-                letterSpacing: '-0.02em', lineHeight: 1.02, margin: '0 0 20px',
-              }}>
+      {/* CTA */}
+      <section style={{ padding: '80px 0 0' }}>
+        <div className="container">
+          <div style={{ position: 'relative', borderRadius: 'var(--r-xl)', overflow: 'hidden', minHeight: 400, background: 'var(--navy)', display: 'flex', alignItems: 'center' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 30% 50%, rgba(249,116,21,0.25) 0%, transparent 60%)' }} />
+            <div style={{ position: 'relative', zIndex: 2, padding: '72px 48px', color: 'var(--cream)', maxWidth: 620 }}>
+              <h2 className="editorial" style={{ fontSize: 'clamp(36px,5vw,68px)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.02 }}>
                 Hay una mesa esperándote <span className="italic-accent">esta noche</span>.
               </h2>
-              <p style={{ fontSize: 17, opacity: 0.8, marginBottom: 28 }}>
-                {total || '+'} restaurantes con disponibilidad ahora mismo. Uno es el tuyo.
+              <p style={{ fontSize: 16, opacity: 0.8, marginTop: 16 }}>
+                {total || restaurants.length} restaurantes con disponibilidad ahora mismo. Uno es el tuyo.
               </p>
-              <button
-                onClick={() => document.getElementById('restaurant-list')?.scrollIntoView({ behavior: 'smooth' })}
-                style={{
-                  height: 56, padding: '0 28px', borderRadius: 14,
-                  background: 'var(--primary)', color: '#fff',
-                  border: 'none', fontSize: 16, fontWeight: 700, cursor: 'pointer',
-                  display: 'inline-flex', alignItems: 'center', gap: 10,
-                  boxShadow: 'var(--sh-glow)',
-                  transition: 'background 0.2s',
-                }}
-                onMouseEnter={e => (e.currentTarget.style.background = 'var(--primary-700)')}
-                onMouseLeave={e => (e.currentTarget.style.background = 'var(--primary)')}
-              >
+              <Link to="/search" className="btn btn-ember" style={{ marginTop: 24, height: 54, padding: '0 28px', fontSize: 15, textDecoration: 'none', display: 'inline-flex' }}>
                 <span>Explorar mesas</span>
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>arrow_forward</span>
-              </button>
+              </Link>
             </div>
           </div>
         </div>

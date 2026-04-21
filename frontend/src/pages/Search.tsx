@@ -12,7 +12,6 @@ const Search: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState('recommended');
   const [priceFilter, setPriceFilter] = useState('');
@@ -24,7 +23,7 @@ const Search: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     restaurantsApi.list({ search: search || undefined, cuisine: cuisine || undefined })
-      .then(data => { setRestaurants(data.restaurants); setTotal(data.total); })
+      .then(data => { setRestaurants(data.restaurants); })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [search, cuisine]);

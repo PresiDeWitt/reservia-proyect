@@ -3,7 +3,6 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useTranslation } from 'react-i18next';
-import RestaurantCard from '../components/RestaurantCard';
 import { restaurantsApi, type Restaurant } from '../api/restaurants';
 
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -101,7 +100,7 @@ const MapExplorer: React.FC = () => {
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{restaurants.length} restaurantes</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {restaurants.map((rest, i) => (
+            {restaurants.map((rest) => (
               <button
                 key={rest.id}
                 onClick={() => setSelectedId(rest.id === selectedId ? null : rest.id)}
