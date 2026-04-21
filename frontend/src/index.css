@@ -1,19 +1,184 @@
 @import "tailwindcss";
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-}
-
 @theme {
   --color-primary: #f97415;
+  --color-primary-700: #d95d05;
   --color-background-light: #f8f7f5;
   --color-background-dark: #23170f;
   --color-navy: #0F172A;
+  --color-cream: #f8f7f5;
+  --color-cream-2: #f2efe9;
+  --color-espresso: #23170f;
   --color-emerald: #10B981;
+  --color-ruby: #E11D48;
   --font-display: "Inter", sans-serif;
+  --font-editorial: "Fraunces", "Times New Roman", serif;
 }
+
+:root {
+  --primary: #f97415;
+  --primary-700: #d95d05;
+  --primary-glow: rgba(249, 116, 21, 0.22);
+  --navy: #0F172A;
+  --cream: #f8f7f5;
+  --cream-2: #f2efe9;
+  --ink-55: rgba(15,23,42,0.55);
+  --ink-40: rgba(15,23,42,0.40);
+  --ink-10: rgba(15,23,42,0.10);
+  --ink-5: rgba(15,23,42,0.05);
+  --border: rgba(15,23,42,0.08);
+  --border-strong: rgba(15,23,42,0.16);
+  --sh-md: 0 18px 40px -18px rgba(15,23,42,0.25);
+  --sh-lg: 0 40px 120px -20px rgba(15,23,42,0.35);
+  --sh-glow: 0 24px 60px -20px rgba(249,116,21,0.45);
+}
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   min-height: 100vh;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: var(--cream);
+  color: var(--navy);
+  overflow-x: hidden;
+}
+
+::selection { background: var(--primary); color: #fff; }
+
+/* ── Typography ── */
+.editorial {
+  font-family: "Fraunces", "Times New Roman", Georgia, serif;
+  font-optical-sizing: auto;
+}
+.italic-accent {
+  font-style: italic;
+  color: var(--primary);
+}
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-55);
+}
+
+/* ── Grain texture ── */
+.grain { position: relative; }
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95  0 0 0 0 0.45  0 0 0 0 0.08  0 0 0 0.18 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* ── Animations ── */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes drift {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249,116,21,0.4); }
+  50%       { box-shadow: 0 0 0 10px rgba(249,116,21,0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.rise-anim  { animation: rise 0.7s cubic-bezier(0.2,0.8,0.2,1) both; }
+.rise-stagger > * { opacity: 0; animation: rise 0.6s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+.rise-stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.rise-stagger > *:nth-child(2) { animation-delay: 0.12s; }
+.rise-stagger > *:nth-child(3) { animation-delay: 0.19s; }
+.rise-stagger > *:nth-child(4) { animation-delay: 0.26s; }
+.rise-stagger > *:nth-child(5) { animation-delay: 0.33s; }
+.rise-stagger > *:nth-child(6) { animation-delay: 0.40s; }
+.drift-anim { animation: drift 5s ease-in-out infinite; }
+.pulse-ring { animation: pulse-ring 2s ease-out infinite; }
+.fade-in    { animation: fade-in 0.5s ease both; }
+.scale-in   { animation: scale-in 0.35s cubic-bezier(0.2,0.8,0.2,1) both; }
+
+.shimmer-bg {
+  background: linear-gradient(90deg, var(--ink-5) 25%, var(--ink-10) 50%, var(--ink-5) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* ── Scroll utils ── */
+.scroll-x { overflow-x: auto; scrollbar-width: none; scroll-snap-type: x mandatory; }
+.scroll-x::-webkit-scrollbar { display: none; }
+
+/* ── Link underline ── */
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1px;
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  transition: background-size 0.35s cubic-bezier(0.2,0.8,0.2,1);
+}
+.link-underline:hover { background-size: 100% 1px; }
+
+/* ── Auth (preserved) ── */
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes auth-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+.auth-editorial { font-family: var(--font-editorial); font-optical-sizing: auto; }
+.auth-grain {
+  background-image:
+    radial-gradient(ellipse at 15% 20%, rgba(249,116,21,0.22) 0, transparent 55%),
+    radial-gradient(ellipse at 85% 85%, rgba(249,116,21,0.10) 0, transparent 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.95 0 0 0 0 0.45 0 0 0 0 0.08 0 0 0 0.22 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.auth-rise > * { opacity: 0; animation: auth-rise 0.55s cubic-bezier(0.2,0.8,0.2,1) forwards; }
+.auth-rise > *:nth-child(1) { animation-delay: 0.05s; }
+.auth-rise > *:nth-child(2) { animation-delay: 0.12s; }
+.auth-rise > *:nth-child(3) { animation-delay: 0.19s; }
+.auth-rise > *:nth-child(4) { animation-delay: 0.26s; }
+.auth-rise > *:nth-child(5) { animation-delay: 0.33s; }
+.auth-rise > *:nth-child(6) { animation-delay: 0.40s; }
+.auth-rise > *:nth-child(7) { animation-delay: 0.47s; }
+.auth-input:focus-within .auth-input-line { transform: scaleX(1); }
+.auth-input-line { transform: scaleX(0.15); transform-origin: left; transition: transform 0.4s cubic-bezier(0.2,0.8,0.2,1); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

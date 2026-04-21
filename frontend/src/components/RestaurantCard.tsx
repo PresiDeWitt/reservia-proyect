@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -15,46 +15,138 @@ interface RestaurantCardProps {
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({ id, name, image, cuisine, location, distance, rating, priceRange }) => {
   const { t } = useTranslation();
+  const [faved, setFaved] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   return (
-    <div className="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
-      <Link to={`/restaurant/${id}`} className="relative h-60 w-full overflow-hidden block">
-        <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald text-white px-3 py-1.5 text-xs font-bold shadow-md">
-          <span className="material-symbols-outlined text-[14px]">bolt</span>
-          {t('restaurant.realTime')}
-        </div>
-        <button 
-          className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors"
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-        >
-          <span className="material-symbols-outlined block text-[20px]">favorite</span>
-        </button>
-        <div 
-          className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-          style={{ backgroundImage: `url(${image})` }}
+    <div
+      style={{
+        display: 'flex', flexDirection: 'column',
+        background: '#fff',
+        borderRadius: 28,
+        border: '1px solid var(--border)',
+        overflow: 'hidden',
+        cursor: 'pointer',
+        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
+        boxShadow: hovered ? 'var(--sh-lg)' : 'var(--sh-sm)',
+        transition: 'transform 0.35s cubic-bezier(0.2,0.8,0.2,1), box-shadow 0.35s',
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Image */}
+      <Link to={`/restaurant/${id}`} style={{ display: 'block', position: 'relative', height: 240, overflow: 'hidden', flexShrink: 0 }}>
+        <div
+          style={{
+            width: '100%', height: '100%',
+            backgroundImage: `url(${image})`,
+            backgroundSize: 'cover', backgroundPosition: 'center',
+            transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            transition: 'transform 0.7s cubic-bezier(0.2,0.8,0.2,1)',
+          }}
         />
+        {/* Cuisine + location pill */}
+        <div style={{
+          position: 'absolute', bottom: 14, left: 14,
+          padding: '6px 12px',
+          background: 'rgba(15,23,42,0.72)', backdropFilter: 'blur(8px)',
+          borderRadius: 999, fontSize: 11, fontWeight: 700, color: '#fff',
+        }}>
+          {cuisine} · {location}
+        </div>
+        {/* Fav button */}
+        <button
+          onClick={e => { e.preventDefault(); e.stopPropagation(); setFaved(f => !f); }}
+          style={{
+            position: 'absolute', top: 14, right: 14,
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.9)',
+            border: 'none', cursor: 'pointer',
+            display: 'grid', placeItems: 'center',
+            color: faved ? 'var(--ruby)' : 'var(--ink-40)',
+            transition: 'transform 0.2s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
+          onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={{ fontSize: 18, fontVariationSettings: faved ? "'FILL' 1" : "'FILL' 0" }}
+          >
+            favorite
+          </span>
+        </button>
       </Link>
-      <div className="flex flex-1 flex-col p-6">
-        <div className="flex justify-between items-start mb-3">
-          <Link to={`/restaurant/${id}`}>
-            <h3 className="text-xl font-bold text-navy group-hover:text-primary transition-colors">{name}</h3>
-            <p className="text-sm text-slate-500 font-medium mt-1">{cuisine} • {location} • {distance}</p>
+
+      {/* Card body */}
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+          <Link to={`/restaurant/${id}`} style={{ textDecoration: 'none' }}>
+            <h3
+              className="editorial"
+              style={{
+                fontSize: 24, fontWeight: 400, lineHeight: 1.1,
+                letterSpacing: '-0.02em', color: 'var(--navy)', margin: 0,
+              }}
+            >
+              {name}
+            </h3>
           </Link>
-          <div className="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
-            <span className="material-symbols-outlined text-[16px] text-green-600">star</span>
-            <span className="text-sm font-bold text-navy">{rating}</span>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            flexShrink: 0,
+          }}>
+            <span className="material-symbols-outlined" style={{ fontSize: 14, color: 'var(--primary)', fontVariationSettings: "'FILL' 1" }}>star</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{rating}</span>
           </div>
         </div>
-        <div className="mb-6 flex items-center gap-3 text-sm text-slate-600">
-          <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">{priceRange}</span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 700, padding: '3px 8px',
+            background: 'var(--ink-5)', borderRadius: 999,
+            color: 'var(--ink-55)',
+          }}>
+            {priceRange}
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--ink-40)' }}>·</span>
+          <span style={{ fontSize: 12, color: 'var(--ink-55)' }}>{distance}</span>
         </div>
-        <div className="mt-auto grid grid-cols-2 gap-3">
-          <button className="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors">
+
+        <div style={{
+          marginTop: 'auto', paddingTop: 14,
+          borderTop: '1px solid var(--border)',
+          display: 'flex', gap: 10,
+        }}>
+          <button
+            style={{
+              flex: 1, height: 42,
+              borderRadius: 14,
+              border: '1px solid var(--border-strong)',
+              background: 'transparent',
+              fontSize: 13, fontWeight: 700,
+              color: 'var(--navy)', cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--ink-5)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+          >
             {t('restaurant.menu')}
           </button>
-          <Link 
+          <Link
             to={`/restaurant/${id}`}
-            className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 transition-all text-center"
+            style={{
+              flex: 1, height: 42,
+              borderRadius: 14,
+              background: 'var(--navy)',
+              fontSize: 13, fontWeight: 700, color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              textDecoration: 'none',
+              transition: 'background 0.2s',
+              position: 'relative', overflow: 'hidden',
+            }}
+            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = 'var(--primary)')}
+            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'var(--navy)')}
           >
             {t('restaurant.bookNow')}
           </Link>
@@ -65,5 +157,3 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({ id, name, image, cuisin
 };
 
 export default RestaurantCard;
-
-
