@@ -32,12 +32,20 @@ class APISecurityThrottlingTests(APITestCase):
         chat_url = reverse('chat')
 
         with patch.dict(ChatRateThrottle.THROTTLE_RATES, {'chat': '2/minute'}, clear=False):
-            with override_settings(ANTHROPIC_API_KEY='test-key'):
-                with patch('anthropic.Anthropic') as mock_anthropic:
-                    mock_client = mock_anthropic.return_value
+            with override_settings(OPENROUTER_API_KEY='test-key'):
+                with patch('requests.post') as mock_post:
                     mock_response = MagicMock()
-                    mock_response.content = [MagicMock(text='respuesta')]
-                    mock_client.messages.create.return_value = mock_response
+                    mock_response.status_code = 200
+                    mock_response.json.return_value = {
+                        'choices': [
+                            {
+                                'message': {
+                                    'content': 'respuesta'
+                                }
+                            }
+                        ]
+                    }
+                    mock_post.return_value = mock_response
 
                     first = self.client.post(chat_url, payload, format='json')
                     second = self.client.post(chat_url, payload, format='json')
