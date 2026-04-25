@@ -3,13 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { chatApi, type ChatMessage } from '../api/chat';
 
-const SUGGESTIONS = [
-  'Restaurante romántico esta noche',
-  'Mesa para 4 en Madrid hoy',
-  'Sushi de calidad cerca de mí',
-  'Terraza con vistas',
-];
-
 const ChatBot: React.FC = () => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -39,18 +32,18 @@ const ChatBot: React.FC = () => {
     }
   };
 
-  const send = async (text?: string) => {
-    const msg = (text || input).trim();
-    if (!msg || loading) return;
+  const send = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
 
-    const userMsg: ChatMessage = { role: 'user', content: msg };
+    const userMsg: ChatMessage = { role: 'user', content: text };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput('');
     setLoading(true);
 
     try {
-      const reply = await chatApi.send(msg, newMessages.slice(-10), location ?? undefined);
+      const reply = await chatApi.send(text, newMessages.slice(-10), location ?? undefined);
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch {
       setMessages((prev) => [
@@ -66,22 +59,13 @@ const ChatBot: React.FC = () => {
     <>
       {/* Floating button */}
       <motion.button
-        onClick={() => setOpen(o => !o)}
-        whileHover={{ scale: 1.08 }}
+        onClick={() => setOpen((o) => !o)}
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center"
+        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        aria-label="Vía IA"
-        style={{
-          position: 'fixed', bottom: 28, right: 28, zIndex: 200,
-          width: 56, height: 56, borderRadius: '50%',
-          background: open ? 'var(--navy)' : 'var(--primary)',
-          border: 'none', cursor: 'pointer',
-          display: 'grid', placeItems: 'center',
-          boxShadow: '0 8px 32px rgba(249,116,21,0.4)',
-          color: '#fff',
-          transition: 'background 0.25s',
-        }}
+        aria-label="AI Chat"
       >
-        <span className="material-symbols-outlined" style={{ fontSize: 24 }}>
+        <span className="material-symbols-outlined text-2xl">
           {open ? 'close' : 'auto_awesome'}
         </span>
       </motion.button>
@@ -90,106 +74,72 @@ const ChatBot: React.FC = () => {
       <AnimatePresence>
         {open && (
           <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.94 }}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 24, scale: 0.94 }}
-            transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-            style={{
-              position: 'fixed', bottom: 96, right: 28, zIndex: 199,
-              width: 'min(380px, calc(100vw - 32px))',
-              height: 'min(520px, calc(100vh - 120px))',
-              background: '#fff',
-              borderRadius: 24,
-              boxShadow: '0 24px 80px rgba(15,23,42,0.18)',
-              border: '1px solid var(--border)',
-              display: 'flex', flexDirection: 'column',
-              overflow: 'hidden',
-            }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] h-[min(480px,calc(100vh-8rem))] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-100"
           >
             {/* Header */}
-            <div style={{
-              padding: '16px 20px',
-              background: 'var(--navy)',
-              display: 'flex', alignItems: 'center', gap: 12,
-              flexShrink: 0,
-            }} className="grain">
-              <div style={{
-                width: 40, height: 40, borderRadius: '50%',
-                background: 'var(--primary)',
-                display: 'grid', placeItems: 'center', flexShrink: 0,
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#fff' }}>auto_awesome</span>
+            <div className="grain px-4 py-3 flex items-center gap-3" style={{ background: 'var(--navy)', color: 'var(--cream)' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--primary)' }}>
+                <span className="mat" style={{ fontSize: 20 }}>auto_awesome</span>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: '"Fraunces", serif', fontSize: 16, fontWeight: 500, color: '#fff', letterSpacing: '-0.01em' }}>
-                  Vía <span style={{ fontStyle: 'italic', color: 'var(--primary)' }}>IA</span>
+              <div className="min-w-0 relative z-10">
+                <div className="editorial text-sm" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+                  Reser<span className="italic-accent">Via</span> · IA
                 </div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>{t('chat.subtitle')}</div>
+                <div className="text-xs truncate" style={{ opacity: 0.7 }}>{t('chat.subtitle')}</div>
               </div>
               <button
                 onClick={toggleLocation}
+                className={`ml-auto p-1.5 rounded-full transition-colors shrink-0 ${
+                  locEnabled ? 'bg-white/30 text-white' : 'bg-white/10 text-orange-200'
+                }`}
                 title={locEnabled ? t('chat.locationOn') : t('chat.locationOff')}
-                style={{
-                  width: 32, height: 32, borderRadius: '50%', border: 'none', cursor: 'pointer',
-                  background: locEnabled ? 'var(--primary)' : 'rgba(255,255,255,0.1)',
-                  color: '#fff', display: 'grid', placeItems: 'center',
-                  transition: 'background 0.2s',
-                }}
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>my_location</span>
+                <span className="material-symbols-outlined text-base">my_location</span>
               </button>
             </div>
 
             {/* Messages */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '24px 12px' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 40, color: 'var(--ink-20)', display: 'block', marginBottom: 12 }}>auto_awesome</span>
-                  <p style={{ fontFamily: '"Fraunces", serif', fontSize: 18, fontWeight: 300, color: 'var(--navy)', marginBottom: 6, letterSpacing: '-0.01em' }}>
-                    {t('chat.welcome')}
-                  </p>
-                  <p style={{ fontSize: 12, color: 'var(--ink-40)', marginBottom: 16 }}>Cuéntame qué buscas y te recomiendo mesas.</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center' }}>
-                    {SUGGESTIONS.map(s => (
-                      <button
-                        key={s}
-                        onClick={() => send(s)}
-                        style={{
-                          padding: '6px 12px', borderRadius: 999,
-                          border: '1px solid var(--border)', background: 'var(--cream-2)',
-                          fontSize: 11, fontWeight: 600, color: 'var(--navy)',
-                          cursor: 'pointer', transition: 'all 0.15s',
-                        }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--primary)'; (e.currentTarget as HTMLElement).style.color = 'var(--primary)'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--navy)'; }}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
+                <div className="text-center text-slate-400 text-sm mt-8 px-4">
+                  <span className="material-symbols-outlined text-4xl block mb-2 text-slate-300">
+                    auto_awesome
+                  </span>
+                  {t('chat.welcome')}
                 </div>
               )}
 
               {messages.map((msg, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
-                  <div style={{
-                    maxWidth: '82%', padding: '10px 14px',
-                    borderRadius: msg.role === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                    background: msg.role === 'user' ? 'var(--navy)' : 'var(--cream-2)',
-                    color: msg.role === 'user' ? '#fff' : 'var(--navy)',
-                    fontSize: 13, lineHeight: 1.55,
-                    whiteSpace: 'pre-wrap',
-                  }}>
+                <div
+                  key={i}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                      msg.role === 'user'
+                        ? 'bg-primary text-white rounded-br-sm'
+                        : 'bg-slate-100 text-slate-800 rounded-bl-sm'
+                    }`}
+                  >
                     {msg.content}
                   </div>
                 </div>
               ))}
 
               {loading && (
-                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                  <div style={{ padding: '12px 16px', borderRadius: '18px 18px 18px 4px', background: 'var(--cream-2)', display: 'flex', gap: 4 }}>
-                    {[0, 1, 2].map(i => (
-                      <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ink-40)', animation: `typingDot 1.2s ${i * 0.15}s infinite` }} />
+                <div className="flex justify-start">
+                  <div className="bg-slate-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
+                    {[0, 1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        className="w-2 h-2 rounded-full bg-slate-400"
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                      />
                     ))}
                   </div>
                 </div>
@@ -198,40 +148,21 @@ const ChatBot: React.FC = () => {
             </div>
 
             {/* Input */}
-            <div style={{
-              padding: '12px 14px',
-              borderTop: '1px solid var(--border)',
-              display: 'flex', gap: 8, alignItems: 'center',
-              flexShrink: 0,
-            }}>
+            <div className="p-3 border-t border-slate-100 flex gap-2">
               <input
                 type="text"
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && send()}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && send()}
                 placeholder={t('chat.placeholder')}
-                style={{
-                  flex: 1, border: '1px solid var(--border)', outline: 'none',
-                  borderRadius: 12, padding: '9px 14px', fontSize: 13,
-                  background: 'var(--cream-2)', color: 'var(--navy)',
-                  fontFamily: 'inherit',
-                  transition: 'border-color 0.2s',
-                }}
-                onFocus={e => (e.currentTarget.style.borderColor = 'var(--primary)')}
-                onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 border border-slate-200"
               />
               <button
-                onClick={() => send()}
+                onClick={send}
                 disabled={!input.trim() || loading}
-                style={{
-                  width: 38, height: 38, borderRadius: 10, border: 'none',
-                  background: input.trim() && !loading ? 'var(--primary)' : 'var(--ink-20)',
-                  color: '#fff', display: 'grid', placeItems: 'center',
-                  cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
-                  flexShrink: 0, transition: 'background 0.2s',
-                }}
+                className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center disabled:opacity-40 hover:bg-orange-600 transition-colors shrink-0"
               >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>send</span>
+                <span className="material-symbols-outlined text-base">send</span>
               </button>
             </div>
           </motion.div>
