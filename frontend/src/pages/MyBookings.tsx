@@ -1,121 +1,164 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import { reservationsApi, type Reservation } from '../api/reservations';
 import { useAuth } from '../context/AuthContext';
 
 const MyBookings: React.FC = () => {
   const { t } = useTranslation();
-  const { isAuthenticated, token } = useAuth();
-  const [reservations, setReservations] = useState<Reservation[]>([]);
-  const [loadedToken, setLoadedToken] = useState<string | null>(null);
-  const [tab, setTab] = useState<'confirmed' | 'cancelled'>('confirmed');
-  const loading = !!(isAuthenticated && token && loadedToken !== token);
+  const { isAuthenticated } = useAuth();
+  const [bookings, setBookings] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
   useEffect(() => {
-    if (!isAuthenticated || !token) return;
-    let isActive = true;
-    reservationsApi.myReservations()
-      .then(data => { if (!isActive) return; setReservations(data); })
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+    reservationsApi
+      .myReservations()
+      .then(setBookings)
       .catch(console.error)
-      .finally(() => { if (!isActive) return; setLoadedToken(token); });
-    return () => { isActive = false; };
-  }, [isAuthenticated, token]);
+      .finally(() => setLoading(false));
+  }, [isAuthenticated]);
 
-  const handleCancel = async (id: number) => {
-    try {
-      await reservationsApi.cancel(id);
-      setReservations(prev => prev.map(r => r.id === id ? { ...r, status: 'cancelled' as const } : r));
-    } catch (err) { console.error(err); }
+  const cancel = async (id: number) => {
+    await reservationsApi.cancel(id);
+    setBookings((b) => b.map((r) => (r.id === id ? { ...r, status: 'cancelled' } : r)));
   };
 
-  const confirmed = reservations.filter(r => r.status === 'confirmed');
-  const cancelled = reservations.filter(r => r.status === 'cancelled');
-  const list = tab === 'confirmed' ? confirmed : cancelled;
+  if (!isAuthenticated) {
+    return (
+      <div className="container" style={{ padding: '120px 24px', textAlign: 'center' }}>
+        <h1 className="editorial" style={{ fontSize: 56, fontWeight: 300 }}>
+          Identifícate para ver tus <span className="italic-accent">reservas</span>
+        </h1>
+        <Link to="/" className="btn btn-primary" style={{ marginTop: 28 }}>
+          <span>Volver al inicio</span>
+        </Link>
+      </div>
+    );
+  }
 
-  const TABS = [
-    { k: 'confirmed' as const, l: `Próximas (${confirmed.length})` },
-    { k: 'cancelled' as const, l: `Canceladas (${cancelled.length})` },
-  ];
+  const now = new Date();
+  const filtered = bookings.filter((b) => {
+    if (b.status === 'cancelled') return filter === 'cancelled';
+    const dt = new Date(`${b.date}T${b.time || '00:00'}`);
+    return filter === 'upcoming' ? dt >= now : dt < now;
+  });
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--surface)', padding: '32px 0 64px' }}>
-      <div className="container" style={{ maxWidth: 860 }}>
-        <div className="eyebrow">Mi agenda</div>
-        <h1 className="editorial" style={{ fontSize: 'clamp(40px,5vw,68px)', fontWeight: 300, letterSpacing: '-0.02em', marginTop: 8 }}>
-          Mis <span className="italic-accent">reservas</span>
-        </h1>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container"
+      style={{ padding: '120px 24px 80px' }}
+    >
+      <div className="eyebrow">Tu agenda</div>
+      <h1
+        className="editorial"
+        style={{ fontSize: 'clamp(48px,6vw,88px)', fontWeight: 300, letterSpacing: '-0.03em', marginTop: 8 }}
+      >
+        Mis <span className="italic-accent">reservas</span>
+      </h1>
 
-        {!isAuthenticated ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--ink-55)' }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 56, display: 'block', marginBottom: 16, opacity: 0.4 }}>lock</span>
-            <p className="editorial" style={{ fontSize: 24, fontWeight: 300 }}>Inicia sesión para ver tus reservas.</p>
-          </div>
-        ) : (
-          <>
-            <div style={{ marginTop: 28 }}>
-              <div className="segmented">
-                {TABS.map(t => (
-                  <button key={t.k} className={tab === t.k ? 'active' : ''} onClick={() => setTab(t.k)}>{t.l}</button>
-                ))}
+      <div style={{ display: 'flex', gap: 8, marginTop: 32, flexWrap: 'wrap' }}>
+        {(['upcoming', 'past', 'cancelled'] as const).map((k) => (
+          <button key={k} onClick={() => setFilter(k)} className={`chip ${filter === k ? 'active' : ''}`}>
+            {k === 'upcoming' ? 'Próximas' : k === 'past' ? 'Pasadas' : 'Canceladas'}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="shimmer" style={{ height: 140, borderRadius: 'var(--r-xl)' }} />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--ink-40)' }}>
+          <span className="mat" style={{ fontSize: 48, marginBottom: 12, display: 'block' }}>event_busy</span>
+          <p style={{ fontSize: 16 }}>{t('bookings.empty')}</p>
+        </div>
+      ) : (
+        <div style={{ marginTop: 40, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {filtered.map((b) => (
+            <div
+              key={b.id}
+              className="card booking-row"
+              style={{
+                background: 'var(--surface-3)',
+                borderRadius: 'var(--r-xl)',
+                padding: 20,
+                display: 'grid',
+                gridTemplateColumns: '160px 1fr auto',
+                gap: 20,
+                alignItems: 'center',
+              }}
+            >
+              <Link
+                to={`/restaurant/${b.restaurantId}`}
+                style={{
+                  height: 100,
+                  borderRadius: 'var(--r-md)',
+                  overflow: 'hidden',
+                  background: `url(${b.restaurantImage}) center/cover`,
+                }}
+              />
+              <div>
+                <div className="eyebrow">{b.restaurantCuisine}</div>
+                <Link
+                  to={`/restaurant/${b.restaurantId}`}
+                  className="editorial"
+                  style={{ fontSize: 26, fontWeight: 400, marginTop: 4, display: 'block' }}
+                >
+                  {b.restaurantName}
+                </Link>
+                <div style={{ marginTop: 6, fontSize: 13, color: 'var(--ink-55)', display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+                  <span>
+                    <span className="mat" style={{ fontSize: 14, verticalAlign: 'middle' }}>event</span> {b.date}
+                  </span>
+                  <span>
+                    <span className="mat" style={{ fontSize: 14, verticalAlign: 'middle' }}>schedule</span> {b.time}
+                  </span>
+                  <span>
+                    <span className="mat" style={{ fontSize: 14, verticalAlign: 'middle' }}>group</span>{' '}
+                    {b.guests} {t('bookings.guests')}
+                  </span>
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                <span
+                  className="chip"
+                  style={
+                    b.status === 'confirmed'
+                      ? { background: 'rgba(16,185,129,0.12)', color: '#0a7c5a', borderColor: 'transparent' }
+                      : { background: 'rgba(225,29,72,0.12)', color: '#b01446', borderColor: 'transparent' }
+                  }
+                >
+                  {b.status === 'confirmed' ? t('bookings.confirmed') : t('bookings.cancelled')}
+                </span>
+                {b.status === 'confirmed' && filter === 'upcoming' && (
+                  <button onClick={() => cancel(b.id)} className="btn btn-ghost" style={{ height: 36, fontSize: 12 }}>
+                    {t('bookings.cancel')}
+                  </button>
+                )}
               </div>
             </div>
+          ))}
+        </div>
+      )}
 
-            <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {loading ? (
-                [1, 2].map(i => <div key={i} style={{ height: 110, borderRadius: 'var(--r-xl)', background: 'var(--ink-5)' }} className="shimmer-bg" />)
-              ) : list.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--ink-55)' }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: 48, display: 'block', marginBottom: 16, opacity: 0.4 }}>event_busy</span>
-                  <p className="editorial" style={{ fontSize: 22, fontWeight: 300 }}>{t('bookings.empty')}</p>
-                  <Link to="/search" className="btn btn-primary" style={{ marginTop: 20, textDecoration: 'none', display: 'inline-flex' }}><span>Encontrar una mesa</span></Link>
-                </div>
-              ) : list.map(r => (
-                <div key={r.id} style={{ background: 'var(--surface-3)', borderRadius: 'var(--r-xl)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex' }}
-                  onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--sh-md)')}
-                  onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
-                >
-                  <img src={r.restaurantImage} alt={r.restaurantName} style={{ width: 110, objectFit: 'cover', flexShrink: 0 }} className="hide-sm" />
-                  <div style={{ flex: 1, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
-                      <div>
-                        <Link to={`/restaurant/${r.restaurantId}`} style={{ fontSize: 17, fontWeight: 700, color: 'var(--navy)', textDecoration: 'none' }}
-                          onMouseEnter={e => (e.currentTarget.style.color = 'var(--primary)')}
-                          onMouseLeave={e => (e.currentTarget.style.color = 'var(--navy)')}
-                        >{r.restaurantName}</Link>
-                        <p style={{ fontSize: 12, color: 'var(--ink-55)', marginTop: 2, marginBottom: 0 }}>{r.restaurantCuisine} · {r.restaurantAddress}</p>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-                        <span style={{ padding: '4px 12px', borderRadius: 'var(--r-pill)', fontSize: 11, fontWeight: 700, background: r.status === 'confirmed' ? 'rgba(16,185,129,0.1)' : 'var(--ink-5)', color: r.status === 'confirmed' ? 'var(--emerald)' : 'var(--ink-55)' }}>
-                          {t(`bookings.${r.status}`)}
-                        </span>
-                        {r.status === 'confirmed' && (
-                          <button onClick={() => handleCancel(r.id)} style={{ fontSize: 12, fontWeight: 700, color: 'var(--ruby)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                            {t('bookings.cancel')}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-                      {[
-                        { icon: 'calendar_today', text: r.date },
-                        { icon: 'schedule', text: r.time },
-                        { icon: 'group', text: `${r.guests} ${t('bookings.guests')}` },
-                      ].map(x => (
-                        <span key={x.icon} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--ink-55)' }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 15, color: 'var(--primary)' }}>{x.icon}</span>
-                          {x.text}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
+      <style>{`
+        @media (max-width: 700px) {
+          .booking-row { grid-template-columns: 1fr !important; }
+          .booking-row > a:first-child { height: 180px !important; }
+        }
+      `}</style>
+    </motion.div>
   );
 };
 
