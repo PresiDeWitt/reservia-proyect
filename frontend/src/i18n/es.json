@@ -3,30 +3,30 @@
     "home": "Inicio",
     "map": "Mapa",
     "categories": "Categorías",
-    "myBookings": "Mis Reservas",
-    "signIn": "Iniciar Sesión",
-    "searchPlaceholder": "Pregunta a la IA: 'Busca un sitio italiano romántico...'"
+    "myBookings": "Mis reservas",
+    "signIn": "Iniciar sesión",
+    "searchPlaceholder": "Busca un restaurante, cocina, barrio o ambiente"
   },
   "hero": {
-    "title": "Reserva de Mesas y Pre-pedido de Comida",
+    "title": "Reserva de mesas y pre pedido de comida",
     "subtitle": "Olvídate de las esperas. Reserva tu mesa o pide por adelantado para una experiencia sin interrupciones.",
-    "bookTable": "Reservar Mesa",
-    "preorderFood": "Pedir Comida",
+    "bookTable": "Reservar mesa",
+    "preorderFood": "Pedir comida",
     "tabs": {
-      "bookTable": "Reservar Mesa",
-      "orderPickup": "Recoger Pedido"
+      "bookTable": "Reservar mesa",
+      "orderPickup": "Recoger pedido"
     },
-    "searchPlaceholder": "Restaurante, cocina o plato específico...",
+    "searchPlaceholder": "Restaurante, cocina o plato específico",
     "filters": {
       "cuisine": "Cocina",
       "distance": "Distancia",
-      "ratings": "Calificaciones"
+      "ratings": "Valoraciones"
     },
     "search": "Buscar"
   },
   "home": {
-    "browseByCraving": "Explora por Antojo",
-    "topRatedTitle": "Mejor Valorados Cerca de Ti",
+    "browseByCraving": "Explora por antojo",
+    "topRatedTitle": "Mejor valorados cerca de ti",
     "topRatedSubtitle": "Restaurantes con excelentes reseñas y disponibilidad inmediata.",
     "viewAll": "Ver todos",
     "results": "restaurantes",
@@ -43,8 +43,8 @@
     "reserveTitle": "Reserva una mesa",
     "guests": "Comensales",
     "date": "Fecha",
-    "availableTimes": "Horarios Disponibles",
-    "completeReservation": "Completar Reserva",
+    "availableTimes": "Horarios disponibles",
+    "completeReservation": "Completar reserva",
     "noCharges": "Sin cargos por ahora. Solo pagarás en el restaurante.",
     "reserved": "¡Reservado!",
     "reservedDetails": "Mesa para {{guests}} a las {{time}} el {{date}}",
@@ -52,21 +52,41 @@
     "photos": "+12 fotos"
   },
   "footer": {
-    "privacy": "Política de Privacidad",
-    "terms": "Términos de Servicio",
+    "privacy": "Política de privacidad",
+    "terms": "Términos de servicio",
     "contact": "Contacto",
     "rights": "© 2026 ReserVia Inc. Todos los derechos reservados."
   },
   "auth": {
-    "signIn": "Iniciar Sesión",
+    "signIn": "Iniciar sesión",
     "register": "Registrarse",
-    "createAccount": "Crear Cuenta",
-    "namePlaceholder": "Tu nombre",
+    "createAccount": "Crear cuenta",
+    "namePlaceholder": "Nombre",
+    "lastNamePlaceholder": "Apellidos",
+    "phonePlaceholder": "Teléfono",
     "emailPlaceholder": "Correo electrónico",
     "passwordPlaceholder": "Contraseña (mín. 6 caracteres)"
   },
+  "profile": {
+    "menu": "Menú de perfil",
+    "verified": "Cuenta verificada",
+    "newBooking": "Reservar",
+    "account": "Mi cuenta",
+    "accountHint": "Datos personales y preferencias",
+    "bookings": "Mis reservas",
+    "bookingsHint": "Historial y próximas visitas",
+    "favorites": "Favoritos",
+    "favoritesHint": "Restaurantes guardados",
+    "explore": "Explorar mapa",
+    "exploreHint": "Descubre cerca de ti",
+    "language": "Idioma",
+    "help": "Ayuda y soporte",
+    "logout": "Cerrar sesión",
+    "logoutHint": "Te echaremos de menos",
+    "tagline": "Hasta pronto"
+  },
   "bookings": {
-    "title": "Mis Reservas",
+    "title": "Mis reservas",
     "empty": "No tienes reservas todavía.",
     "guests": "comensales",
     "cancel": "Cancelar",
@@ -89,10 +109,10 @@
   },
   "chat": {
     "subtitle": "Encuentra tu restaurante perfecto",
-    "welcome": "Hola\\! Preg�ntame y te ayudo a encontrar el restaurante ideal seg�n tu cocina favorita, el ambiente, presupuesto o tu ubicaci�n.",
-    "placeholder": "Ej: Italiano rom�ntico para esta noche...",
-    "error": "Lo siento, algo sali� mal. Int�ntalo de nuevo.",
-    "locationOn": "Ubicaci�n activada",
-    "locationOff": "Activar ubicaci�n para sugerencias cercanas"
+    "welcome": "¡Hola! Pregúntame y te ayudo a encontrar el restaurante ideal según tu cocina favorita, el ambiente, el presupuesto o tu ubicación.",
+    "placeholder": "Ej: italiano romántico para esta noche",
+    "error": "Lo siento, algo salió mal. Inténtalo de nuevo.",
+    "locationOn": "Ubicación activada",
+    "locationOff": "Activar ubicación para sugerencias cercanas"
   }
 }

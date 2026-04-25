@@ -89,7 +89,7 @@
   },
   "chat": {
     "subtitle": "Find your perfect restaurant",
-    "welcome": "Hi\\! Ask me to find a restaurant for you. I can help based on cuisine, mood, budget or your location.",
+    "welcome": "Hi! Ask me to find a restaurant for you. I can help based on cuisine, mood, budget or your location.",
     "placeholder": "e.g. Romantic Italian for tonight...",
     "error": "Sorry, something went wrong. Please try again.",
     "locationOn": "Location enabled",
