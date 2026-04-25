@@ -1,161 +1,206 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import ProfileMenu from './ProfileMenu';
 import LanguageMenu from './LanguageMenu';
-
-const SearchOverlay: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [q, setQ] = useState('');
-  const navigate = useNavigate();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => { inputRef.current?.focus(); }, []);
-
-  return (
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(15,23,42,0.75)', backdropFilter: 'blur(16px)' }}
-      className="fade-in"
-      onClick={onClose}
-    >
-      <div onClick={e => e.stopPropagation()} style={{ maxWidth: 720, margin: '80px auto', padding: '0 20px' }}>
-        <div className="scale-in" style={{ background: 'var(--surface-3)', borderRadius: 'var(--r-xl)', boxShadow: 'var(--sh-lg)', overflow: 'hidden' }}>
-          <div style={{ padding: 22, borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 14 }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 28, color: 'var(--primary)' }}>search</span>
-            <input
-              ref={inputRef}
-              value={q}
-              onChange={e => setQ(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && q.trim()) { navigate(`/search?q=${encodeURIComponent(q.trim())}`); onClose(); } }}
-              placeholder="Busca una cocina, un barrio, un ambiente…"
-              style={{ flex: 1, border: 'none', outline: 'none', background: 'transparent', fontFamily: '"Fraunces", serif', fontSize: 22, fontWeight: 400, color: 'var(--ink)', letterSpacing: '-0.02em' }}
-            />
-            <button onClick={onClose} style={{ padding: 8, borderRadius: '50%' }}>
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
-          <div style={{ padding: '14px 22px', fontSize: 13, color: 'var(--ink-55)' }}>
-            Prueba:{' '}
-            <em style={{ color: 'var(--primary)', fontFamily: '"Fraunces", serif' }}>"cena romántica"</em> ·{' '}
-            <em style={{ color: 'var(--primary)', fontFamily: '"Fraunces", serif' }}>"terraza Madrid"</em> ·{' '}
-            <em style={{ color: 'var(--primary)', fontFamily: '"Fraunces", serif' }}>"aniversario"</em>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
+import MobileDrawer from './MobileDrawer';
+import Logo from './Logo';
 
 const Header: React.FC = () => {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
-  const [authOpen, setAuthOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
+  const [authOpen, setAuthOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState('');
 
   const onLanding = location.pathname === '/';
+  const transparent = onLanding && !scrolled;
 
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 40);
-    window.addEventListener('scroll', on, { passive: true });
-    on();
-    return () => window.removeEventListener('scroll', on);
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const solidHeader = scrolled || !onLanding;
+  const variant = transparent ? 'dark' : 'light';
+
+  const headerStyle: React.CSSProperties = {
+    background: transparent ? 'transparent' : 'color-mix(in srgb, var(--surface) 82%, transparent)',
+    backdropFilter: transparent ? 'blur(0)' : 'blur(14px) saturate(1.2)',
+    WebkitBackdropFilter: transparent ? 'blur(0)' : 'blur(14px) saturate(1.2)',
+    borderBottom: transparent ? '1px solid transparent' : '1px solid var(--border)',
+    color: transparent ? '#fff' : 'var(--ink)',
+    transition: 'all 0.35s cubic-bezier(0.2,0.8,0.2,1)',
+  };
+
+  const navLinkClass = (to: string) => {
+    const active = location.pathname === to;
+    return [
+      'px-3.5 py-2 rounded-full text-[13px] font-semibold transition-colors',
+      active ? 'bg-white/10 dark-active' : 'opacity-85 hover:opacity-100',
+    ].join(' ');
+  };
 
   return (
     <>
-      <header style={{
-        position: 'sticky', top: 0, zIndex: 100,
-        background: solidHeader ? 'rgba(15,23,42,0.97)' : 'transparent',
-        backdropFilter: solidHeader ? 'blur(14px) saturate(1.2)' : 'none',
-        borderBottom: solidHeader ? '1px solid rgba(255,255,255,0.08)' : '1px solid transparent',
-        transition: 'all 0.35s cubic-bezier(0.2,0.8,0.2,1)',
-        color: '#fff',
-      }}>
-        <div style={{
-          maxWidth: 1320, margin: '0 auto',
-          padding: scrolled ? '14px 24px' : '20px 24px',
-          transition: 'padding 0.3s',
-          display: 'flex', alignItems: 'center', gap: 20,
-        }}>
-          {/* Logo */}
-          <Link to="/" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 10, color: '#fff', textDecoration: 'none' }}>
-            <svg width="28" height="28" viewBox="0 0 48 48">
-              <defs>
-                <linearGradient id="hdr-logo-g" x1="0" x2="1" y1="0" y2="1">
-                  <stop offset="0" stopColor="#f97415" />
-                  <stop offset="1" stopColor="#d95d05" />
-                </linearGradient>
-              </defs>
-              <circle cx="24" cy="24" r="21" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
-              <path d="M24 8 C 28.5 12.5, 32 17, 28 23 C 26 19, 24 21, 24 25 C 21 21, 17 17, 24 8 Z" fill="url(#hdr-logo-g)" />
-              <circle cx="24" cy="30" r="2.4" fill="rgba(255,255,255,0.55)" />
-            </svg>
-            <span style={{ fontFamily: '"Fraunces", serif', fontSize: 19, fontWeight: 500, letterSpacing: '-0.02em' }}>
-              Reser<em style={{ fontStyle: 'italic', color: '#f97415' }}>Via</em>
-            </span>
+      <header className="sticky top-0 z-[100]" style={headerStyle}>
+        <div
+          className="container flex items-center gap-5"
+          style={{ padding: scrolled ? '12px 24px' : '20px 24px', transition: 'padding 0.3s' }}
+        >
+          <Link to="/" className="shrink-0" aria-label="ReserVia">
+            <Logo size={30} color={transparent ? '#fff' : 'var(--ink)'} />
           </Link>
 
-          {/* Nav */}
-          <nav style={{ display: 'flex', gap: 2, marginLeft: 12 }} className="hide-sm">
-            {[
-              { to: '/', label: t('header.home') },
-              { to: '/search', label: 'Explorar' },
-              { to: '/map', label: t('header.map') },
-              ...(isAuthenticated ? [
-                { to: '/my-bookings', label: t('header.myBookings') },
-                { to: '/favorites', label: 'Favoritos' },
-              ] : []),
-            ].map(item => (
-              <Link key={item.to} to={item.to} style={{
-                padding: '8px 14px', borderRadius: 'var(--r-pill)',
-                fontSize: 13, fontWeight: 600, textDecoration: 'none',
-                background: location.pathname === item.to ? 'rgba(255,255,255,0.12)' : 'transparent',
-                color: location.pathname === item.to ? '#fff' : 'rgba(255,255,255,0.7)',
-                transition: 'background 0.2s, color 0.2s',
-              }}
-                onMouseEnter={e => { if (location.pathname !== item.to) (e.currentTarget as HTMLElement).style.color = '#fff'; }}
-                onMouseLeave={e => { if (location.pathname !== item.to) (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.7)'; }}
-              >{item.label}</Link>
-            ))}
+          <nav className="hide-sm flex gap-1 ml-3">
+            <Link to="/" className={navLinkClass('/')} style={{ background: location.pathname === '/' ? (transparent ? 'rgba(255,255,255,0.1)' : 'var(--ink-10)') : 'transparent' }}>
+              {t('header.home')}
+            </Link>
+            <Link
+              to="/map"
+              className={navLinkClass('/map')}
+              style={{ background: location.pathname === '/map' ? (transparent ? 'rgba(255,255,255,0.1)' : 'var(--ink-10)') : 'transparent' }}
+            >
+              {t('header.map')}
+            </Link>
+            {isAuthenticated && (
+              <Link
+                to="/my-bookings"
+                className={navLinkClass('/my-bookings')}
+                style={{ background: location.pathname === '/my-bookings' ? (transparent ? 'rgba(255,255,255,0.1)' : 'var(--ink-10)') : 'transparent' }}
+              >
+                {t('header.myBookings')}
+              </Link>
+            )}
           </nav>
 
-          {/* Right side */}
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="ml-auto flex items-center gap-2">
             <button
-              onClick={() => setSearchOpen(true)}
-              style={{ width: 40, height: 40, borderRadius: '50%', display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,0.8)', transition: 'background 0.2s' }}
+              onClick={() => setSearchOpen((v) => !v)}
               aria-label="Buscar"
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              className="grid place-items-center rounded-full transition-colors"
+              style={{
+                width: 40,
+                height: 40,
+                color: 'inherit',
+                background: searchOpen ? (transparent ? 'rgba(255,255,255,0.12)' : 'var(--ink-5)') : 'transparent',
+              }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>search</span>
+              <span className="mat" style={{ fontSize: 20 }}>search</span>
             </button>
 
-            <LanguageMenu />
+            <div className="hide-sm flex items-center gap-2">
+              <LanguageMenu variant={variant} />
+              {isAuthenticated ? (
+                <ProfileMenu variant={variant} />
+              ) : (
+                <button
+                  onClick={() => setAuthOpen(true)}
+                  className="btn btn-primary"
+                  style={{ height: 40, padding: '0 18px' }}
+                >
+                  <span>{t('header.signIn')}</span>
+                </button>
+              )}
+            </div>
 
-            {isAuthenticated ? (
-              <ProfileMenu />
-            ) : (
-              <button
-                onClick={() => setAuthOpen(true)}
-                className="btn btn-primary"
-                style={{ height: 38, padding: '0 18px', fontSize: 13 }}
-              >
-                <span>{t('header.signIn')}</span>
-                <span className="material-symbols-outlined" style={{ fontSize: 15, position: 'relative', zIndex: 1 }}>arrow_forward</span>
-              </button>
-            )}
+            <button
+              onClick={() => setMobileOpen(true)}
+              aria-label="Menú"
+              className="show-mobile items-center justify-center"
+              style={{
+                display: 'none',
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                background: 'transparent',
+                color: 'inherit',
+                padding: 0,
+                border: transparent ? '2px solid rgba(255,255,255,0.25)' : '2px solid var(--border)',
+                overflow: 'hidden',
+              }}
+            >
+              {isAuthenticated && user ? (
+                <span
+                  className="grid place-items-center text-white font-black"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(135deg, var(--primary), var(--primary-700))',
+                    fontSize: 13,
+                  }}
+                >
+                  {(user.name || user.email)
+                    .split(' ')
+                    .map((w) => w[0])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()}
+                </span>
+              ) : (
+                <span className="mat" style={{ fontSize: 22 }}>person</span>
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Search overlay strip */}
+        {searchOpen && (
+          <div
+            className="absolute left-0 right-0 top-full px-4 py-4"
+            style={{
+              background: 'var(--surface-2)',
+              borderBottom: '1px solid var(--border)',
+              boxShadow: 'var(--sh-md)',
+            }}
+          >
+            <form
+              className="container flex items-center gap-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (headerSearch.trim()) {
+                  navigate(`/?search=${encodeURIComponent(headerSearch.trim())}`);
+                  setSearchOpen(false);
+                }
+              }}
+            >
+              <span className="mat" style={{ fontSize: 24, color: 'var(--primary)' }}>search</span>
+              <input
+                autoFocus
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                placeholder={t('header.searchPlaceholder')}
+                className="flex-1 bg-transparent outline-none editorial italic"
+                style={{ fontSize: 20, color: 'var(--ink)', letterSpacing: '-0.01em' }}
+              />
+              <button
+                type="button"
+                onClick={() => setSearchOpen(false)}
+                className="grid place-items-center"
+                style={{ width: 36, height: 36, borderRadius: '50%', color: 'var(--ink-55)' }}
+                aria-label="Cerrar"
+              >
+                <span className="mat" style={{ fontSize: 20 }}>close</span>
+              </button>
+            </form>
+          </div>
+        )}
       </header>
 
-      {searchOpen && <SearchOverlay onClose={() => setSearchOpen(false)} />}
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+      <MobileDrawer
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        onOpenAuth={() => setAuthOpen(true)}
+      />
     </>
   );
 };
