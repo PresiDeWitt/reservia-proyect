@@ -88,3 +88,14 @@ coverage/
 # ========================
 *.bak
 *.tmp
+
+# Local DB
+backend/db.sqlite3
+*.sqlite3
+
+# pnpm / lockfile alternatives
+frontend/.pnpm-store/
+
+# Env additional
+backend/.env
+frontend/.env
