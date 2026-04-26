@@ -7,6 +7,7 @@ import ProfileMenu from './ProfileMenu';
 import LanguageMenu from './LanguageMenu';
 import MobileDrawer from './MobileDrawer';
 import Logo from './Logo';
+import NotificationsMenu from './NotificationsMenu';
 
 const Header: React.FC = () => {
   const { t } = useTranslation();
@@ -28,6 +29,12 @@ const Header: React.FC = () => {
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSearchOpen(false); };
+    if (searchOpen) document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [searchOpen]);
 
   const variant = transparent ? 'dark' : 'light';
 
@@ -53,7 +60,7 @@ const Header: React.FC = () => {
       <header className="sticky top-0 z-[100]" style={headerStyle}>
         <div
           className="container flex items-center gap-5"
-          style={{ padding: scrolled ? '12px 24px' : '20px 24px', transition: 'padding 0.3s' }}
+          style={{ padding: scrolled ? '6px 24px' : '10px 24px', transition: 'padding 0.3s' }}
         >
           <Link to="/" className="shrink-0" aria-label="ReserVia">
             <Logo size={180} color={transparent ? '#fff' : 'var(--ink)'} />
@@ -97,6 +104,7 @@ const Header: React.FC = () => {
             </button>
 
             <div className="hide-sm flex items-center gap-2">
+              <NotificationsMenu variant={variant} />
               <LanguageMenu variant={variant} />
               {isAuthenticated ? (
                 <ProfileMenu variant={variant} />
@@ -152,18 +160,13 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Search overlay strip */}
+        {/* Search bar — compact pill */}
         {searchOpen && (
           <div
-            className="absolute left-0 right-0 top-full px-4 py-4"
-            style={{
-              background: 'var(--surface-2)',
-              borderBottom: '1px solid var(--border)',
-              boxShadow: 'var(--sh-md)',
-            }}
+            className="absolute left-0 right-0 top-full flex justify-center"
+            style={{ padding: '10px 24px' }}
           >
             <form
-              className="container flex items-center gap-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 if (headerSearch.trim()) {
@@ -171,24 +174,38 @@ const Header: React.FC = () => {
                   setSearchOpen(false);
                 }
               }}
+              className="flex items-center gap-2"
+              style={{
+                width: '100%',
+                maxWidth: 560,
+                background: 'rgba(15,23,42,0.75)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 999,
+                padding: '8px 8px 8px 18px',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
+              }}
             >
-              <span className="mat" style={{ fontSize: 24, color: 'var(--primary)' }}>search</span>
+              <span className="mat" style={{ fontSize: 18, color: 'var(--primary)', flexShrink: 0 }}>search</span>
               <input
                 autoFocus
                 value={headerSearch}
                 onChange={(e) => setHeaderSearch(e.target.value)}
                 placeholder={t('header.searchPlaceholder')}
-                className="flex-1 bg-transparent outline-none editorial italic"
-                style={{ fontSize: 20, color: 'var(--ink)', letterSpacing: '-0.01em' }}
+                className="flex-1 bg-transparent outline-none"
+                style={{ fontSize: 14, color: '#fff', minWidth: 0 }}
               />
               <button
-                type="button"
-                onClick={() => setSearchOpen(false)}
-                className="grid place-items-center"
-                style={{ width: 36, height: 36, borderRadius: '50%', color: 'var(--ink-55)' }}
-                aria-label="Cerrar"
+                type="submit"
+                style={{
+                  height: 34, padding: '0 16px', borderRadius: 999,
+                  background: 'var(--primary)', color: '#fff',
+                  fontWeight: 700, fontSize: 13, border: 'none',
+                  cursor: 'pointer', flexShrink: 0,
+                }}
               >
-                <span className="mat" style={{ fontSize: 20 }}>close</span>
+                Buscar
               </button>
             </form>
           </div>
