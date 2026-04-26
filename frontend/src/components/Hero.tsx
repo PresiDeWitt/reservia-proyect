@@ -129,8 +129,8 @@ const Hero: React.FC = () => {
       style={{
         position: 'relative',
         minHeight: '100vh',
-        marginTop: '-88px',
-        paddingTop: 88,
+        marginTop: '-240px',
+        paddingTop: 240,
         background: 'var(--espresso)',
         color: 'var(--cream)',
         overflow: 'hidden',

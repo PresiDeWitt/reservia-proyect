@@ -60,7 +60,7 @@ const ChatBot: React.FC = () => {
       {/* Floating button */}
       <motion.button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center chat-aura"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="AI Chat"

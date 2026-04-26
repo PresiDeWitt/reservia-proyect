@@ -148,7 +148,8 @@
 
 /* Base */
 * { box-sizing: border-box; min-width: 0; }
-html, body, #root { margin: 0; padding: 0; min-height: 100vh; max-width: 100vw; overflow-x: hidden; }
+html { margin: 0; padding: 0; min-height: 100vh; max-width: 100vw; overflow-x: hidden; background: var(--surface); }
+body, #root { margin: 0; padding: 0; min-height: 100vh; max-width: 100vw; overflow-x: hidden; }
 body {
   font-family: var(--font-sans);
   color: var(--ink);
@@ -624,4 +625,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .auth-input-line { transform: scaleX(0.15); transform-origin: left; transition: transform 0.4s var(--ease-out-expo); }
 @media (prefers-reduced-motion: reduce) {
   .auth-rise > *, .auth-input-line { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+
+/* Chat aura animation */
+@keyframes chat-aura-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249, 116, 21, 0.7), 0 0 0 6px rgba(249, 116, 21, 0.3); }
+  50%       { box-shadow: 0 0 0 8px rgba(249, 116, 21, 0.2), 0 0 0 16px rgba(249, 116, 21, 0); }
+}
+.chat-aura {
+  animation: chat-aura-pulse 2.2s ease-in-out infinite;
 }
