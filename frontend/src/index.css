@@ -607,8 +607,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-6px); }
 }
-.auth-editorial { font-family: var(--font-editorial); font-optical-sizing: auto; }
-.auth-grain {
+.auth-editorial { font-family: var(--font-editorial); font-optical-sizing: auto; }.auth-grain {
   background-image:
     radial-gradient(ellipse at 15% 20%, rgba(249, 116, 21, 0.22) 0, transparent 55%),
     radial-gradient(ellipse at 85% 85%, rgba(249, 116, 21, 0.10) 0, transparent 50%),

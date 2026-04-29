@@ -56,7 +56,7 @@ const Header: React.FC = () => {
           style={{ padding: scrolled ? '2px 24px' : '4px 24px', transition: 'padding 0.3s' }}
         >
           <Link to="/" className="shrink-0" aria-label="ReserVia">
-            <Logo size={180} color={transparent ? '#fff' : 'var(--ink)'} />
+            <Logo size={44} />
           </Link>
 
           <nav className="hide-sm flex gap-1 ml-3">
