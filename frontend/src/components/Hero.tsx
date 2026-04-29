@@ -5,8 +5,13 @@ import heroImg from '../assets/images/reservia_hero_dining_1769099684622.png';
 import italianImg from '../assets/images/cuisine_italian_pasta_1769099701383.png';
 import sushiImg from '../assets/images/cuisine_sushi_platter_1769099717268.png';
 import steakImg from '../assets/images/cuisine_steak_grilled_1769099732584.png';
+import mexicanImg from '../assets/images/cuisine_mexican_tacos_1769099775852.png';
+import burgerImg from '../assets/images/cuisine_burger_gourmet_1769099791338.png';
+import healthyImg from '../assets/images/cuisine_healthy_salad_1769099807481.png';
+import bakeryImg from '../assets/images/cuisine_bakery_bread_1769099834160.png';
+import asianImg from '../assets/images/cuisine_asian_noodles_dimsum_1769099849081.png';
 
-const PLATES = [italianImg, sushiImg, steakImg];
+const PLATE_POOL = [italianImg, sushiImg, steakImg, mexicanImg, burgerImg, healthyImg, bakeryImg, asianImg];
 
 interface TypewriterLine {
   text: string;
@@ -14,11 +19,14 @@ interface TypewriterLine {
   small?: boolean;
 }
 
-const useTypewriter = (lines: TypewriterLine[], speed = 55) => {
+const useTypewriter = (lines: TypewriterLine[], speed = 55, replayKey = 0) => {
   const [typed, setTyped] = useState<string[]>(() => lines.map(() => ''));
   const [activeIdx, setActiveIdx] = useState(0);
 
   useEffect(() => {
+    setTyped(lines.map(() => ''));
+    setActiveIdx(0);
+
     let cancelled = false;
     let lineIdx = 0;
     let charIdx = 0;
@@ -41,7 +49,6 @@ const useTypewriter = (lines: TypewriterLine[], speed = 55) => {
         return;
       }
 
-      // Line complete: snap to full text, then advance after pause.
       setTyped((prev) => {
         const next = [...prev];
         next[lineIdx] = line.text;
@@ -61,7 +68,7 @@ const useTypewriter = (lines: TypewriterLine[], speed = 55) => {
       if (timer) clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [replayKey]);
 
   return { typed, activeIdx };
 };
@@ -77,13 +84,35 @@ const Hero: React.FC = () => {
   const [day, setDay] = useState('hoy');
   const [time, setTime] = useState('21:00');
   const [people, setPeople] = useState('2');
+  const [replayKey, setReplayKey] = useState(0);
+  const [plateOffset, setPlateOffset] = useState(0);
 
   const lines: TypewriterLine[] = [
     { text: 'La mesa que' },
     { text: 'recordarás', italic: true },
     { text: 'no la que reservaste.', small: true },
   ];
-  const { typed, activeIdx } = useTypewriter(lines);
+  const { typed, activeIdx } = useTypewriter(lines, 55, replayKey);
+
+  // Replay typewriter when hero re-enters viewport (scroll back to top)
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setReplayKey((k) => k + 1); },
+      { threshold: 0.4 }
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, []);
+
+  // Cycle plate images every 2.5s
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setPlateOffset((o) => (o + 1) % PLATE_POOL.length);
+    }, 2500);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -204,33 +233,37 @@ const Hero: React.FC = () => {
             animation: 'spin 60s linear infinite',
           }}
         >
-          {[0, 120, 240].map((deg, i) => (
-            <div
-              key={i}
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: `rotate(${deg}deg) translateX(340px)`,
-                animation: 'drift 6s ease-in-out infinite',
-                animationDelay: `${i * 1.2}s`,
-              }}
-            >
+          {[0, 120, 240].map((deg, i) => {
+            const src = PLATE_POOL[(plateOffset + i) % PLATE_POOL.length];
+            return (
               <div
+                key={i}
                 style={{
-                  width: 120,
-                  height: 120,
-                  borderRadius: '50%',
-                  border: '2px solid rgba(255,255,255,0.2)',
-                  backgroundImage: `url(${PLATES[i]})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  boxShadow: '0 30px 60px -20px rgba(0,0,0,0.6)',
-                  transform: `rotate(-${deg}deg)`,
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: `rotate(${deg}deg) translateX(340px)`,
+                  animation: 'drift 6s ease-in-out infinite',
+                  animationDelay: `${i * 1.2}s`,
                 }}
-              />
-            </div>
-          ))}
+              >
+                <div
+                  style={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: '50%',
+                    border: '2px solid rgba(255,255,255,0.2)',
+                    backgroundImage: `url(${src})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    boxShadow: '0 30px 60px -20px rgba(0,0,0,0.6)',
+                    transform: `rotate(-${deg}deg)`,
+                    transition: 'background-image 0.6s ease',
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 

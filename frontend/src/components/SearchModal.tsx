@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { restaurantsApi, type Restaurant } from '../api/restaurants';
 import './SearchModal.css';
 
@@ -12,6 +13,7 @@ interface Props {
 const SPRING = { type: 'spring', stiffness: 400, damping: 32 } as const;
 
 const SearchModal: React.FC<Props> = ({ open, onClose }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
@@ -68,7 +70,7 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
   };
 
   const list = query.trim() ? results : popular;
-  const sectionLabel = query.trim() ? 'RESULTADOS' : 'POPULAR AHORA';
+  const sectionLabel = query.trim() ? t('search.results') : t('search.popular');
 
   return (
     <AnimatePresence>
@@ -101,7 +103,7 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
                     className="sm-input"
                     value={query}
                     onChange={handleChange}
-                    placeholder="Busca una cocina, un barrio, un ambiente..."
+                    placeholder={t('search.placeholder')}
                   />
                   <button type="button" className="sm-close-btn" onClick={onClose}>
                     <span className="mat" style={{ fontSize: 18 }}>close</span>
@@ -116,7 +118,7 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
                   onClick={() => { navigate('/map'); onClose(); }}
                 >
                   <span className="mat">near_me</span>
-                  Cerca de mí
+                  {t('search.nearMe')}
                 </button>
               </div>
 
@@ -124,11 +126,11 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
 
               <div className="sm-list">
                 <div className="sm-section-label">
-                  {loading ? 'BUSCANDO…' : sectionLabel}
+                  {loading ? t('search.searching') : sectionLabel}
                 </div>
 
                 {list.length === 0 && !loading && query.trim() && (
-                  <div className="sm-empty">Sin resultados para "{query}"</div>
+                  <div className="sm-empty">{t('search.noResults')} "{query}"</div>
                 )}
 
                 {list.map((r, i) => (

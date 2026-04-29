@@ -33,10 +33,10 @@ const MyBookings: React.FC = () => {
     return (
       <div className="container" style={{ padding: '120px 24px', textAlign: 'center' }}>
         <h1 className="editorial" style={{ fontSize: 56, fontWeight: 300 }}>
-          Identifícate para ver tus <span className="italic-accent">reservas</span>
+          <span className="italic-accent">{t('bookings.loginMessage')}</span>
         </h1>
         <Link to="/" className="btn btn-primary" style={{ marginTop: 28 }}>
-          <span>Volver al inicio</span>
+          <span>{t('confirmation.backHome')}</span>
         </Link>
       </div>
     );
@@ -56,18 +56,18 @@ const MyBookings: React.FC = () => {
       className="container"
       style={{ padding: '120px 24px 80px' }}
     >
-      <div className="eyebrow">Tu agenda</div>
+      <div className="eyebrow">{t('bookings.agenda')}</div>
       <h1
         className="editorial"
         style={{ fontSize: 'clamp(48px,6vw,88px)', fontWeight: 300, letterSpacing: '-0.03em', marginTop: 8 }}
       >
-        Mis <span className="italic-accent">reservas</span>
+        <span className="italic-accent">{t('bookings.title')}</span>
       </h1>
 
       <div style={{ display: 'flex', gap: 8, marginTop: 32, flexWrap: 'wrap' }}>
         {(['upcoming', 'past', 'cancelled'] as const).map((k) => (
           <button key={k} onClick={() => setFilter(k)} className={`chip ${filter === k ? 'active' : ''}`}>
-            {k === 'upcoming' ? 'Próximas' : k === 'past' ? 'Pasadas' : 'Canceladas'}
+            {k === 'upcoming' ? t('bookings.filterUpcoming') : k === 'past' ? t('bookings.filterPast') : t('bookings.filterCancelled')}
           </button>
         ))}
       </div>

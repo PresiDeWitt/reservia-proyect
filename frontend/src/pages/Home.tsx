@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import Hero from '../components/Hero';
@@ -30,6 +30,7 @@ const CATEGORIES = [
 const Home: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [total, setTotal] = useState(0);
@@ -76,7 +77,7 @@ const Home: React.FC = () => {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
-      <Hero />
+      <Hero key={location.key} />
 
       {/* Cuisines ribbon */}
       <section style={{ padding: 'var(--d-section) 0 40px', background: 'var(--surface)' }}>
@@ -359,7 +360,7 @@ const Home: React.FC = () => {
                 style={{ fontSize: 44, fontWeight: 400, lineHeight: 1, marginTop: 6 }}
               >
                 84{' '}
-                <span style={{ fontStyle: 'italic', color: 'var(--primary)', fontSize: '0.5em' }}>covers</span>
+                <span style={{ fontStyle: 'italic', color: 'var(--primary)', fontSize: '0.5em' }}>cubiertos</span>
               </div>
               <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 6 }}>+18% vs. martes pasado</div>
             </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { reservationsApi } from '../api/reservations';
 import { useAuth } from '../context/AuthContext';
 import type { Restaurant } from '../api/restaurants';
@@ -14,6 +15,7 @@ interface Props {
 }
 
 const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [step, setStep] = useState(1);
@@ -94,10 +96,10 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
           <span className="mat" style={{ fontSize: 36 }}>check</span>
         </div>
         <div className="eyebrow" style={{ marginTop: 20, color: 'var(--emerald)' }}>
-          Mesa confirmada
+          {t('reservation.tableConfirmed')}
         </div>
         <h3 className="editorial" style={{ fontSize: 30, fontWeight: 400, marginTop: 8 }}>
-          Te <span className="italic-accent">esperamos</span>.
+          <span className="italic-accent">{t('reservation.seeYou')}</span>.
         </h3>
         <div className="mono-num" style={{ marginTop: 14, fontWeight: 700, fontSize: 18 }}>{done.code}</div>
       </div>
@@ -119,12 +121,12 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <div>
-          <div className="eyebrow">Reserva tu mesa</div>
+          <div className="eyebrow">{t('reservation.reserveTable')}</div>
           <h3
             className="editorial"
             style={{ fontSize: 28, fontWeight: 400, letterSpacing: '-0.02em', marginTop: 4 }}
           >
-            Paso <span className="italic-accent mono-num">{step}</span>/3
+            {t('reservation.step')} <span className="italic-accent mono-num">{step}</span>/3
           </h3>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
@@ -144,7 +146,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
 
       {step === 1 && (
         <div className="fade-in" style={{ marginTop: 20 }}>
-          <div className="eyebrow" style={{ marginBottom: 8 }}>Comensales</div>
+          <div className="eyebrow" style={{ marginBottom: 8 }}>{t('reservation.guests')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6 }}>
             {[1, 2, 3, 4, 5, 6].map((n) => (
               <button
@@ -167,7 +169,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
             ))}
           </div>
 
-          <div className="eyebrow" style={{ marginTop: 16, marginBottom: 8 }}>Fecha</div>
+          <div className="eyebrow" style={{ marginTop: 16, marginBottom: 8 }}>{t('reservation.date')}</div>
           <input
             type="date"
             value={date}
@@ -176,7 +178,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
             className="input"
           />
 
-          <div className="eyebrow" style={{ marginTop: 16, marginBottom: 8 }}>Servicio</div>
+          <div className="eyebrow" style={{ marginTop: 16, marginBottom: 8 }}>{t('reservation.service')}</div>
           <div className="flex gap-2">
             {(['lunch', 'dinner'] as const).map((s) => (
               <button
@@ -189,12 +191,12 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
                     : undefined
                 }
               >
-                {s === 'lunch' ? 'Comida' : 'Cena'}
+                {s === 'lunch' ? t('reservation.lunch') : t('reservation.dinner')}
               </button>
             ))}
           </div>
 
-          <div className="eyebrow" style={{ marginTop: 16, marginBottom: 8 }}>Hora</div>
+          <div className="eyebrow" style={{ marginTop: 16, marginBottom: 8 }}>{t('reservation.time')}</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
             {slots.map((s) => {
               const unavail = UNAVAILABLE.has(s);
@@ -228,7 +230,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
             className="btn btn-primary"
             style={{ width: '100%', height: 52, marginTop: 20, opacity: time ? 1 : 0.5 }}
           >
-            <span>Continuar</span>
+            <span>{t('reservation.continue')}</span>
             <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
           </button>
 
@@ -254,7 +256,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
                 fontWeight: 700,
               }}
             >
-              O BIEN
+              {t('reservation.orElse')}
             </span>
           </div>
           <button
@@ -263,33 +265,36 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
             style={{ width: '100%', height: 48, borderStyle: 'dashed' }}
           >
             <span className="mat" style={{ fontSize: 16 }}>table_restaurant</span>
-            <span>Elegir mesa en el plano</span>
+            <span>{t('reservation.chooseFloor')}</span>
           </button>
           <p style={{ fontSize: 10, textAlign: 'center', color: 'var(--ink-55)', marginTop: 6 }}>
-            Mira el plano en vivo y escoge tu mesa como en el cine.
+            {t('reservation.floorHint')}
           </p>
         </div>
       )}
 
       {step === 2 && (
         <div className="fade-in" style={{ marginTop: 20 }}>
-          <div className="eyebrow">Ocasión (opcional)</div>
+          <div className="eyebrow">{t('reservation.occasion')}</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-            {['Cumpleaños', 'Aniversario', 'Primera cita', 'Negocios', 'Casual'].map((o) => (
-              <button
-                key={o}
-                onClick={() => setOccasion(occasion === o ? '' : o)}
-                className={`chip ${occasion === o ? 'active' : ''}`}
-              >
-                {o}
-              </button>
-            ))}
+            {(['birthday', 'anniversary', 'firstDate', 'business', 'casual'] as const).map((o) => {
+              const label = t(`reservation.occasionOptions.${o}`);
+              return (
+                <button
+                  key={o}
+                  onClick={() => setOccasion(occasion === label ? '' : label)}
+                  className={`chip ${occasion === label ? 'active' : ''}`}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
-          <div className="eyebrow" style={{ marginTop: 18 }}>Nota al restaurante</div>
+          <div className="eyebrow" style={{ marginTop: 18 }}>{t('reservation.noteToRestaurant')}</div>
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Alergias, mesa tranquila, silla para bebé..."
+            placeholder={t('reservation.notePlaceholder')}
             style={{
               width: '100%',
               minHeight: 90,
@@ -307,10 +312,10 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
           <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
             <button onClick={() => setStep(1)} className="btn btn-ghost" style={{ flex: 1 }}>
               <span className="mat" style={{ fontSize: 16 }}>arrow_back</span>
-              <span>Atrás</span>
+              <span>{t('reservation.back')}</span>
             </button>
             <button onClick={() => setStep(3)} className="btn btn-primary" style={{ flex: 2 }}>
-              <span>Revisar</span>
+              <span>{t('reservation.review')}</span>
               <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
             </button>
           </div>
@@ -331,26 +336,26 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
             <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 2 }}>{restaurant.location}</div>
             <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, fontSize: 12 }}>
               <div>
-                <div className="eyebrow">Día</div>
+                <div className="eyebrow">{t('reservation.day')}</div>
                 <div style={{ fontWeight: 700, marginTop: 2 }}>{date}</div>
               </div>
               <div>
-                <div className="eyebrow">Hora</div>
+                <div className="eyebrow">{t('reservation.time')}</div>
                 <div style={{ fontWeight: 700, marginTop: 2 }}>{time}</div>
               </div>
               <div>
-                <div className="eyebrow">Mesa</div>
+                <div className="eyebrow">{t('reservation.table')}</div>
                 <div style={{ fontWeight: 700, marginTop: 2 }}>{guests}p</div>
               </div>
             </div>
             {occasion && (
               <div style={{ marginTop: 10, fontSize: 11, color: 'var(--ink-55)' }}>
-                Ocasión: <span style={{ color: 'var(--ink)', fontWeight: 600 }}>{occasion}</span>
+                {t('reservation.occasionLabel')}: <span style={{ color: 'var(--ink)', fontWeight: 600 }}>{occasion}</span>
               </div>
             )}
             {note && (
               <div style={{ marginTop: 4, fontSize: 11, color: 'var(--ink-55)' }}>
-                Nota: <span style={{ color: 'var(--ink)' }}>{note}</span>
+                {t('reservation.noteLabel')}: <span style={{ color: 'var(--ink)' }}>{note}</span>
               </div>
             )}
           </div>
@@ -365,7 +370,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
             }}
           >
             <span className="mat" style={{ fontSize: 14, color: 'var(--primary)', verticalAlign: 'middle' }}>info</span>{' '}
-            Sin cargo por ahora. Solo un depósito de €10/pers si cancelas con menos de 4h.
+            {t('reservation.cancelPolicy')}
           </div>
           {error && (
             <div
@@ -383,7 +388,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
           )}
           {!isAuthenticated && (
             <div style={{ marginTop: 10, fontSize: 11, color: 'var(--primary)', textAlign: 'center' }}>
-              Entra para finalizar la reserva
+              {t('reservation.loginRequired')}
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, marginTop: 18 }}>
@@ -405,7 +410,7 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
                 />
               ) : (
                 <>
-                  <span>Confirmar reserva</span>
+                  <span>{t('reservation.confirm')}</span>
                   <span className="mat" style={{ fontSize: 16 }}>check</span>
                 </>
               )}

@@ -1,29 +1,26 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { restaurantsApi, type Restaurant } from '../api/restaurants';
 import ReservationWidget from '../components/ReservationWidget';
 import AuthModal from '../components/AuthModal';
 
 type TabKey = 'about' | 'menu' | 'reviews' | 'info';
 
-const TABS: Array<{ k: TabKey; l: string }> = [
-  { k: 'about', l: 'Sobre el lugar' },
-  { k: 'menu', l: 'Carta' },
-  { k: 'reviews', l: 'Reseñas' },
-  { k: 'info', l: 'Info práctica' },
-];
+const TAB_KEYS: TabKey[] = ['about', 'menu', 'reviews', 'info'];
 
-const FACTS = [
-  { i: 'restaurant_menu', t: 'Carta de temporada' },
-  { i: 'deck', t: 'Terraza cubierta' },
-  { i: 'local_bar', t: 'Barra de cocktails' },
-  { i: 'accessible', t: 'Accesible' },
-  { i: 'pets', t: 'Pet friendly' },
-  { i: 'wifi', t: 'Wi-Fi' },
+const FACT_KEYS = [
+  { i: 'restaurant_menu', k: 'seasonal' },
+  { i: 'deck', k: 'terrace' },
+  { i: 'local_bar', k: 'bar' },
+  { i: 'accessible', k: 'accessible' },
+  { i: 'pets', k: 'pets' },
+  { i: 'wifi', k: 'wifi' },
 ];
 
 const RestaurantDetails: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,7 +112,7 @@ const RestaurantDetails: React.FC = () => {
                 <span style={{ color: 'var(--cream)', fontWeight: 700 }}>{restaurant.rating.toFixed(1)}</span>
               </span>
               <span style={{ opacity: 0.6 }}>·</span>
-              <span>{restaurant.reviewsCount} reseñas</span>
+              <span>{restaurant.reviewsCount} {t('restaurantDetail.reviews')}</span>
               <span style={{ opacity: 0.6 }}>·</span>
               <span>{restaurant.priceRange}</span>
               <span style={{ opacity: 0.6 }}>·</span>
@@ -129,7 +126,7 @@ const RestaurantDetails: React.FC = () => {
                     animation: 'pulse-glow 2s ease-out infinite',
                   }}
                 />
-                Abierto ahora
+                {t('restaurantDetail.openNow')}
               </span>
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 32, flexWrap: 'wrap' }}>
@@ -137,15 +134,15 @@ const RestaurantDetails: React.FC = () => {
                 <span className={`mat ${favorite ? 'mat-fill' : ''}`} style={{ fontSize: 16, color: favorite ? 'var(--primary)' : 'inherit' }}>
                   favorite
                 </span>
-                <span>{favorite ? 'Guardado' : 'Guardar'}</span>
+                <span>{favorite ? t('restaurantDetail.saved') : t('restaurantDetail.save')}</span>
               </button>
               <button className="btn btn-dark">
                 <span className="mat" style={{ fontSize: 16 }}>ios_share</span>
-                <span>Compartir</span>
+                <span>{t('restaurantDetail.share')}</span>
               </button>
               <button className="btn btn-dark">
                 <span className="mat" style={{ fontSize: 16 }}>directions</span>
-                <span>Cómo llegar</span>
+                <span>{t('restaurantDetail.directions')}</span>
               </button>
             </div>
           </div>
@@ -173,23 +170,23 @@ const RestaurantDetails: React.FC = () => {
               flexWrap: 'wrap',
             }}
           >
-            {TABS.map((tt) => (
+            {TAB_KEYS.map((k) => (
               <button
-                key={tt.k}
-                onClick={() => setTab(tt.k)}
+                key={k}
+                onClick={() => setTab(k)}
                 style={{
                   padding: '14px 16px',
                   fontSize: 13,
                   fontWeight: 700,
-                  color: tab === tt.k ? 'var(--ink)' : 'var(--ink-55)',
-                  borderBottom: tab === tt.k ? '2px solid var(--primary)' : '2px solid transparent',
+                  color: tab === k ? 'var(--ink)' : 'var(--ink-55)',
+                  borderBottom: tab === k ? '2px solid var(--primary)' : '2px solid transparent',
                   marginBottom: -1,
                   background: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
                 }}
               >
-                {tt.l}
+                {t(`restaurantDetail.tabs.${k}`)}
               </button>
             ))}
           </div>
@@ -202,7 +199,7 @@ const RestaurantDetails: React.FC = () => {
               </p>
 
               <div style={{ marginTop: 48 }}>
-                <div className="eyebrow">Bueno saber</div>
+                <div className="eyebrow">{t('restaurantDetail.goodToKnow')}</div>
                 <div
                   style={{
                     display: 'grid',
@@ -211,9 +208,9 @@ const RestaurantDetails: React.FC = () => {
                     marginTop: 14,
                   }}
                 >
-                  {FACTS.map((x) => (
+                  {FACT_KEYS.map((x) => (
                     <div
-                      key={x.t}
+                      key={x.k}
                       style={{
                         display: 'flex',
                         gap: 10,
@@ -225,7 +222,7 @@ const RestaurantDetails: React.FC = () => {
                       }}
                     >
                       <span className="mat" style={{ color: 'var(--primary)' }}>{x.i}</span>
-                      <span style={{ fontSize: 13, fontWeight: 600 }}>{x.t}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{t(`restaurantDetail.facts.${x.k}`)}</span>
                     </div>
                   ))}
                 </div>
@@ -235,7 +232,7 @@ const RestaurantDetails: React.FC = () => {
 
           {tab === 'menu' && (
             <div className="fade-in">
-              <div className="eyebrow">Platos destacados</div>
+              <div className="eyebrow">{t('restaurantDetail.featuredDishes')}</div>
               <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {(restaurant.menuItems && restaurant.menuItems.length > 0
                   ? restaurant.menuItems
@@ -310,30 +307,30 @@ const RestaurantDetails: React.FC = () => {
                     ))}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--ink-55)', marginTop: 6 }}>
-                    {restaurant.reviewsCount} reseñas
+                    {restaurant.reviewsCount} {t('restaurantDetail.reviews')}
                   </div>
                 </div>
                 <div style={{ flex: 1, minWidth: 240 }}>
-                  {[
-                    ['Comida', 4.9],
-                    ['Servicio', 4.8],
-                    ['Ambiente', 4.7],
-                    ['Calidad/precio', 4.5],
-                  ].map(([k, v]) => (
-                    <div key={k as string} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                      <div style={{ fontSize: 12, width: 140, color: 'var(--ink-55)' }}>{k}</div>
+                  {([
+                    ['food', 4.9],
+                    ['service', 4.8],
+                    ['ambience', 4.7],
+                    ['value', 4.5],
+                  ] as [string, number][]).map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, width: 140, color: 'var(--ink-55)' }}>{t(`restaurantDetail.reviewCategories.${k}`)}</div>
                       <div style={{ flex: 1, height: 6, background: 'var(--ink-5)', borderRadius: 999, overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${((v as number) / 5) * 100}%`, background: 'var(--primary)' }} />
                       </div>
                       <div className="mono-num" style={{ fontSize: 12, fontWeight: 700, width: 30, textAlign: 'right' }}>
-                        {v}
+                        {v as number}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
               <p style={{ marginTop: 24, color: 'var(--ink-55)', fontSize: 14 }}>
-                Las reseñas verificadas se muestran cuando los comensales completan su visita.
+                {t('restaurantDetail.reviewsVerified')}
               </p>
             </div>
           )}
@@ -348,15 +345,15 @@ const RestaurantDetails: React.FC = () => {
               }}
             >
               {[
-                { t: 'Dirección', v: restaurant.address, i: 'location_on' },
-                { t: 'Teléfono', v: '+34 912 345 678', i: 'call' },
-                { t: 'Horario', v: 'Mar a Dom · 13:00 a 16:00 · 20:00 a 23:30', i: 'schedule' },
-                { t: 'Pago', v: 'Visa · MC · AmEx · Bizum', i: 'credit_card' },
-                { t: 'Vestimenta', v: 'Smart casual', i: 'checkroom' },
-                { t: 'Aparcamiento', v: 'SER · parking 200m', i: 'local_parking' },
+                { k: 'address', v: restaurant.address, i: 'location_on' },
+                { k: 'phone', v: '+34 912 345 678', i: 'call' },
+                { k: 'hours', v: 'Mar a Dom · 13:00 a 16:00 · 20:00 a 23:30', i: 'schedule' },
+                { k: 'payment', v: 'Visa · MC · AmEx · Bizum', i: 'credit_card' },
+                { k: 'dress', v: 'Smart casual', i: 'checkroom' },
+                { k: 'parking', v: 'SER · parking 200m', i: 'local_parking' },
               ].map((x) => (
                 <div
-                  key={x.t}
+                  key={x.k}
                   style={{
                     padding: 20,
                     background: 'var(--surface-3)',
@@ -366,7 +363,7 @@ const RestaurantDetails: React.FC = () => {
                 >
                   <span className="mat" style={{ color: 'var(--primary)' }}>{x.i}</span>
                   <div className="eyebrow" style={{ marginTop: 10 }}>
-                    {x.t}
+                    {t(`restaurantDetail.infoItems.${x.k}`)}
                   </div>
                   <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{x.v}</div>
                 </div>

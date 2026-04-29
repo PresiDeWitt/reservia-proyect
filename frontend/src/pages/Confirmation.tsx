@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import type { Restaurant } from '../api/restaurants';
 
 interface State {
@@ -56,6 +57,7 @@ const Confetti: React.FC = () => {
 };
 
 const Confirmation: React.FC = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const state = location.state as State | null;
   const [now, setNow] = useState(new Date());
@@ -102,7 +104,7 @@ const Confirmation: React.FC = () => {
         </motion.div>
 
         <div className="eyebrow" style={{ color: 'var(--emerald)', marginTop: 28 }}>
-          Reserva confirmada
+          {t('confirmation.confirmed')}
         </div>
         <h1
           className="editorial"
@@ -114,7 +116,7 @@ const Confirmation: React.FC = () => {
             marginTop: 12,
           }}
         >
-          Te <span className="italic-accent">esperamos</span>.
+          <span className="italic-accent">{t('confirmation.seeYou')}</span>.
         </h1>
 
         {/* Ticket */}
@@ -179,26 +181,26 @@ const Confirmation: React.FC = () => {
           <div style={{ padding: 24 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
               <div>
-                <div className="eyebrow">Fecha</div>
+                <div className="eyebrow">{t('confirmation.date')}</div>
                 <div style={{ fontWeight: 700, marginTop: 4 }}>{date}</div>
               </div>
               <div>
-                <div className="eyebrow">Hora</div>
+                <div className="eyebrow">{t('confirmation.time')}</div>
                 <div style={{ fontWeight: 700, marginTop: 4 }}>{time}</div>
               </div>
               <div>
-                <div className="eyebrow">Mesa</div>
+                <div className="eyebrow">{t('confirmation.table')}</div>
                 <div style={{ fontWeight: 700, marginTop: 4 }}>{guests} pers.</div>
               </div>
             </div>
             {occasion && (
               <div style={{ marginTop: 12, fontSize: 12, color: 'var(--ink-55)' }}>
-                Ocasión: <span style={{ color: 'var(--ink)', fontWeight: 600 }}>{occasion}</span>
+                {t('confirmation.occasion')}: <span style={{ color: 'var(--ink)', fontWeight: 600 }}>{occasion}</span>
               </div>
             )}
             {note && (
               <div style={{ marginTop: 4, fontSize: 12, color: 'var(--ink-55)' }}>
-                Nota: <span style={{ color: 'var(--ink)' }}>{note}</span>
+                {t('confirmation.note')}: <span style={{ color: 'var(--ink)' }}>{note}</span>
               </div>
             )}
 
@@ -212,7 +214,7 @@ const Confirmation: React.FC = () => {
                 textAlign: 'center',
               }}
             >
-              <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>Código</div>
+              <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>{t('confirmation.code')}</div>
               <div className="mono-num" style={{ marginTop: 6, fontFamily: 'monospace', fontSize: 24, letterSpacing: '0.4em' }}>
                 {code}
               </div>
@@ -243,18 +245,18 @@ const Confirmation: React.FC = () => {
               }}
             >
               <span className="mat" style={{ fontSize: 14, color: 'var(--primary)', verticalAlign: 'middle' }}>schedule</span>{' '}
-              Llegan en <span className="mono-num" style={{ color: 'var(--ink)', fontWeight: 700 }}>{hours}h {minutes}m</span>
+              {t('confirmation.countdown')} <span className="mono-num" style={{ color: 'var(--ink)', fontWeight: 700 }}>{hours}h {minutes}m</span>
             </div>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
           <Link to="/my-bookings" className="btn btn-primary">
-            <span>Ver mis reservas</span>
+            <span>{t('confirmation.viewBookings')}</span>
             <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
           </Link>
           <Link to="/" className="btn btn-ghost">
-            <span>Volver al inicio</span>
+            <span>{t('confirmation.backHome')}</span>
           </Link>
         </div>
       </div>

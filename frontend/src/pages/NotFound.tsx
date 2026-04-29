@@ -10,12 +10,12 @@ const NotFound: React.FC = () => (
   >
     <span className="material-symbols-outlined text-8xl text-slate-200 mb-4">search_off</span>
     <h1 className="text-6xl font-black text-navy mb-2">404</h1>
-    <p className="text-xl text-slate-500 mb-8">Page not found</p>
+    <p className="text-xl text-slate-500 mb-8">Página no encontrada</p>
     <Link
       to="/"
       className="px-8 py-3 bg-primary hover:bg-orange-600 text-white font-bold rounded-xl transition-all"
     >
-      Back to Home
+      Volver al inicio
     </Link>
   </motion.div>
 );

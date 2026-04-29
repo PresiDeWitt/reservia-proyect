@@ -51,6 +51,101 @@
     "gotIt": "Entendido",
     "photos": "+12 fotos"
   },
+  "confirmation": {
+    "confirmed": "Reserva confirmada",
+    "seeYou": "Te esperamos",
+    "date": "Fecha",
+    "time": "Hora",
+    "table": "Mesa",
+    "code": "Código",
+    "occasion": "Ocasión",
+    "note": "Nota",
+    "countdown": "Llegan en",
+    "viewBookings": "Ver mis reservas",
+    "backHome": "Volver al inicio"
+  },
+  "restaurantDetail": {
+    "tabs": {
+      "about": "Sobre el lugar",
+      "menu": "Carta",
+      "reviews": "Reseñas",
+      "info": "Info práctica"
+    },
+    "openNow": "Abierto ahora",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "share": "Compartir",
+    "directions": "Cómo llegar",
+    "goodToKnow": "Bueno saber",
+    "featuredDishes": "Platos destacados",
+    "reviewsVerified": "Las reseñas verificadas se muestran cuando los comensales completan su visita.",
+    "reviews": "reseñas",
+    "reviewCategories": {
+      "food": "Comida",
+      "service": "Servicio",
+      "ambience": "Ambiente",
+      "value": "Calidad/precio"
+    },
+    "infoItems": {
+      "address": "Dirección",
+      "phone": "Teléfono",
+      "hours": "Horario",
+      "payment": "Pago",
+      "dress": "Vestimenta",
+      "parking": "Aparcamiento"
+    },
+    "facts": {
+      "seasonal": "Carta de temporada",
+      "terrace": "Terraza cubierta",
+      "bar": "Barra de cocktails",
+      "accessible": "Accesible",
+      "pets": "Pet friendly",
+      "wifi": "Wi-Fi"
+    }
+  },
+  "reservation": {
+    "reserveTable": "Reserva tu mesa",
+    "step": "Paso",
+    "guests": "Comensales",
+    "date": "Fecha",
+    "service": "Servicio",
+    "lunch": "Comida",
+    "dinner": "Cena",
+    "time": "Hora",
+    "day": "Día",
+    "table": "Mesa",
+    "continue": "Continuar",
+    "orElse": "O BIEN",
+    "chooseFloor": "Elegir mesa en el plano",
+    "floorHint": "Mira el plano en vivo y escoge tu mesa como en el cine.",
+    "occasion": "Ocasión (opcional)",
+    "occasionLabel": "Ocasión",
+    "noteToRestaurant": "Nota al restaurante",
+    "notePlaceholder": "Alergias, mesa tranquila, silla para bebé...",
+    "noteLabel": "Nota",
+    "back": "Atrás",
+    "review": "Revisar",
+    "confirm": "Confirmar reserva",
+    "cancelPolicy": "Sin cargo por ahora. Solo un depósito de €10/pers si cancelas con menos de 4h.",
+    "loginRequired": "Entra para finalizar la reserva",
+    "tableConfirmed": "Mesa confirmada",
+    "seeYou": "Te esperamos",
+    "occasionOptions": {
+      "birthday": "Cumpleaños",
+      "anniversary": "Aniversario",
+      "firstDate": "Primera cita",
+      "business": "Negocios",
+      "casual": "Casual"
+    }
+  },
+  "search": {
+    "placeholder": "Busca una cocina, un barrio, un ambiente...",
+    "nearMe": "Cerca de mí",
+    "popular": "POPULAR AHORA",
+    "results": "RESULTADOS",
+    "searching": "BUSCANDO…",
+    "noResults": "Sin resultados para"
+  },
   "footer": {
     "privacy": "Política de privacidad",
     "terms": "Términos de servicio",
@@ -87,11 +182,16 @@
   },
   "bookings": {
     "title": "Mis reservas",
+    "agenda": "Tu agenda",
+    "loginMessage": "Identifícate para ver tus reservas",
     "empty": "No tienes reservas todavía.",
     "guests": "comensales",
     "cancel": "Cancelar",
     "cancelled": "Cancelada",
-    "confirmed": "Confirmada"
+    "confirmed": "Confirmada",
+    "filterUpcoming": "Próximas",
+    "filterPast": "Pasadas",
+    "filterCancelled": "Canceladas"
   },
   "cuisines": {
     "Italian": "Italiana",
