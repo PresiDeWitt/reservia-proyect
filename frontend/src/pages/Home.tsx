@@ -354,15 +354,19 @@ const Home: React.FC = () => {
                 boxShadow: 'var(--sh-lg)',
               }}
             >
-              <div className="eyebrow">Hoy</div>
+              <div className="eyebrow">{t('home.platformLabel', { defaultValue: 'En la plataforma' })}</div>
               <div
                 className="editorial mono-num"
                 style={{ fontSize: 44, fontWeight: 400, lineHeight: 1, marginTop: 6 }}
               >
-                84{' '}
-                <span style={{ fontStyle: 'italic', color: 'var(--primary)', fontSize: '0.5em' }}>cubiertos</span>
+                {total > 0 ? total : '—'}{' '}
+                <span style={{ fontStyle: 'italic', color: 'var(--primary)', fontSize: '0.5em' }}>
+                  {t('home.restaurantsLabel', { defaultValue: 'restaurantes' })}
+                </span>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 6 }}>+18% vs. martes pasado</div>
+              <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 6 }}>
+                {t('home.platformSub', { defaultValue: 'Disponibles ahora mismo' })}
+              </div>
             </div>
           </div>
         </div>
