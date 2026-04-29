@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
@@ -8,17 +8,16 @@ import LanguageMenu from './LanguageMenu';
 import MobileDrawer from './MobileDrawer';
 import Logo from './Logo';
 import NotificationsMenu from './NotificationsMenu';
+import SearchModal from './SearchModal';
 
 const Header: React.FC = () => {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const [authOpen, setAuthOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [headerSearch, setHeaderSearch] = useState('');
 
   const onLanding = location.pathname === '/';
   const transparent = onLanding && !scrolled;
@@ -29,12 +28,6 @@ const Header: React.FC = () => {
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSearchOpen(false); };
-    if (searchOpen) document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [searchOpen]);
 
   const variant = transparent ? 'dark' : 'light';
 
@@ -60,7 +53,7 @@ const Header: React.FC = () => {
       <header className="sticky top-0 z-[100]" style={headerStyle}>
         <div
           className="container flex items-center gap-5"
-          style={{ padding: scrolled ? '6px 24px' : '10px 24px', transition: 'padding 0.3s' }}
+          style={{ padding: scrolled ? '2px 24px' : '4px 24px', transition: 'padding 0.3s' }}
         >
           <Link to="/" className="shrink-0" aria-label="ReserVia">
             <Logo size={180} color={transparent ? '#fff' : 'var(--ink)'} />
@@ -160,57 +153,9 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Search bar — compact pill */}
-        {searchOpen && (
-          <div
-            className="absolute left-0 right-0 top-full flex justify-center"
-            style={{ padding: '10px 24px' }}
-          >
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (headerSearch.trim()) {
-                  navigate(`/?search=${encodeURIComponent(headerSearch.trim())}`);
-                  setSearchOpen(false);
-                }
-              }}
-              className="flex items-center gap-2"
-              style={{
-                width: '100%',
-                maxWidth: 560,
-                background: 'rgba(15,23,42,0.75)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                borderRadius: 999,
-                padding: '8px 8px 8px 18px',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.35)',
-              }}
-            >
-              <span className="mat" style={{ fontSize: 18, color: 'var(--primary)', flexShrink: 0 }}>search</span>
-              <input
-                autoFocus
-                value={headerSearch}
-                onChange={(e) => setHeaderSearch(e.target.value)}
-                placeholder={t('header.searchPlaceholder')}
-                className="flex-1 bg-transparent outline-none"
-                style={{ fontSize: 14, color: '#fff', minWidth: 0 }}
-              />
-              <button
-                type="submit"
-                style={{
-                  height: 34, padding: '0 16px', borderRadius: 999,
-                  background: 'var(--primary)', color: '#fff',
-                  fontWeight: 700, fontSize: 13, border: 'none',
-                  cursor: 'pointer', flexShrink: 0,
-                }}
-              >
-                Buscar
-              </button>
-            </form>
-          </div>
-        )}
       </header>
+
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
       <MobileDrawer
