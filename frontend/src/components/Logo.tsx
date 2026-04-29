@@ -12,8 +12,13 @@ const Logo: React.FC<LogoProps> = ({ size = 28, className = '' }) => {
     <img
       src="/logo2.svg"
       alt="ReserVia"
-      height={size}
-      style={{ display: 'inline-block', userSelect: 'none', width: 'auto', maxHeight: size }}
+      style={{
+        display: 'block',
+        height: `${size}px`,
+        width: 'auto',
+        userSelect: 'none',
+        flexShrink: 0,
+      }}
       className={className}
     />
   );
