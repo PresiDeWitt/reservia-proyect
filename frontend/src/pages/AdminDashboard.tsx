@@ -11,20 +11,20 @@ const PLATFORM_STATS = [
 const PENDING = [
   { id: 1, name: 'Taberna del Sol', city: 'Sevilla', cuisine: 'Spanish', submitted: 'hace 2h', rating: null },
   { id: 2, name: 'Ramen Tokio', city: 'Barcelona', cuisine: 'Asian', submitted: 'hace 5h', rating: null },
-  { id: 3, name: 'La Brasserie', city: 'Madrid', cuisine: 'French', submitted: 'ayer', rating: null },
+  { id: 3, name: 'La Brasserie', city: 'Granada', cuisine: 'French', submitted: 'ayer', rating: null },
   { id: 4, name: 'Green Bowl', city: 'Valencia', cuisine: 'Healthy', submitted: 'hace 3 días', rating: null },
 ];
 
 const TOP_RESTAURANTS = [
-  { name: 'Osteria del Borgo', city: 'Madrid', bookings: 1240, revenue: '18.400€', rating: 4.9 },
+  { name: 'Osteria del Borgo', city: 'Granada', bookings: 1240, revenue: '18.400€', rating: 4.9 },
   { name: 'Le Petit Atelier', city: 'Barcelona', bookings: 980, revenue: '14.200€', rating: 4.8 },
-  { name: 'Sushi Omakase', city: 'Madrid', bookings: 870, revenue: '21.600€', rating: 4.9 },
+  { name: 'Sushi Omakase', city: 'Granada', bookings: 870, revenue: '21.600€', rating: 4.9 },
   { name: 'La Fogata', city: 'Sevilla', bookings: 760, revenue: '9.800€', rating: 4.7 },
-  { name: 'Botín Clásico', city: 'Madrid', bookings: 720, revenue: '11.200€', rating: 4.8 },
+  { name: 'Botín Clásico', city: 'Granada', bookings: 720, revenue: '11.200€', rating: 4.8 },
 ];
 
 const CITIES = [
-  { name: 'Madrid', restaurants: 512, bookings: 21400, pct: 44 },
+  { name: 'Granada', restaurants: 512, bookings: 21400, pct: 44 },
   { name: 'Barcelona', restaurants: 384, bookings: 15800, pct: 32 },
   { name: 'Valencia', restaurants: 198, bookings: 6200, pct: 13 },
   { name: 'Sevilla', restaurants: 112, bookings: 3400, pct: 7 },

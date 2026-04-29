@@ -135,7 +135,7 @@ const Footer: React.FC = () => {
             </a>
           </div>
           <div className="editorial" style={{ fontSize: 12, opacity: 0.35, fontStyle: 'italic' }}>
-            Hecho con <span style={{ color: 'var(--primary)', opacity: 1 }}>amor al buen comer</span>, en Madrid.
+            Hecho con <span style={{ color: 'var(--primary)', opacity: 1 }}>amor al buen comer</span>, en Granada.
           </div>
         </div>
       </div>

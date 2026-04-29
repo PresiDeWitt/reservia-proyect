@@ -251,7 +251,7 @@ const Hero: React.FC = () => {
                 animation: 'pulse-glow 2s ease-out infinite',
               }}
             />
-            <span>{tonight} mesas disponibles · esta noche · Madrid</span>
+            <span>{tonight} mesas disponibles · esta noche · Granada</span>
           </div>
 
           <h1

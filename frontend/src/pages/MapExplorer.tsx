@@ -29,7 +29,7 @@ const ChangeView = ({ center }: { center: [number, number] }) => {
   return null;
 };
 
-// Fixed Madrid coordinates for each restaurant (deterministic by index)
+// Fixed Granada coordinates for each restaurant (deterministic by index)
 const COORDS: [number, number][] = [
   [40.4168, -3.7038],
   [40.4200, -3.6950],

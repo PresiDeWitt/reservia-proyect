@@ -23,7 +23,7 @@ const Account: React.FC = () => {
   const fields = [
     { label: 'Nombre', value: displayName, icon: 'person' },
     { label: 'Email', value: displayEmail, icon: 'mail' },
-    { label: 'Ciudad', value: 'Madrid', icon: 'location_on' },
+    { label: 'Ciudad', value: 'Granada', icon: 'location_on' },
     { label: 'Preferencias', value: 'Sin restricciones', icon: 'restaurant_menu' },
     { label: 'Idioma', value: 'Español', icon: 'language' },
     { label: 'Teléfono', value: '+34 612 345 678', icon: 'call' },
