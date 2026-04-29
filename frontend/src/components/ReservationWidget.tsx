@@ -119,29 +119,27 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
         border: '1px solid var(--border)',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <div>
-          <div className="eyebrow">{t('reservation.reserveTable')}</div>
-          <h3
-            className="editorial"
-            style={{ fontSize: 28, fontWeight: 400, letterSpacing: '-0.02em', marginTop: 4 }}
+      <div>
+        <div className="eyebrow">{t('reservation.reserveTable')}</div>
+      </div>
+
+      {/* Stepper */}
+      <div className="res-stepper">
+        {([
+          { n: 1, label: t('reservation.guests') },
+          { n: 2, label: t('reservation.occasion') },
+          { n: 3, label: t('reservation.review') },
+        ] as { n: number; label: string }[]).map(({ n, label }) => (
+          <div
+            key={n}
+            className={`res-step-item${step === n ? ' active' : step > n ? ' done' : ''}`}
           >
-            {t('reservation.step')} <span className="italic-accent mono-num">{step}</span>/3
-          </h3>
-        </div>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {[1, 2, 3].map((n) => (
-            <div
-              key={n}
-              style={{
-                width: 24,
-                height: 3,
-                borderRadius: 2,
-                background: step >= n ? 'var(--primary)' : 'var(--ink-10)',
-              }}
-            />
-          ))}
-        </div>
+            <div className="res-step-dot">
+              {step > n ? <span className="mat" style={{ fontSize: 14 }}>check</span> : n}
+            </div>
+            <span className="res-step-label">{label}</span>
+          </div>
+        ))}
       </div>
 
       {step === 1 && (
