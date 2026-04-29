@@ -88,6 +88,7 @@ coverage/
 # ========================
 *.bak
 *.tmp
+CLAUDE.md
 
 # Local DB
 backend/db.sqlite3
