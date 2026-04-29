@@ -87,7 +87,7 @@ const ChatBot: React.FC = () => {
               </div>
               <div className="min-w-0 relative z-10">
                 <div className="editorial text-sm" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
-                  Reser<span className="italic-accent">Via</span> · IA
+                  Reserv<span className="italic-accent">IA</span>
                 </div>
                 <div className="text-xs truncate" style={{ opacity: 0.7 }}>{t('chat.subtitle')}</div>
               </div>
