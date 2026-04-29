@@ -50,30 +50,22 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
     <Link
       to={`/restaurant/${id}`}
       className="card card-lift block no-underline"
-      style={{
-        background: 'var(--surface-3)',
-        borderRadius: 'var(--r-xl)',
-        color: 'var(--ink)',
-      }}
+      style={{ background: 'var(--surface-3)', borderRadius: 'var(--r-xl)', color: 'var(--ink)' }}
     >
+      {/* Image */}
       <div
-        className="relative overflow-hidden"
-        style={{
-          height: featured ? 360 : 240,
-          borderRadius: 'var(--r-xl) var(--r-xl) 0 0',
-        }}
+        className="card-img-zoom"
+        style={{ height: featured ? 360 : 240, borderRadius: 'var(--r-xl) var(--r-xl) 0 0', position: 'relative' }}
       >
         <img
           src={image}
           alt={name}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-700"
-          style={{ filter: 'brightness(0.95)' }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
 
-        <div className="absolute top-3.5 left-3.5 flex gap-1.5">
+        {/* Badges */}
+        <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', gap: 6, zIndex: 1 }}>
           {showEditorial && (
             <span
               style={{
@@ -89,7 +81,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
                 letterSpacing: '0.02em',
               }}
             >
-              Editor's Pick
+              {t('restaurant.editorsPick')}
             </span>
           )}
           {showLowAvail && (
@@ -107,35 +99,44 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
                 letterSpacing: '0.02em',
               }}
             >
-              Solo {tonight} mesas hoy
+              {t('restaurant.tablesLeft', { count: tonight })}
             </span>
           )}
         </div>
 
+        {/* Fav button — 44×44 touch target */}
         <button
           onClick={toggleFav}
-          aria-label={fav ? 'Quitar de favoritos' : 'Añadir a favoritos'}
-          className="absolute top-3.5 right-3.5 grid place-items-center transition-transform"
+          aria-label={fav ? t('restaurant.removeFromFavorites', { defaultValue: 'Quitar de favoritos' }) : t('restaurant.addToFavorites', { defaultValue: 'Añadir a favoritos' })}
           style={{
-            width: 36,
-            height: 36,
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 1,
+            width: 44,
+            height: 44,
             borderRadius: '50%',
             background: 'rgba(255,255,255,0.92)',
             color: fav ? 'var(--ruby)' : 'var(--ink-55)',
             border: 'none',
             cursor: 'pointer',
+            display: 'grid',
+            placeItems: 'center',
+            transition: 'transform 0.2s var(--ease-out-expo), background 0.2s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+          className="fav-btn"
         >
-          <span className={`mat ${fav ? 'mat-fill' : ''}`} style={{ fontSize: 18 }}>
+          <span className={`mat ${fav ? 'mat-fill' : ''}`} style={{ fontSize: 20 }}>
             favorite
           </span>
         </button>
 
+        {/* Location pill */}
         <div
-          className="absolute bottom-3.5 left-3.5"
           style={{
+            position: 'absolute',
+            bottom: 14,
+            left: 14,
             padding: '6px 10px',
             background: 'rgba(15,23,42,0.75)',
             backdropFilter: 'blur(8px)',
@@ -149,38 +150,32 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
         </div>
       </div>
 
+      {/* Body */}
       <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
-          <div>
-            <h3
-              className="editorial"
-              style={{
-                fontSize: featured ? 28 : 24,
-                fontWeight: 400,
-                lineHeight: 1.1,
-                letterSpacing: '-0.02em',
-                margin: 0,
-              }}
-            >
-              {name}
-            </h3>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                color: 'var(--primary)',
-              }}
-            >
+          <h3
+            className="editorial"
+            style={{
+              fontSize: featured ? 28 : 24,
+              fontWeight: 400,
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              margin: 0,
+            }}
+          >
+            {name}
+          </h3>
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--primary)' }}>
               <span className="mat mat-fill" style={{ fontSize: 14 }}>star</span>
               <span className="mono-num" style={{ fontWeight: 700, color: 'var(--ink)' }}>
                 {rating.toFixed(1)}
               </span>
             </span>
             {reviewsCount !== undefined && (
-              <div style={{ fontSize: 10, color: 'var(--ink-40)', marginTop: 2 }}>{reviewsCount} reseñas</div>
+              <div style={{ fontSize: 10, color: 'var(--ink-40)', marginTop: 2 }}>
+                {reviewsCount} {t('restaurant.reviews')}
+              </div>
             )}
           </div>
         </div>
@@ -196,14 +191,12 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
           }}
         >
           <div style={{ fontSize: 12, color: 'var(--ink-55)' }}>
-            <span className="mono-num" style={{ fontWeight: 700, color: 'var(--ink)' }}>
-              {priceRange}
-            </span>{' '}
-            · {distance}
+            <span className="mono-num" style={{ fontWeight: 700, color: 'var(--ink)' }}>{priceRange}</span>
+            {' '}· {distance}
           </div>
-          <span className="btn btn-primary" style={{ height: 36, padding: '0 14px', fontSize: 12 }}>
+          <div className="btn btn-primary" style={{ height: 36, padding: '0 14px', fontSize: 12, pointerEvents: 'none' }}>
             <span>{t('restaurant.bookNow')}</span>
-          </span>
+          </div>
         </div>
       </div>
     </Link>

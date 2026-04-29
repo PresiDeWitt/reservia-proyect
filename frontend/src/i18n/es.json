@@ -31,13 +31,18 @@
     "viewAll": "Ver todos",
     "results": "restaurantes",
     "clearFilters": "Limpiar filtros",
-    "noResults": "No se encontraron restaurantes. Prueba con otra búsqueda."
+    "noResults": "No se encontraron restaurantes. Prueba con otra búsqueda.",
+    "platformLabel": "En la plataforma",
+    "restaurantsLabel": "restaurantes",
+    "platformSub": "Disponibles ahora mismo"
   },
   "restaurant": {
     "realTime": "Tiempo real",
     "menu": "Menú",
     "bookNow": "Reservar",
     "reviews": "reseñas",
+    "editorsPick": "Selección del editor",
+    "tablesLeft": "Solo {{count}} mesas hoy",
     "about": "Sobre el restaurante",
     "menuHighlights": "Platos destacados",
     "reserveTitle": "Reserva una mesa",

@@ -31,13 +31,18 @@
     "viewAll": "View all",
     "results": "restaurants",
     "clearFilters": "Clear filters",
-    "noResults": "No restaurants found. Try a different search."
+    "noResults": "No restaurants found. Try a different search.",
+    "platformLabel": "On the platform",
+    "restaurantsLabel": "restaurants",
+    "platformSub": "Available right now"
   },
   "restaurant": {
     "realTime": "Real-time",
     "menu": "Menu",
     "bookNow": "Book Now",
     "reviews": "reviews",
+    "editorsPick": "Editor's Pick",
+    "tablesLeft": "Only {{count}} tables today",
     "about": "About the restaurant",
     "menuHighlights": "Menu highlights",
     "reserveTitle": "Reserve a table",
