@@ -192,7 +192,7 @@ const RestaurantDetails: React.FC = () => {
           </div>
 
           {tab === 'about' && (
-            <div className="fade-in">
+            <div key="about" className="tab-content">
               <p style={{ fontSize: 18, lineHeight: 1.7, maxWidth: 640 }}>
                 {restaurant.description ||
                   `${restaurant.name} es una propuesta de cocina ${restaurant.cuisine.toLowerCase()} en ${restaurant.location}. Cocina honesta, producto local y una sala con alma.`}
@@ -231,7 +231,7 @@ const RestaurantDetails: React.FC = () => {
           )}
 
           {tab === 'menu' && (
-            <div className="fade-in">
+            <div key="menu" className="tab-content">
               <div className="eyebrow">{t('restaurantDetail.featuredDishes')}</div>
               <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {(restaurant.menuItems && restaurant.menuItems.length > 0
@@ -272,7 +272,7 @@ const RestaurantDetails: React.FC = () => {
           )}
 
           {tab === 'reviews' && (
-            <div className="fade-in">
+            <div key="reviews" className="tab-content">
               <div
                 style={{
                   display: 'flex',
@@ -337,7 +337,8 @@ const RestaurantDetails: React.FC = () => {
 
           {tab === 'info' && (
             <div
-              className="fade-in"
+              key="info"
+              className="tab-content"
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
