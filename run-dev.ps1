@@ -72,9 +72,8 @@ $backendProc = Start-Process -FilePath $pythonExe `
   -NoNewWindow -PassThru
 
 Push-Location (Join-Path $ROOT "frontend")
-$npmExe = (Get-Command npm).Source
-$frontendProc = Start-Process -FilePath $npmExe `
-  -ArgumentList "run","dev" `
+$frontendProc = Start-Process -FilePath "cmd.exe" `
+  -ArgumentList "/c","npm run dev" `
   -NoNewWindow -PassThru
 
 Pop-Location
