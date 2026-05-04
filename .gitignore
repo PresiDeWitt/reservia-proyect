@@ -99,3 +99,7 @@ docs/.obsidian/
 
 # pnpm / lockfile alternatives
 frontend/.pnpm-store/
+
+# Obsidian
+*.canvas
+docs/documento/
