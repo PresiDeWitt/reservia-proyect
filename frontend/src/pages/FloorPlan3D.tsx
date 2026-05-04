@@ -36,7 +36,6 @@ const FloorPlan3D: React.FC = () => {
   const navigate = useNavigate();
   const mountRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
-  const [hovered, setHovered] = useState<string | null>(null);
 
   useEffect(() => {
     const mount = mountRef.current;
@@ -392,8 +391,6 @@ const FloorPlan3D: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {hovered && <span style={{ display: 'none' }}>{hovered}</span>}
     </div>
   );
 };
