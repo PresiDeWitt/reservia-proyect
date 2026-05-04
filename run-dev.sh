@@ -6,6 +6,9 @@ set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 VENV="$ROOT/.venv"
 
+# Development mode
+export DEBUG=True
+
 # Colores
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'

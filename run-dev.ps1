@@ -5,6 +5,9 @@ $ErrorActionPreference = "Stop"
 $ROOT = Split-Path -Parent $PSCommandPath
 $VENV = Join-Path $ROOT ".venv"
 
+# Development mode
+$env:DEBUG = "True"
+
 Write-Host ""
 Write-Host "========================================"
 Write-Host "  ReserVia - Modo Desarrollo"
