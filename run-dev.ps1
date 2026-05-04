@@ -5,20 +5,6 @@ $ErrorActionPreference = "Stop"
 $ROOT = Split-Path -Parent $PSCommandPath
 $VENV = Join-Path $ROOT ".venv"
 
-$Green = "`e[0;32m"
-$Yellow = "`e[1;33m"
-$Red = "`e[0;31m"
-$NC = "`e[0m"
-
-# Cleanup handler
-$backendProc = $null
-$frontendProc = $null
-
-$null = Register-EngineEvent -SourceIdentifier PowerShell.Exiting -SupportEvent -Action {
-  if ($backendProc) { Stop-Process $backendProc.Id -Force -ErrorAction SilentlyContinue }
-  if ($frontendProc) { Stop-Process $frontendProc.Id -Force -ErrorAction SilentlyContinue }
-}
-
 Write-Host ""
 Write-Host "========================================"
 Write-Host "  ReserVia - Modo Desarrollo"
@@ -36,54 +22,60 @@ if (-not (Test-Path $pipExe)) {
 
 # Crear venv si no existe
 if (-not (Test-Path $pythonExe)) {
-  Write-Host "$Yellow Creando entorno virtual Python en .venv...$NC"
+  Write-Host "Creando entorno virtual Python en .venv..." -ForegroundColor Yellow
   $sysPython = Get-Command python -ErrorAction SilentlyContinue
   if (-not $sysPython) { $sysPython = Get-Command python3 -ErrorAction SilentlyContinue }
   if (-not $sysPython) {
-    Write-Host "$Red No se encontro Python en el sistema$NC"
+    Write-Host "No se encontro Python en el sistema" -ForegroundColor Red
     exit 1
   }
   & $sysPython.Source -m venv $VENV
 }
 
-Write-Host "$Yellow Instalando dependencias Python...$NC"
+Write-Host "Instalando dependencias Python..." -ForegroundColor Yellow
 & $pipExe install -r requirements.txt -q
 
-Write-Host "$Yellow Ejecutando migraciones...$NC"
-& $pythonExe manage.py migrate --run-syncdb -v 0 2>$null
+Write-Host "Ejecutando migraciones..." -ForegroundColor Yellow
+& $pythonExe manage.py migrate --run-syncdb -v 0
 if ($LASTEXITCODE -ne 0) {
   & $pythonExe manage.py migrate -v 0
 }
 
-Write-Host "$Yellow Ejecutando seed...$NC"
+Write-Host "Ejecutando seed..." -ForegroundColor Yellow
 & $pythonExe manage.py seed 2>$null
+if ($LASTEXITCODE -ne 0) { $true }
 
 # --- Frontend setup ---
 Pop-Location
 Push-Location (Join-Path $ROOT "frontend")
 
 if (-not (Test-Path "node_modules")) {
-  Write-Host "$Yellow Instalando dependencias npm...$NC"
+  Write-Host "Instalando dependencias npm..." -ForegroundColor Yellow
   npm install
 }
 
 Pop-Location
 
 Write-Host ""
-Write-Host "$Green ========================================$NC"
-Write-Host "$Green   Backend:  http://localhost:8000$NC"
-Write-Host "$Green   Frontend: http://localhost:5173$NC"
-Write-Host "$Green ========================================$NC"
+Write-Host "========================================" -ForegroundColor Green
+Write-Host "  Backend:  http://localhost:8000"        -ForegroundColor Green
+Write-Host "  Frontend: http://localhost:5173"        -ForegroundColor Green
+Write-Host "========================================" -ForegroundColor Green
 Write-Host ""
 Write-Host "Ctrl+C para parar todo"
 Write-Host ""
 
 # --- Arrancar servidores ---
 Push-Location (Join-Path $ROOT "backend")
-$backendProc = Start-Process -FilePath $pythonExe -ArgumentList "manage.py","runserver","--noreload" -NoNewWindow -PassThru
+$backendProc = Start-Process -FilePath $pythonExe `
+  -ArgumentList "manage.py","runserver","--noreload" `
+  -NoNewWindow -PassThru
 
 Push-Location (Join-Path $ROOT "frontend")
-$frontendProc = Start-Process -FilePath "npm" -ArgumentList "run","dev" -NoNewWindow -PassThru
+$npmExe = (Get-Command npm).Source
+$frontendProc = Start-Process -FilePath $npmExe `
+  -ArgumentList "run","dev" `
+  -NoNewWindow -PassThru
 
 Pop-Location
 Pop-Location
@@ -95,8 +87,8 @@ try {
 }
 finally {
   Write-Host ""
-  Write-Host "$Yellow Apagando servidores...$NC"
+  Write-Host "Apagando servidores..." -ForegroundColor Yellow
   if ($backendProc -and -not $backendProc.HasExited) { Stop-Process $backendProc.Id -Force -ErrorAction SilentlyContinue }
   if ($frontendProc -and -not $frontendProc.HasExited) { Stop-Process $frontendProc.Id -Force -ErrorAction SilentlyContinue }
-  Write-Host "$Green Servidores detenidos.$NC"
+  Write-Host "Servidores detenidos." -ForegroundColor Green
 }

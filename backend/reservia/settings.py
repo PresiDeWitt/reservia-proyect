@@ -40,6 +40,7 @@ _is_mgmt = any(
         "dbshell",
         "createsuperuser",
         "seed",
+        "runserver",
     ]
 )
 if not DEBUG and not IS_TEST and not _is_mgmt and SECRET_KEY == _default_secret:
