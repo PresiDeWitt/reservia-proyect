@@ -14,6 +14,13 @@ Write-Host "  ReserVia - Modo Desarrollo"
 Write-Host "========================================"
 Write-Host ""
 
+# Clean up any stale processes from previous runs
+$pid8000 = (Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue).OwningProcess
+if ($pid8000) { Stop-Process -Id $pid8000 -Force -ErrorAction SilentlyContinue }
+$pids5173 = (Get-NetTCPConnection -LocalPort 5173 -ErrorAction SilentlyContinue).OwningProcess
+if ($pids5173) { $pids5173 | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue } }
+Start-Sleep -Seconds 1
+
 # --- Backend setup ---
 Push-Location (Join-Path $ROOT "backend")
 
