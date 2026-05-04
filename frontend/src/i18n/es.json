@@ -200,17 +200,11 @@
   },
   "cuisines": {
     "Italian": "Italiana",
-    "Sushi": "Sushi",
-    "Steak": "Carne",
-    "Mexican": "Mexicana",
-    "Burgers": "Hamburguesas",
-    "Healthy": "Saludable",
-    "Bakery": "Panadería",
-    "Asian": "Asiática",
     "Japanese": "Japonesa",
     "Steakhouse": "Parrilla",
+    "Fusion": "Fusión",
     "French": "Francesa",
-    "Fusion": "Fusión"
+    "Healthy": "Saludable"
   },
   "chat": {
     "subtitle": "Encuentra tu restaurante perfecto",

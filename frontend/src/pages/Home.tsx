@@ -10,21 +10,17 @@ import { restaurantsApi, type Restaurant } from '../api/restaurants';
 import italianImg from '../assets/images/cuisine_italian_pasta_1769099701383.png';
 import sushiImg from '../assets/images/cuisine_sushi_platter_1769099717268.png';
 import steakImg from '../assets/images/cuisine_steak_grilled_1769099732584.png';
-import mexicanImg from '../assets/images/cuisine_mexican_tacos_1769099775852.png';
-import burgerImg from '../assets/images/cuisine_burger_gourmet_1769099791338.png';
 import healthyImg from '../assets/images/cuisine_healthy_salad_1769099807481.png';
 import bakeryImg from '../assets/images/cuisine_bakery_bread_1769099834160.png';
 import asianImg from '../assets/images/cuisine_asian_noodles_dimsum_1769099849081.png';
 
 const CATEGORIES = [
   { key: 'Italian', image: italianImg },
-  { key: 'Sushi', image: sushiImg },
-  { key: 'Steak', image: steakImg },
-  { key: 'Mexican', image: mexicanImg },
-  { key: 'Burgers', image: burgerImg },
+  { key: 'Japanese', image: sushiImg },
+  { key: 'Steakhouse', image: steakImg },
+  { key: 'Fusion', image: asianImg },
+  { key: 'French', image: bakeryImg },
   { key: 'Healthy', image: healthyImg },
-  { key: 'Bakery', image: bakeryImg },
-  { key: 'Asian', image: asianImg },
 ];
 
 const Home: React.FC = () => {
