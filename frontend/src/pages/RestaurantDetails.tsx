@@ -1,265 +1,390 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { restaurantsApi, type Restaurant } from '../api/restaurants';
-import { reservationsApi } from '../api/reservations';
-import { useAuth } from '../context/AuthContext';
+import ReservationWidget from '../components/ReservationWidget';
+import AuthModal from '../components/AuthModal';
 
-const TIME_SLOTS = ['13:00', '13:30', '14:00', '14:30', '20:00', '20:30', '21:00', '21:30', '22:00'];
+type TabKey = 'about' | 'menu' | 'reviews' | 'info';
+
+const TAB_KEYS: TabKey[] = ['about', 'menu', 'reviews', 'info'];
+
+const FACT_KEYS = [
+  { i: 'restaurant_menu', k: 'seasonal' },
+  { i: 'deck', k: 'terrace' },
+  { i: 'local_bar', k: 'bar' },
+  { i: 'accessible', k: 'accessible' },
+  { i: 'pets', k: 'pets' },
+  { i: 'wifi', k: 'wifi' },
+];
 
 const RestaurantDetails: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { id } = useParams<{ id: string }>();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
-  const [guests, setGuests] = useState(2);
-  const [isBooked, setIsBooked] = useState(false);
-  const [bookingError, setBookingError] = useState('');
-  const [bookingLoading, setBookingLoading] = useState(false);
-
-  const bookingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [tab, setTab] = useState<TabKey>('about');
+  const [authOpen, setAuthOpen] = useState(false);
+  const [favorite, setFavorite] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      restaurantsApi.get(id).then(setRestaurant).catch(console.error).finally(() => setLoading(false));
-    }
-    return () => {
-      if (bookingTimeoutRef.current) {
-        clearTimeout(bookingTimeoutRef.current);
-      }
-    };
+    if (!id) return;
+    restaurantsApi.get(id).then(setRestaurant).catch(console.error).finally(() => setLoading(false));
   }, [id]);
-
-  const handleBooking = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedDate || !selectedTime || !restaurant) return;
-    setBookingError('');
-    setBookingLoading(true);
-    try {
-      await reservationsApi.create({
-        restaurantId: Number(restaurant.id),
-        date: selectedDate,
-        time: selectedTime,
-        guests,
-      });
-      setIsBooked(true);
-      
-      if (bookingTimeoutRef.current) clearTimeout(bookingTimeoutRef.current);
-      bookingTimeoutRef.current = setTimeout(() => setIsBooked(false), 5000);
-    } catch (err: unknown) {
-      setBookingError(err instanceof Error ? err.message : 'Booking failed');
-    } finally {
-      setBookingLoading(false);
-    }
-  };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin" />
+      <div className="container" style={{ padding: '120px 24px' }}>
+        <div className="shimmer" style={{ height: 480, borderRadius: 'var(--r-xl)' }} />
       </div>
     );
   }
 
   if (!restaurant) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-500">Restaurant not found.</div>;
+    return (
+      <div className="container" style={{ padding: '120px 24px', textAlign: 'center' }}>
+        <h1 className="editorial" style={{ fontSize: 48, fontWeight: 300 }}>
+          No <span className="italic-accent">encontrado</span>
+        </h1>
+      </div>
+    );
   }
 
-  const timeSlots = TIME_SLOTS;
-
   return (
-    <div className="bg-background-light min-h-screen pb-20">
-      {/* Hero Gallery */}
-      <div className="h-[40vh] md:h-[50vh] grid grid-cols-4 gap-2 p-2">
-        <div className="col-span-4 md:col-span-2 relative overflow-hidden rounded-xl">
-          <img src={restaurant.image} alt={restaurant.name} className="w-full h-full object-cover" />
-        </div>
-        <div className="hidden md:block relative overflow-hidden rounded-xl">
-          <img src={restaurant.image} alt="Interior" className="w-full h-full object-cover" />
-        </div>
-        <div className="hidden md:block relative overflow-hidden rounded-xl">
-          <img src={restaurant.image} alt="Food" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center pointer-events-none">
-            <span className="text-white font-bold">{t('restaurant.photos')}</span>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
+      {/* Hero */}
+      <div
+        style={{
+          position: 'relative',
+          height: '65vh',
+          minHeight: 500,
+          marginTop: -88,
+          paddingTop: 88,
+          overflow: 'hidden',
+        }}
+      >
+        <img
+          src={restaurant.image}
+          alt={restaurant.name}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(180deg, rgba(15,23,42,0.35) 0%, rgba(15,23,42,0.1) 40%, rgba(15,23,42,0.85) 100%)',
+          }}
+        />
+        <div
+          className="container"
+          style={{
+            position: 'relative',
+            zIndex: 2,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            paddingBottom: 48,
+            color: 'var(--cream)',
+          }}
+        >
+          <div className="rise-stagger" style={{ maxWidth: 900 }}>
+            <div className="eyebrow" style={{ color: 'var(--primary)' }}>
+              {restaurant.cuisine} · {restaurant.location}
+            </div>
+            <h1
+              className="editorial"
+              style={{
+                fontSize: 'clamp(48px,7vw,104px)',
+                fontWeight: 300,
+                letterSpacing: '-0.03em',
+                lineHeight: 0.95,
+                marginTop: 14,
+              }}
+            >
+              {restaurant.name}
+            </h1>
+            <div style={{ display: 'flex', gap: 18, marginTop: 24, flexWrap: 'wrap', alignItems: 'center', fontSize: 13 }}>
+              <span style={{ display: 'inline-flex', gap: 6, alignItems: 'center', color: 'var(--primary)' }}>
+                <span className="mat mat-fill" style={{ fontSize: 16 }}>star</span>
+                <span style={{ color: 'var(--cream)', fontWeight: 700 }}>{restaurant.rating.toFixed(1)}</span>
+              </span>
+              <span style={{ opacity: 0.6 }}>·</span>
+              <span>{restaurant.reviewsCount} {t('restaurantDetail.reviews')}</span>
+              <span style={{ opacity: 0.6 }}>·</span>
+              <span>{restaurant.priceRange}</span>
+              <span style={{ opacity: 0.6 }}>·</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <span
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: 'var(--emerald)',
+                    animation: 'pulse-glow 2s ease-out infinite',
+                  }}
+                />
+                {t('restaurantDetail.openNow')}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 10, marginTop: 32, flexWrap: 'wrap' }}>
+              <button onClick={() => setFavorite((v) => !v)} className="btn btn-dark">
+                <span className={`mat ${favorite ? 'mat-fill' : ''}`} style={{ fontSize: 16, color: favorite ? 'var(--primary)' : 'inherit' }}>
+                  favorite
+                </span>
+                <span>{favorite ? t('restaurantDetail.saved') : t('restaurantDetail.save')}</span>
+              </button>
+              <button className="btn btn-dark">
+                <span className="mat" style={{ fontSize: 16 }}>ios_share</span>
+                <span>{t('restaurantDetail.share')}</span>
+              </button>
+              <button className="btn btn-dark">
+                <span className="mat" style={{ fontSize: 16 }}>directions</span>
+                <span>{t('restaurantDetail.directions')}</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-[1280px] mx-auto px-4 md:px-10 lg:px-40 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
-        {/* Main Content */}
-        <div className="lg:col-span-2">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col gap-4"
+      {/* Body */}
+      <div
+        className="container detail-grid"
+        style={{
+          padding: '48px 24px',
+          display: 'grid',
+          gridTemplateColumns: '1fr 400px',
+          gap: 48,
+        }}
+      >
+        <div>
+          {/* Tabs */}
+          <div
+            style={{
+              display: 'flex',
+              gap: 4,
+              borderBottom: '1px solid var(--border)',
+              marginBottom: 32,
+              flexWrap: 'wrap',
+            }}
           >
-            <div className="flex justify-between items-start">
-              <div>
-                <h1 className="text-2xl sm:text-4xl font-black text-navy">{restaurant.name}</h1>
-                <div className="flex items-center gap-3 mt-2 text-slate-600">
-                  <span className="flex items-center gap-1 font-bold text-primary">
-                    <span className="material-symbols-outlined text-sm">stars</span>
-                    {restaurant.rating}
-                  </span>
-                  <span>•</span>
-                  <span>{restaurant.reviewsCount} {t('restaurant.reviews')}</span>
-                  <span>•</span>
-                  <span>{t(`cuisines.${restaurant.cuisine}`, { defaultValue: restaurant.cuisine })}</span>
-                </div>
-              </div>
-              <button className="p-3 rounded-full border border-slate-200 hover:bg-slate-50 transition-colors">
-                <span className="material-symbols-outlined">share</span>
+            {TAB_KEYS.map((k) => (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                style={{
+                  padding: '14px 16px',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: tab === k ? 'var(--ink)' : 'var(--ink-55)',
+                  borderBottom: tab === k ? '2px solid var(--primary)' : '2px solid transparent',
+                  marginBottom: -1,
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                {t(`restaurantDetail.tabs.${k}`)}
               </button>
-            </div>
+            ))}
+          </div>
 
-            <div className="flex items-center gap-2 text-slate-500 text-sm italic">
-              <span className="material-symbols-outlined text-lg">location_on</span>
-              {restaurant.address}
-            </div>
+          {tab === 'about' && (
+            <div key="about" className="tab-content">
+              <p style={{ fontSize: 18, lineHeight: 1.7, maxWidth: 640 }}>
+                {restaurant.description ||
+                  `${restaurant.name} es una propuesta de cocina ${restaurant.cuisine.toLowerCase()} en ${restaurant.location}. Cocina honesta, producto local y una sala con alma.`}
+              </p>
 
-            <hr className="border-slate-200 my-4" />
-
-            <div className="prose prose-slate max-w-none">
-              <h3 className="text-xl font-bold text-navy mb-4">{t('restaurant.about')}</h3>
-              <p className="text-slate-600 leading-relaxed">{restaurant.description}</p>
-            </div>
-
-            {restaurant.menuItems && restaurant.menuItems.length > 0 && (
-              <div className="mt-8">
-                <h3 className="text-xl font-bold text-navy mb-6">{t('restaurant.menuHighlights')}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {restaurant.menuItems.map(item => (
-                    <div key={item.id} className="p-4 rounded-xl border border-slate-100 bg-white shadow-sm flex justify-between items-center group hover:border-primary transition-all">
-                      <div>
-                        <span className="font-medium text-slate-800">{item.name}</span>
-                        <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>
-                      </div>
-                      <span className="text-sm font-bold text-primary ml-3">€{item.price}</span>
+              <div style={{ marginTop: 48 }}>
+                <div className="eyebrow">{t('restaurantDetail.goodToKnow')}</div>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                    gap: 14,
+                    marginTop: 14,
+                  }}
+                >
+                  {FACT_KEYS.map((x) => (
+                    <div
+                      key={x.k}
+                      style={{
+                        display: 'flex',
+                        gap: 10,
+                        alignItems: 'center',
+                        padding: 14,
+                        background: 'var(--surface-3)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--r-md)',
+                      }}
+                    >
+                      <span className="mat" style={{ color: 'var(--primary)' }}>{x.i}</span>
+                      <span style={{ fontSize: 13, fontWeight: 600 }}>{t(`restaurantDetail.facts.${x.k}`)}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-          </motion.div>
-        </div>
+            </div>
+          )}
 
-        {/* Booking Sidebar */}
-        <div className="lg:col-span-1">
-          <motion.div 
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:sticky lg:top-28 p-6 md:p-8 rounded-2xl bg-white border border-slate-200 shadow-xl"
-          >
-            <h3 className="text-2xl font-bold text-navy mb-6">{t('restaurant.reserveTitle')}</h3>
-            
-            <form onSubmit={handleBooking} className="flex flex-col gap-6">
-              <fieldset className="flex flex-col gap-2 border-none p-0 m-0">
-                <legend className="text-sm font-bold text-slate-700 mb-2">{t('restaurant.guests')}</legend>
-                <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden h-12">
-                  <button 
-                    type="button"
-                    onClick={() => setGuests(Math.max(1, guests - 1))}
-                    className="flex-1 h-full hover:bg-slate-50 transition-colors"
-                    aria-label="Decrease guests"
+          {tab === 'menu' && (
+            <div key="menu" className="tab-content">
+              <div className="eyebrow">{t('restaurantDetail.featuredDishes')}</div>
+              <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {(restaurant.menuItems && restaurant.menuItems.length > 0
+                  ? restaurant.menuItems
+                  : [
+                      { id: 1, name: 'Plato de temporada', description: 'Producto local de mercado', price: 18 },
+                      { id: 2, name: 'Especialidad de la casa', description: 'Receta de siempre', price: 24 },
+                    ]
+                ).map((m) => (
+                  <div
+                    key={m.id}
+                    style={{
+                      display: 'flex',
+                      gap: 16,
+                      padding: 20,
+                      background: 'var(--surface-3)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--r-md)',
+                      alignItems: 'center',
+                    }}
                   >
-                    -
-                  </button>
-                  <span className="w-12 text-center font-bold text-navy" aria-live="polite">{guests}</span>
-                  <button 
-                    type="button"
-                    onClick={() => setGuests(guests + 1)}
-                    className="flex-1 h-full hover:bg-slate-50 transition-colors"
-                    aria-label="Increase guests"
-                  >
-                    +
-                  </button>
-                </div>
-              </fieldset>
-
-              <div className="flex flex-col gap-2">
-                <label htmlFor="booking-date" className="text-sm font-bold text-slate-700">{t('restaurant.date')}</label>
-                <input 
-                  id="booking-date"
-                  type="date" 
-                  required
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full h-12 px-4 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-medium"
-                />
-              </div>
-
-              <fieldset className="flex flex-col gap-2 border-none p-0 m-0">
-                <legend className="text-sm font-bold text-slate-700 mb-2">{t('restaurant.availableTimes')}</legend>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {timeSlots.map(time => (
-                    <button
-                      key={time}
-                      type="button"
-                      onClick={() => setSelectedTime(time)}
-                      className={`h-10 rounded-lg text-xs font-bold transition-all border ${
-                        selectedTime === time 
-                        ? 'bg-primary border-primary text-white shadow-md' 
-                        : 'border-slate-200 text-slate-600 hover:border-primary hover:text-primary'
-                      }`}
+                    <div style={{ flex: 1 }}>
+                      <h4 className="editorial" style={{ fontSize: 22, fontWeight: 400 }}>
+                        {m.name}
+                      </h4>
+                      <p style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 6 }}>{m.description}</p>
+                    </div>
+                    <div
+                      className="editorial mono-num"
+                      style={{ fontSize: 24, fontWeight: 400, color: 'var(--primary)' }}
                     >
-                      {time}
-                    </button>
+                      €{m.price}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === 'reviews' && (
+            <div key="reviews" className="tab-content">
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 48,
+                  alignItems: 'center',
+                  padding: 24,
+                  background: 'var(--surface-3)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--r-md)',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div>
+                  <div
+                    className="editorial mono-num"
+                    style={{ fontSize: 72, fontWeight: 300, lineHeight: 1 }}
+                  >
+                    {restaurant.rating.toFixed(1)}
+                  </div>
+                  <div style={{ display: 'flex', gap: 2, marginTop: 6 }}>
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <span
+                        key={n}
+                        className="mat mat-fill"
+                        style={{
+                          fontSize: 16,
+                          color: n <= Math.round(restaurant.rating) ? 'var(--primary)' : 'var(--ink-20)',
+                        }}
+                      >
+                        star
+                      </span>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-55)', marginTop: 6 }}>
+                    {restaurant.reviewsCount} {t('restaurantDetail.reviews')}
+                  </div>
+                </div>
+                <div style={{ flex: 1, minWidth: 240 }}>
+                  {([
+                    ['food', 4.9],
+                    ['service', 4.8],
+                    ['ambience', 4.7],
+                    ['value', 4.5],
+                  ] as [string, number][]).map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                      <div style={{ fontSize: 12, width: 140, color: 'var(--ink-55)' }}>{t(`restaurantDetail.reviewCategories.${k}`)}</div>
+                      <div style={{ flex: 1, height: 6, background: 'var(--ink-5)', borderRadius: 999, overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${((v as number) / 5) * 100}%`, background: 'var(--primary)' }} />
+                      </div>
+                      <div className="mono-num" style={{ fontSize: 12, fontWeight: 700, width: 30, textAlign: 'right' }}>
+                        {v as number}
+                      </div>
+                    </div>
                   ))}
                 </div>
-              </fieldset>
-
-              {bookingError && (
-                <p className="text-red-500 text-sm font-medium text-center">{bookingError}</p>
-              )}
-              {!isAuthenticated && (
-                <p className="text-amber-600 text-xs text-center font-medium">Sign in to complete your reservation.</p>
-              )}
-
-              <button
-                type="submit"
-                className="w-full h-14 bg-primary hover:bg-orange-600 text-white font-bold rounded-xl shadow-lg shadow-orange-200 transition-all transform active:scale-95 disabled:opacity-50"
-                disabled={!selectedDate || !selectedTime || !isAuthenticated || bookingLoading}
-              >
-                {bookingLoading ? '...' : t('restaurant.completeReservation')}
-              </button>
-
-              <p className="text-center text-xs text-slate-400">
-                {t('restaurant.noCharges')}
+              </div>
+              <p style={{ marginTop: 24, color: 'var(--ink-55)', fontSize: 14 }}>
+                {t('restaurantDetail.reviewsVerified')}
               </p>
-            </form>
+            </div>
+          )}
 
-            <AnimatePresence>
-              {isBooked && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  className="absolute inset-0 bg-emerald/95 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center p-8 text-white text-center z-50"
+          {tab === 'info' && (
+            <div
+              key="info"
+              className="tab-content"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: 16,
+              }}
+            >
+              {[
+                { k: 'address', v: restaurant.address, i: 'location_on' },
+                { k: 'phone', v: '+34 912 345 678', i: 'call' },
+                { k: 'hours', v: 'Mar a Dom · 13:00 a 16:00 · 20:00 a 23:30', i: 'schedule' },
+                { k: 'payment', v: 'Visa · MC · AmEx · Bizum', i: 'credit_card' },
+                { k: 'dress', v: 'Smart casual', i: 'checkroom' },
+                { k: 'parking', v: 'SER · parking 200m', i: 'local_parking' },
+              ].map((x) => (
+                <div
+                  key={x.k}
+                  style={{
+                    padding: 20,
+                    background: 'var(--surface-3)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--r-md)',
+                  }}
                 >
-                  <span className="material-symbols-outlined text-6xl mb-4">check_circle</span>
-                  <h4 className="text-2xl font-bold mb-2">{t('restaurant.reserved')}</h4>
-                  <p className="font-medium">
-                    {t('restaurant.reservedDetails', { guests, time: selectedTime, date: selectedDate })}
-                  </p>
-                  <button 
-                    onClick={() => setIsBooked(false)}
-                    className="mt-6 px-6 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-bold transition-all"
-                  >
-                    {t('restaurant.gotIt')}
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+                  <span className="mat" style={{ color: 'var(--primary)' }}>{x.i}</span>
+                  <div className="eyebrow" style={{ marginTop: 10 }}>
+                    {t(`restaurantDetail.infoItems.${x.k}`)}
+                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 600, marginTop: 6 }}>{x.v}</div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
+
+        <ReservationWidget restaurant={restaurant} onAuthRequired={() => setAuthOpen(true)} />
       </div>
-    </div>
+
+      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+
+      <style>{`
+        @media (max-width: 900px) {
+          .detail-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </motion.div>
   );
 };
 
 export default RestaurantDetails;
-

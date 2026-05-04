@@ -1,52 +1,101 @@
-# Python
+# ========================
+# Python / Django
+# ========================
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
 .Python
+*.egg
 *.egg-info/
 dist/
 build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+.installed.cfg
+lib/
+lib64/
+
+# Entorno virtual
 venv/
-reservia-proyect/.env
-*.env.local
-*.env.production
-*.env.development
+env/
+ENV/
+.venv/
+.env/
+
 # Django
-backend/db.sqlite3
+*.log
+*.pot
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
 backend/staticfiles/
-backend/venv/
-backend/api/__pycache__/
-backend/reservia/__pycache__/
 
-# Node
-frontend/node_modules/
+# ========================
+# Node / React / Vite
+# ========================
+node_modules/
+dist/
+dist-ssr/
+*.local
+.cache/
+.parcel-cache/
+
+# Build output
 frontend/dist/
+frontend/build/
 
-# IDE
+# ========================
+# Variables de entorno
+# ========================
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+frontend/.env
+
+# ========================
+# IDEs y editores
+# ========================
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS
+*~
 .DS_Store
 Thumbs.db
 
-# Secrets
-.env
-.env.local
-.env.example
+# ========================
+# Testing
+# ========================
+.coverage
+htmlcov/
+.pytest_cache/
+coverage/
+coverage.xml
+*.cover
+.mypy_cache/
 
-# Claude
+# ========================
+# Docker
+# ========================
+*.override.yml
+
+# ========================
+# Misc
+# ========================
+*.bak
+*.tmp
 CLAUDE.md
 .claude/
-
-# Local development artifacts
-.venv/
-**/__pycache__/
-.pytest_cache/
-.mypy_cache/
-.coverage
-coverage.xml
 docs/.obsidian/
+
+# pnpm / lockfile alternatives
+frontend/.pnpm-store/

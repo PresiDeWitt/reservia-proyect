@@ -31,13 +31,18 @@
     "viewAll": "View all",
     "results": "restaurants",
     "clearFilters": "Clear filters",
-    "noResults": "No restaurants found. Try a different search."
+    "noResults": "No restaurants found. Try a different search.",
+    "platformLabel": "On the platform",
+    "restaurantsLabel": "restaurants",
+    "platformSub": "Available right now"
   },
   "restaurant": {
     "realTime": "Real-time",
     "menu": "Menu",
     "bookNow": "Book Now",
     "reviews": "reviews",
+    "editorsPick": "Editor's Pick",
+    "tablesLeft": "Only {{count}} tables today",
     "about": "About the restaurant",
     "menuHighlights": "Menu highlights",
     "reserveTitle": "Reserve a table",
@@ -51,6 +56,101 @@
     "gotIt": "Got it",
     "photos": "+12 photos"
   },
+  "confirmation": {
+    "confirmed": "Booking confirmed",
+    "seeYou": "We'll see you there",
+    "date": "Date",
+    "time": "Time",
+    "table": "Table",
+    "code": "Code",
+    "occasion": "Occasion",
+    "note": "Note",
+    "countdown": "Arriving in",
+    "viewBookings": "View my bookings",
+    "backHome": "Back to home"
+  },
+  "restaurantDetail": {
+    "tabs": {
+      "about": "About",
+      "menu": "Menu",
+      "reviews": "Reviews",
+      "info": "Practical info"
+    },
+    "openNow": "Open now",
+    "save": "Save",
+    "saved": "Saved",
+    "share": "Share",
+    "directions": "Get directions",
+    "goodToKnow": "Good to know",
+    "featuredDishes": "Featured dishes",
+    "reviewsVerified": "Verified reviews are shown once diners complete their visit.",
+    "reviews": "reviews",
+    "reviewCategories": {
+      "food": "Food",
+      "service": "Service",
+      "ambience": "Ambience",
+      "value": "Value for money"
+    },
+    "infoItems": {
+      "address": "Address",
+      "phone": "Phone",
+      "hours": "Hours",
+      "payment": "Payment",
+      "dress": "Dress code",
+      "parking": "Parking"
+    },
+    "facts": {
+      "seasonal": "Seasonal menu",
+      "terrace": "Covered terrace",
+      "bar": "Cocktail bar",
+      "accessible": "Accessible",
+      "pets": "Pet friendly",
+      "wifi": "Wi-Fi"
+    }
+  },
+  "reservation": {
+    "reserveTable": "Reserve your table",
+    "step": "Step",
+    "guests": "Guests",
+    "date": "Date",
+    "service": "Service",
+    "lunch": "Lunch",
+    "dinner": "Dinner",
+    "time": "Time",
+    "day": "Day",
+    "table": "Table",
+    "continue": "Continue",
+    "orElse": "OR",
+    "chooseFloor": "Choose table on the floor plan",
+    "floorHint": "See the live floor plan and pick your table like at the cinema.",
+    "occasion": "Occasion (optional)",
+    "occasionLabel": "Occasion",
+    "noteToRestaurant": "Note to restaurant",
+    "notePlaceholder": "Allergies, quiet table, baby chair...",
+    "noteLabel": "Note",
+    "back": "Back",
+    "review": "Review",
+    "confirm": "Confirm booking",
+    "cancelPolicy": "No charge now. Only a €10/person deposit if cancelled less than 4h before.",
+    "loginRequired": "Log in to complete the booking",
+    "tableConfirmed": "Table confirmed",
+    "seeYou": "We'll see you there",
+    "occasionOptions": {
+      "birthday": "Birthday",
+      "anniversary": "Anniversary",
+      "firstDate": "First date",
+      "business": "Business",
+      "casual": "Casual"
+    }
+  },
+  "search": {
+    "placeholder": "Search cuisine, neighbourhood, vibe...",
+    "nearMe": "Near me",
+    "popular": "POPULAR NOW",
+    "results": "RESULTS",
+    "searching": "SEARCHING…",
+    "noResults": "No results for"
+  },
   "footer": {
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
@@ -61,21 +161,21 @@
     "signIn": "Sign In",
     "register": "Register",
     "createAccount": "Create Account",
-    "namePlaceholder": "First name",
+    "namePlaceholder": "Your name",
     "lastNamePlaceholder": "Last name",
-    "phonePlaceholder": "Phone",
+    "phonePlaceholder": "Phone number",
     "emailPlaceholder": "Email address",
     "passwordPlaceholder": "Password (min. 6 characters)"
   },
   "profile": {
     "menu": "Profile menu",
     "verified": "Verified account",
-    "newBooking": "Book",
+    "newBooking": "Book a table",
     "account": "My account",
-    "accountHint": "Personal details and preferences",
+    "accountHint": "Personal data and preferences",
     "bookings": "My bookings",
     "bookingsHint": "History and upcoming visits",
-    "favorites": "Favorites",
+    "favorites": "Favourites",
     "favoritesHint": "Saved restaurants",
     "explore": "Explore map",
     "exploreHint": "Discover near you",
@@ -87,11 +187,16 @@
   },
   "bookings": {
     "title": "My Bookings",
+    "agenda": "Your schedule",
+    "loginMessage": "Log in to see your bookings",
     "empty": "You have no reservations yet.",
     "guests": "guests",
     "cancel": "Cancel",
     "cancelled": "Cancelled",
-    "confirmed": "Confirmed"
+    "confirmed": "Confirmed",
+    "filterUpcoming": "Upcoming",
+    "filterPast": "Past",
+    "filterCancelled": "Cancelled"
   },
   "cuisines": {
     "Italian": "Italian",
@@ -109,7 +214,7 @@
   },
   "chat": {
     "subtitle": "Find your perfect restaurant",
-    "welcome": "Hi\\! Ask me to find a restaurant for you. I can help based on cuisine, mood, budget or your location.",
+    "welcome": "Hi! Ask me to find a restaurant for you. I can help based on cuisine, mood, budget or your location.",
     "placeholder": "e.g. Romantic Italian for tonight...",
     "error": "Sorry, something went wrong. Please try again.",
     "locationOn": "Location enabled",

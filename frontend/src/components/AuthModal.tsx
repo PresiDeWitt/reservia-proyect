@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../api/auth';
 import { useAuth } from '../context/AuthContext';
+import Logo from './Logo';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -89,14 +90,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               />
 
               <div className="relative z-10 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-9 h-9 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/30">
-                    <span className="material-symbols-outlined text-navy" style={{ fontSize: 20, fontWeight: 700 }}>
-                      restaurant
-                    </span>
-                  </span>
-                  <span className="font-black tracking-tight text-lg">ReserVia</span>
-                </div>
+                <Logo size={90} />
                 <span className="text-[10px] tracking-[0.3em] uppercase text-background-light/60 font-semibold">
                   Est. 2026
                 </span>

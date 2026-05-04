@@ -1,78 +1,170 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
 import ProfileMenu from './ProfileMenu';
 import LanguageMenu from './LanguageMenu';
+import MobileDrawer from './MobileDrawer';
+import Logo from './Logo';
+import NotificationsMenu from './NotificationsMenu';
+import SearchModal from './SearchModal';
 
 const Header: React.FC = () => {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const location = useLocation();
   const [authOpen, setAuthOpen] = useState(false);
-  const [headerSearch, setHeaderSearch] = useState('');
-  const navigate = useNavigate();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const onLanding = location.pathname === '/';
+  const transparent = onLanding && !scrolled;
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const variant = transparent ? 'dark' : 'light';
+
+  const headerStyle: React.CSSProperties = {
+    background: transparent ? 'transparent' : 'color-mix(in srgb, var(--surface) 82%, transparent)',
+    backdropFilter: transparent ? 'blur(0)' : 'blur(14px) saturate(1.2)',
+    WebkitBackdropFilter: transparent ? 'blur(0)' : 'blur(14px) saturate(1.2)',
+    borderBottom: transparent ? '1px solid transparent' : '1px solid var(--border)',
+    color: transparent ? '#fff' : 'var(--ink)',
+    transition: 'all 0.35s cubic-bezier(0.2,0.8,0.2,1)',
+  };
+
+  const navLinkClass = (to: string) => {
+    const active = location.pathname === to;
+    return [
+      'px-3.5 py-2 rounded-full text-[13px] font-semibold transition-colors',
+      active ? 'bg-white/10 dark-active' : 'opacity-85 hover:opacity-100',
+    ].join(' ');
+  };
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-slate-800 bg-navy px-4 md:px-10 py-4 shadow-md">
-        <Link to="/" className="flex items-center gap-4 text-white hover:opacity-80 transition-opacity">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary/20 text-primary">
-            <span className="material-symbols-outlined text-3xl">restaurant</span>
-          </div>
-          <h2 className="text-white text-xl font-bold leading-tight tracking-tight">ReserVia</h2>
-        </Link>
-
-        <form
-          className="hidden lg:flex flex-1 max-w-lg mx-8"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (headerSearch.trim()) navigate(`/?search=${encodeURIComponent(headerSearch.trim())}`);
-          }}
+      <header className="sticky top-0 z-[100]" style={headerStyle}>
+        <div
+          className="container flex items-center gap-5"
+          style={{ padding: scrolled ? '2px 24px' : '4px 24px', transition: 'padding 0.3s' }}
         >
-          <div className="relative w-full group">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-indigo-400">
-              <span className="material-symbols-outlined text-[20px]">search</span>
-            </div>
-            <input
-              className="w-full h-10 pl-10 pr-4 rounded-lg bg-slate-800/50 border border-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
-              placeholder={t('header.searchPlaceholder')}
-              type="text"
-              value={headerSearch}
-              onChange={(e) => setHeaderSearch(e.target.value)}
-            />
-          </div>
-        </form>
+          <Link to="/" className="shrink-0" aria-label="ReserVia">
+            <Logo size={44} />
+          </Link>
 
-        <div className="flex justify-end gap-6 items-center">
-          <nav className="hidden md:flex items-center gap-8">
-            <Link className="text-slate-300 hover:text-white transition-colors text-sm font-medium" to="/">{t('header.home')}</Link>
-            <Link className="text-slate-300 hover:text-white transition-colors text-sm font-medium" to="/map">{t('header.map')}</Link>
+          <nav className="hide-sm flex gap-1 ml-3">
+            <Link to="/" className={navLinkClass('/')} style={{ background: location.pathname === '/' ? (transparent ? 'rgba(255,255,255,0.1)' : 'var(--ink-10)') : 'transparent' }}>
+              {t('header.home')}
+            </Link>
+            <Link
+              to="/map"
+              className={navLinkClass('/map')}
+              style={{ background: location.pathname === '/map' ? (transparent ? 'rgba(255,255,255,0.1)' : 'var(--ink-10)') : 'transparent' }}
+            >
+              {t('header.map')}
+            </Link>
             {isAuthenticated && (
-              <Link className="text-slate-300 hover:text-white transition-colors text-sm font-medium" to="/my-bookings">{t('header.myBookings')}</Link>
+              <Link
+                to="/my-bookings"
+                className={navLinkClass('/my-bookings')}
+                style={{ background: location.pathname === '/my-bookings' ? (transparent ? 'rgba(255,255,255,0.1)' : 'var(--ink-10)') : 'transparent' }}
+              >
+                {t('header.myBookings')}
+              </Link>
             )}
           </nav>
 
-          <div className="flex items-center gap-2 sm:gap-3 border-l border-slate-700 pl-3 sm:pl-6 ml-1 sm:ml-2">
-            <LanguageMenu />
-            {isAuthenticated ? (
-              <ProfileMenu />
-            ) : (
-              <button
-                onClick={() => setAuthOpen(true)}
-                className="flex items-center justify-center rounded-lg h-9 sm:h-10 px-3 sm:px-6 bg-primary hover:bg-orange-600 transition-colors text-white text-xs sm:text-sm font-bold shadow-sm whitespace-nowrap"
-              >
-                {t('header.signIn')}
-              </button>
-            )}
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => setSearchOpen((v) => !v)}
+              aria-label="Buscar"
+              className="grid place-items-center rounded-full transition-colors"
+              style={{
+                width: 40,
+                height: 40,
+                color: 'inherit',
+                background: searchOpen ? (transparent ? 'rgba(255,255,255,0.12)' : 'var(--ink-5)') : 'transparent',
+              }}
+            >
+              <span className="mat" style={{ fontSize: 20 }}>search</span>
+            </button>
+
+            <div className="hide-sm flex items-center gap-2">
+              <NotificationsMenu variant={variant} />
+              <LanguageMenu variant={variant} />
+              {isAuthenticated ? (
+                <ProfileMenu variant={variant} />
+              ) : (
+                <button
+                  onClick={() => setAuthOpen(true)}
+                  className="btn btn-primary"
+                  style={{ height: 40, padding: '0 18px' }}
+                >
+                  <span>{t('header.signIn')}</span>
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => setMobileOpen(true)}
+              aria-label="Menú"
+              className="show-mobile items-center justify-center"
+              style={{
+                display: 'none',
+                width: 40,
+                height: 40,
+                borderRadius: '50%',
+                background: 'transparent',
+                color: 'inherit',
+                padding: 0,
+                border: transparent ? '2px solid rgba(255,255,255,0.25)' : '2px solid var(--border)',
+                overflow: 'hidden',
+              }}
+            >
+              {isAuthenticated && user ? (
+                <span
+                  className="grid place-items-center text-white font-black"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(135deg, var(--primary), var(--primary-700))',
+                    fontSize: 13,
+                  }}
+                >
+                  {(user.name || user.email)
+                    .split(' ')
+                    .map((w) => w[0])
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase()}
+                </span>
+              ) : (
+                <span className="mat" style={{ fontSize: 22 }}>person</span>
+              )}
+            </button>
           </div>
         </div>
+
       </header>
+
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+
       <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+      <MobileDrawer
+        open={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        onOpenAuth={() => setAuthOpen(true)}
+      />
     </>
   );
 };
 
 export default Header;
-
-

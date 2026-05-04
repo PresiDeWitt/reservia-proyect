@@ -11,13 +11,54 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ name, image, onClick, activ
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center gap-3 sm:gap-4 min-w-[100px] sm:min-w-[120px] group snap-center bg-transparent border-none p-0 cursor-pointer ${active ? 'opacity-100' : 'opacity-80 hover:opacity-100'}`}
+      className="relative shrink-0 overflow-hidden transition-transform"
+      style={{
+        width: 180,
+        height: 240,
+        borderRadius: 'var(--r-xl)',
+        scrollSnapAlign: 'start',
+        border: active ? '3px solid var(--primary)' : '3px solid transparent',
+        background: 'transparent',
+        cursor: 'pointer',
+        padding: 0,
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
     >
-      <div
-        className={`size-20 sm:size-24 rounded-full bg-cover bg-center shadow-md transition-all group-hover:scale-105 ${active ? 'ring-4 ring-primary scale-105' : 'ring-4 ring-white group-hover:shadow-xl'}`}
-        style={{ backgroundImage: `url(${image})` }}
+      <img
+        src={image}
+        alt={name}
+        loading="lazy"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          filter: 'brightness(0.7)',
+        }}
       />
-      <span className={`text-sm sm:text-base font-bold transition-colors ${active ? 'text-primary' : 'text-slate-700 group-hover:text-primary'}`}>{name}</span>
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(180deg, transparent 40%, rgba(15,23,42,0.85) 100%)',
+        }}
+      />
+      <div
+        className="absolute left-3.5 bottom-3.5 text-left"
+        style={{ color: '#fff' }}
+      >
+        <div
+          className="editorial"
+          style={{
+            fontSize: 22,
+            fontWeight: 400,
+            letterSpacing: '-0.01em',
+            lineHeight: 1.05,
+          }}
+        >
+          {name}
+        </div>
+      </div>
     </button>
   );
 };

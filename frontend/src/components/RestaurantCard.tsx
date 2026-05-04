@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -11,59 +11,196 @@ interface RestaurantCardProps {
   distance: string;
   rating: number;
   priceRange: string;
+  reviewsCount?: number;
+  featured?: boolean;
+  tonight?: number;
+  isFavorite?: boolean;
+  onToggleFavorite?: (id: string) => void;
 }
 
-const RestaurantCard: React.FC<RestaurantCardProps> = ({ id, name, image, cuisine, location, distance, rating, priceRange }) => {
+const RestaurantCard: React.FC<RestaurantCardProps> = ({
+  id,
+  name,
+  image,
+  cuisine,
+  location,
+  distance,
+  rating,
+  priceRange,
+  reviewsCount,
+  featured = false,
+  tonight,
+  isFavorite = false,
+  onToggleFavorite,
+}) => {
   const { t } = useTranslation();
+  const [fav, setFav] = useState(isFavorite);
+
+  const toggleFav = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setFav((v) => !v);
+    onToggleFavorite?.(id);
+  };
+
+  const showLowAvail = tonight !== undefined && tonight <= 3;
+  const showEditorial = rating >= 4.8;
 
   return (
-    <div className="group flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
-      <Link to={`/restaurant/${id}`} className="relative h-60 w-full overflow-hidden block">
-        <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5 rounded-full bg-emerald text-white px-3 py-1.5 text-xs font-bold shadow-md">
-          <span className="material-symbols-outlined text-[14px]">bolt</span>
-          {t('restaurant.realTime')}
-        </div>
-        <button 
-          className="absolute top-4 right-4 z-10 rounded-full bg-white/90 p-2 text-slate-400 hover:text-red-500 cursor-pointer transition-colors"
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-        >
-          <span className="material-symbols-outlined block text-[20px]">favorite</span>
-        </button>
-        <div 
-          className="h-full w-full bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
-          style={{ backgroundImage: `url(${image})` }}
+    <Link
+      to={`/restaurant/${id}`}
+      className="card card-lift block no-underline"
+      style={{ background: 'var(--surface-3)', borderRadius: 'var(--r-xl)', color: 'var(--ink)' }}
+    >
+      {/* Image */}
+      <div
+        className="card-img-zoom"
+        style={{ height: featured ? 360 : 240, borderRadius: 'var(--r-xl) var(--r-xl) 0 0', position: 'relative' }}
+      >
+        <img
+          src={image}
+          alt={name}
+          loading="lazy"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
-      </Link>
-      <div className="flex flex-1 flex-col p-6">
-        <div className="flex justify-between items-start mb-3">
-          <Link to={`/restaurant/${id}`}>
-            <h3 className="text-xl font-bold text-navy group-hover:text-primary transition-colors">{name}</h3>
-            <p className="text-sm text-slate-500 font-medium mt-1">{cuisine} • {location} • {distance}</p>
-          </Link>
-          <div className="flex items-center gap-1 rounded-md bg-green-50 px-2 py-1 border border-green-100">
-            <span className="material-symbols-outlined text-[16px] text-green-600">star</span>
-            <span className="text-sm font-bold text-navy">{rating}</span>
-          </div>
+
+        {/* Badges */}
+        <div style={{ position: 'absolute', top: 14, left: 14, display: 'flex', gap: 6, zIndex: 1 }}>
+          {showEditorial && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '4px 10px',
+                borderRadius: 'var(--r-pill)',
+                fontSize: 11,
+                fontWeight: 700,
+                background: 'var(--navy)',
+                color: 'var(--cream)',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {t('restaurant.editorsPick')}
+            </span>
+          )}
+          {showLowAvail && (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '4px 10px',
+                borderRadius: 'var(--r-pill)',
+                fontSize: 11,
+                fontWeight: 700,
+                background: 'var(--primary)',
+                color: '#fff',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {t('restaurant.tablesLeft', { count: tonight })}
+            </span>
+          )}
         </div>
-        <div className="mb-6 flex items-center gap-3 text-sm text-slate-600">
-          <span className="font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded text-xs">{priceRange}</span>
-        </div>
-        <div className="mt-auto grid grid-cols-2 gap-3">
-          <button className="w-full rounded-xl bg-slate-50 border border-slate-200 py-3 text-sm font-bold text-slate-700 hover:bg-slate-100 transition-colors">
-            {t('restaurant.menu')}
-          </button>
-          <Link 
-            to={`/restaurant/${id}`}
-            className="w-full rounded-xl bg-primary py-3 text-sm font-bold text-white shadow-md hover:bg-orange-600 transition-all text-center"
-          >
-            {t('restaurant.bookNow')}
-          </Link>
+
+        {/* Fav button — 44×44 touch target */}
+        <button
+          onClick={toggleFav}
+          aria-label={fav ? t('restaurant.removeFromFavorites', { defaultValue: 'Quitar de favoritos' }) : t('restaurant.addToFavorites', { defaultValue: 'Añadir a favoritos' })}
+          style={{
+            position: 'absolute',
+            top: 10,
+            right: 10,
+            zIndex: 1,
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.92)',
+            color: fav ? 'var(--ruby)' : 'var(--ink-55)',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'grid',
+            placeItems: 'center',
+            transition: 'transform 0.2s var(--ease-out-expo), background 0.2s',
+          }}
+          className="fav-btn"
+        >
+          <span className={`mat ${fav ? 'mat-fill' : ''}`} style={{ fontSize: 20 }}>
+            favorite
+          </span>
+        </button>
+
+        {/* Location pill */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 14,
+            left: 14,
+            padding: '6px 10px',
+            background: 'rgba(15,23,42,0.75)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: 999,
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#fff',
+          }}
+        >
+          {cuisine} · {location}
         </div>
       </div>
-    </div>
+
+      {/* Body */}
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10 }}>
+          <h3
+            className="editorial"
+            style={{
+              fontSize: featured ? 28 : 24,
+              fontWeight: 400,
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              margin: 0,
+            }}
+          >
+            {name}
+          </h3>
+          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--primary)' }}>
+              <span className="mat mat-fill" style={{ fontSize: 14 }}>star</span>
+              <span className="mono-num" style={{ fontWeight: 700, color: 'var(--ink)' }}>
+                {rating.toFixed(1)}
+              </span>
+            </span>
+            {reviewsCount !== undefined && (
+              <div style={{ fontSize: 10, color: 'var(--ink-40)', marginTop: 2 }}>
+                {reviewsCount} {t('restaurant.reviews')}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            paddingTop: 10,
+            marginTop: 4,
+            borderTop: '1px solid var(--border)',
+          }}
+        >
+          <div style={{ fontSize: 12, color: 'var(--ink-55)' }}>
+            <span className="mono-num" style={{ fontWeight: 700, color: 'var(--ink)' }}>{priceRange}</span>
+            {' '}· {distance}
+          </div>
+          <div className="btn btn-primary" style={{ height: 36, padding: '0 14px', fontSize: 12, pointerEvents: 'none' }}>
+            <span>{t('restaurant.bookNow')}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 };
 
 export default RestaurantCard;
-
-

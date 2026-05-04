@@ -60,7 +60,7 @@ const ChatBot: React.FC = () => {
       {/* Floating button */}
       <motion.button
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white shadow-2xl flex items-center justify-center chat-aura"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="AI Chat"
@@ -81,13 +81,15 @@ const ChatBot: React.FC = () => {
             className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] h-[min(480px,calc(100vh-8rem))] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-100"
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-primary to-orange-500 px-4 py-3 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-white text-xl">auto_awesome</span>
+            <div className="grain px-4 py-3 flex items-center gap-3" style={{ background: 'var(--navy)', color: 'var(--cream)' }}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--primary)' }}>
+                <span className="mat" style={{ fontSize: 20 }}>auto_awesome</span>
               </div>
-              <div className="min-w-0">
-                <div className="text-white font-bold text-sm">ReserVia AI</div>
-                <div className="text-orange-100 text-xs truncate">{t('chat.subtitle')}</div>
+              <div className="min-w-0 relative z-10">
+                <div className="editorial text-sm" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+                  Reserv<span className="italic-accent">IA</span>
+                </div>
+                <div className="text-xs truncate" style={{ opacity: 0.7 }}>{t('chat.subtitle')}</div>
               </div>
               <button
                 onClick={toggleLocation}

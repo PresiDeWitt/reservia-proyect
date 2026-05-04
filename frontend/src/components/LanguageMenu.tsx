@@ -8,56 +8,40 @@ interface LangDef {
   code: LangCode;
   label: string;
   native: string;
-  flag: React.ReactNode;
+  countryCode: string;
 }
 
-const FlagES = (
-  <svg
-    viewBox="0 0 3 2"
-    preserveAspectRatio="xMidYMid slice"
-    className="w-full h-full"
-    aria-hidden="true"
-  >
-    <rect width="3" height="2" fill="#aa151b" />
-    <rect y="0.5" width="3" height="1" fill="#f1bf00" />
-  </svg>
-);
-
-const FlagGB = (
-  <svg
-    viewBox="0 0 60 30"
-    preserveAspectRatio="xMidYMid slice"
-    className="w-full h-full"
-    aria-hidden="true"
-  >
-    <clipPath id="lm-uk-t">
-      <path d="M30 15h30v15zv15H0zH0V0zV0h30z" />
-    </clipPath>
-    <rect width="60" height="30" fill="#012169" />
-    <path d="M0 0L60 30M60 0L0 30" stroke="#fff" strokeWidth="6" />
-    <path
-      d="M0 0L60 30M60 0L0 30"
-      stroke="#c8102e"
-      strokeWidth="4"
-      clipPath="url(#lm-uk-t)"
-    />
-    <path d="M30 0v30M0 15h60" stroke="#fff" strokeWidth="10" />
-    <path d="M30 0v30M0 15h60" stroke="#c8102e" strokeWidth="6" />
-  </svg>
-);
-
 const LANGS: LangDef[] = [
-  { code: 'es', label: 'Spanish', native: 'Español', flag: FlagES },
-  { code: 'en', label: 'English', native: 'English', flag: FlagGB },
+  { code: 'es', label: 'Spanish', native: 'Español', countryCode: 'es' },
+  { code: 'en', label: 'English', native: 'English', countryCode: 'gb' },
 ];
 
-const LanguageMenu: React.FC = () => {
+interface LanguageMenuProps {
+  variant?: 'light' | 'dark';
+}
+
+const Flag: React.FC<{ countryCode: string; size?: number }> = ({ countryCode, size = 24 }) => (
+  <span
+    className={`fi fi-${countryCode}`}
+    style={{
+      width: size * 1.4,
+      height: size,
+      borderRadius: 4,
+      display: 'inline-block',
+      backgroundSize: 'cover',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+      flexShrink: 0,
+    }}
+  />
+);
+
+const LanguageMenu: React.FC<LanguageMenuProps> = ({ variant = 'dark' }) => {
   const { i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  const current = ((i18n.language || 'es').split('-')[0] as LangCode);
+  const current = (i18n.language || 'es').split('-')[0] as LangCode;
   const active = LANGS.find((l) => l.code === current) ?? LANGS[0];
 
   useEffect(() => {
@@ -66,10 +50,7 @@ const LanguageMenu: React.FC = () => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) setOpen(false);
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
+      if (e.key === 'Escape') { setOpen(false); triggerRef.current?.focus(); }
     };
     document.addEventListener('mousedown', onClick);
     document.addEventListener('keydown', onKey);
@@ -79,10 +60,9 @@ const LanguageMenu: React.FC = () => {
     };
   }, [open]);
 
-  const choose = (code: LangCode) => {
-    i18n.changeLanguage(code);
-    setOpen(false);
-  };
+  const choose = (code: LangCode) => { i18n.changeLanguage(code); setOpen(false); };
+
+  const isDark = variant === 'dark';
 
   return (
     <div ref={wrapperRef} className="relative">
@@ -91,21 +71,21 @@ const LanguageMenu: React.FC = () => {
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Idioma actual: ${active.native}`}
-        className="group flex items-center gap-2 h-11 pl-1.5 pr-3 rounded-full bg-slate-800/50 border border-slate-700 hover:border-primary/60 hover:bg-slate-800 transition-all"
+        aria-label={`Idioma: ${active.native}`}
+        className="flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors"
+        style={{
+          background: 'transparent',
+          border: 'none',
+          color: isDark ? '#fff' : 'var(--ink)',
+          cursor: 'pointer',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.1)' : 'var(--ink-5)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
       >
-        <span className="relative w-8 h-8 rounded-full overflow-hidden ring-2 ring-slate-900/50 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.6)]">
-          {active.flag}
-        </span>
-        <span className="text-[11px] font-black tracking-[0.15em] uppercase text-white">
-          {active.code}
-        </span>
+        <Flag countryCode={active.countryCode} size={20} />
         <span
-          className={`material-symbols-outlined text-slate-400 transition-transform duration-300 ${
-            open ? 'rotate-180 text-primary' : 'group-hover:text-primary'
-          }`}
-          style={{ fontSize: 18 }}
-          aria-hidden="true"
+          className="mat"
+          style={{ fontSize: 16, opacity: 0.6, transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           expand_more
         </span>
@@ -120,47 +100,49 @@ const LanguageMenu: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.98 }}
             transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
-            className="absolute right-0 top-[calc(100%+10px)] w-[200px] sm:w-[220px] max-w-[calc(100vw-2rem)] origin-top-right bg-background-light rounded-2xl shadow-[0_30px_80px_-20px_rgba(15,23,42,0.5)] ring-1 ring-navy/10 overflow-hidden p-2"
-            style={{ transformOrigin: 'top right' }}
+            className="absolute right-0 top-[calc(100%+8px)] origin-top-right overflow-hidden"
+            style={{
+              width: 200,
+              maxWidth: 'calc(100vw - 2rem)',
+              background: 'var(--surface-3)',
+              color: 'var(--ink)',
+              borderRadius: 'var(--r-lg)',
+              boxShadow: 'var(--sh-lg)',
+              border: '1px solid var(--border)',
+              padding: 6,
+              listStyle: 'none',
+              margin: 0,
+            }}
           >
-            <li className="px-3 pt-1 pb-2 text-[10px] tracking-[0.25em] uppercase text-navy/45 font-bold">
-              Idioma · Language
-            </li>
             {LANGS.map((lang) => {
               const isActive = lang.code === current;
               return (
                 <li key={lang.code} role="option" aria-selected={isActive}>
                   <button
                     onClick={() => choose(lang.code)}
-                    className={`group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
-                      isActive ? 'bg-primary/10' : 'hover:bg-navy/5'
-                    }`}
+                    className="w-full flex items-center gap-3"
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: 'var(--r-md)',
+                      background: isActive ? 'rgba(249,116,21,0.12)' : 'transparent',
+                      color: 'var(--ink)',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s',
+                      border: 'none',
+                      width: '100%',
+                    }}
+                    onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = 'var(--ink-5)'; }}
+                    onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                   >
-                    <span className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-navy/10 shrink-0">
-                      {lang.flag}
-                    </span>
-                    <span className="flex-1 min-w-0">
-                      <span className={`block text-sm font-bold leading-tight ${isActive ? 'text-primary' : 'text-navy'}`}>
+                    <Flag countryCode={lang.countryCode} size={22} />
+                    <span className="flex-1 text-left">
+                      <span className="block text-sm font-bold leading-tight" style={{ color: isActive ? 'var(--primary)' : 'var(--ink)' }}>
                         {lang.native}
                       </span>
-                      <span className="block text-[11px] text-navy/50">{lang.label}</span>
+                      <span className="block text-[11px]" style={{ color: 'var(--ink-55)' }}>{lang.label}</span>
                     </span>
-                    {isActive ? (
-                      <span
-                        className="material-symbols-outlined text-primary"
-                        style={{ fontSize: 20, fontVariationSettings: "'FILL' 1" }}
-                        aria-hidden="true"
-                      >
-                        check_circle
-                      </span>
-                    ) : (
-                      <span
-                        className="material-symbols-outlined text-navy/20 group-hover:text-navy/40 transition-colors"
-                        style={{ fontSize: 18 }}
-                        aria-hidden="true"
-                      >
-                        radio_button_unchecked
-                      </span>
+                    {isActive && (
+                      <span className="mat mat-fill" style={{ fontSize: 16, color: 'var(--primary)' }}>check_circle</span>
                     )}
                   </button>
                 </li>
