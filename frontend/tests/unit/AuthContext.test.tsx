@@ -13,7 +13,7 @@ const Probe = () => {
       <span data-testid="auth-email">{user?.email ?? 'none'}</span>
       <button
         onClick={() =>
-          login('token-123', {
+          login('token-123', 'refresh-456', {
             id: 1,
             name: 'Ana',
             email: 'ana@example.com',

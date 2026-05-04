@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const PLATFORM_STATS = [
@@ -35,8 +36,23 @@ const REVENUE_CHART = [42, 58, 51, 67, 75, 62, 88, 91, 79, 95, 102, 114];
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 const AdminDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'overview' | 'restaurants' | 'pending'>('overview');
   const [pendingItems, setPendingItems] = useState(PENDING);
+
+  const handleLogout = () => {
+    localStorage.removeItem('reservia_staff_role');
+    localStorage.removeItem('reservia_staff_token');
+    navigate('/staff', { replace: true });
+  };
+
+  useEffect(() => {
+    const role = localStorage.getItem('reservia_staff_role');
+    const token = localStorage.getItem('reservia_staff_token');
+    if (role !== 'admin' || !token) {
+      navigate('/staff', { replace: true });
+    }
+  }, [navigate]);
 
   const approve = (id: number) => setPendingItems(p => p.filter(r => r.id !== id));
   const reject = (id: number) => setPendingItems(p => p.filter(r => r.id !== id));
@@ -52,14 +68,25 @@ const AdminDashboard: React.FC = () => {
             <h1 className="editorial" style={{ fontSize: 'clamp(36px,5vw,56px)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0 }}>
               Panel <span className="italic-accent">ReserVia</span>
             </h1>
-            <div style={{
-              padding: '8px 16px', borderRadius: 999,
-              background: '#ecfdf5', color: '#10b981',
-              fontSize: 12, fontWeight: 700,
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981' }} />
-              Todos los sistemas operativos
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{
+                padding: '8px 16px', borderRadius: 999,
+                background: '#ecfdf5', color: '#10b981',
+                fontSize: 12, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981' }} />
+                Todos los sistemas operativos
+              </div>
+              <button onClick={handleLogout} style={{
+                height: 36, padding: '0 16px', borderRadius: 999,
+                background: '#fef2f2', color: '#ef4444',
+                border: '1px solid #fecaca', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>logout</span>
+                Salir
+              </button>
             </div>
           </div>
         </motion.div>

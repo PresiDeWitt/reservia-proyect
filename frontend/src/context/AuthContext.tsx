@@ -4,7 +4,7 @@ import type { AuthUser } from '../api/auth';
 interface AuthContextType {
   user: AuthUser | null;
   token: string | null;
-  login: (token: string, user: AuthUser) => void;
+  login: (token: string, refresh: string, user: AuthUser) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -28,12 +28,14 @@ const getInitialAuthState = (): AuthState => {
       };
     } catch {
       localStorage.removeItem('reservia_token');
+      localStorage.removeItem('reservia_refresh');
       localStorage.removeItem('reservia_user');
       return { token: null, user: null };
     }
   }
 
   localStorage.removeItem('reservia_token');
+  localStorage.removeItem('reservia_refresh');
   localStorage.removeItem('reservia_user');
   return { token: null, user: null };
 };
@@ -41,14 +43,16 @@ const getInitialAuthState = (): AuthState => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>(() => getInitialAuthState());
 
-  const login = (newToken: string, newUser: AuthUser) => {
+  const login = (newToken: string, newRefresh: string, newUser: AuthUser) => {
     localStorage.setItem('reservia_token', newToken);
+    localStorage.setItem('reservia_refresh', newRefresh);
     localStorage.setItem('reservia_user', JSON.stringify(newUser));
     setAuthState({ token: newToken, user: newUser });
   };
 
   const logout = () => {
     localStorage.removeItem('reservia_token');
+    localStorage.removeItem('reservia_refresh');
     localStorage.removeItem('reservia_user');
     setAuthState({ token: null, user: null });
   };

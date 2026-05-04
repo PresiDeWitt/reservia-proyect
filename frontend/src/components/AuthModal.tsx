@@ -38,7 +38,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               email,
               password,
             });
-      login(res.token, res.user);
+      login(res.token, res.refresh, res.user);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');

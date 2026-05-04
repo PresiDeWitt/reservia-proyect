@@ -2,12 +2,14 @@ services:
   backend:
     build: ./backend
     environment:
-      SECRET_KEY: "change-me-in-production"
+      SECRET_KEY: ${SECRET_KEY:-}
       DEBUG: "False"
       ALLOWED_HOSTS: "localhost,127.0.0.1,backend"
       CORS_ALLOWED_ORIGINS: "http://localhost"
       DB_PATH: "/data/db.sqlite3"
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      STAFF_OWNER_CODE: ${STAFF_OWNER_CODE:-}
+      STAFF_ADMIN_CODE: ${STAFF_ADMIN_CODE:-}
     volumes:
       - db_data:/data
     restart: unless-stopped

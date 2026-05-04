@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const RESERVATIONS = [
@@ -57,8 +58,23 @@ const floorBorder: Record<string, string> = {
 };
 
 const OwnerDashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'reservations' | 'floor' | 'heatmap'>('reservations');
   const [filter, setFilter] = useState('all');
+
+  const handleLogout = () => {
+    localStorage.removeItem('reservia_staff_role');
+    localStorage.removeItem('reservia_staff_token');
+    navigate('/staff', { replace: true });
+  };
+
+  useEffect(() => {
+    const role = localStorage.getItem('reservia_staff_role');
+    const token = localStorage.getItem('reservia_staff_token');
+    if (role !== 'owner' || !token) {
+      navigate('/staff', { replace: true });
+    }
+  }, [navigate]);
 
   const filtered = filter === 'all' ? RESERVATIONS : RESERVATIONS.filter(r => r.status === filter);
 
@@ -89,6 +105,15 @@ const OwnerDashboard: React.FC = () => {
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>settings</span>
                 Config
+              </button>
+              <button onClick={handleLogout} style={{
+                height: 40, padding: '0 18px', borderRadius: 12,
+                background: '#fef2f2', color: '#ef4444',
+                border: '1px solid #fecaca', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>logout</span>
+                Salir
               </button>
             </div>
           </div>
