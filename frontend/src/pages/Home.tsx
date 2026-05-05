@@ -320,12 +320,18 @@ const Home: React.FC = () => {
               de cobertura. Todo en un panel que aprende de tu servicio.
             </p>
             <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
-              <button className="btn btn-ember">
-                <span>Más información</span>
+              <button
+                className="btn btn-ember"
+                onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }))}
+              >
+                <span>Registra tu restaurante</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
               </button>
-              <button className="btn btn-dark">
-                <span>Hablar con ventas</span>
+              <button
+                className="btn btn-dark"
+                onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'login', role: 'owner' } }))}
+              >
+                <span>Ya tengo cuenta</span>
               </button>
             </div>
           </div>

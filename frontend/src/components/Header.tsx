@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import AuthModal from './AuthModal';
+import type { UserRole } from '../api/auth';
 import ProfileMenu from './ProfileMenu';
 import LanguageMenu from './LanguageMenu';
 import MobileDrawer from './MobileDrawer';
@@ -15,6 +16,17 @@ const Header: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const location = useLocation();
   const [authOpen, setAuthOpen] = useState(false);
+  const [authPreset, setAuthPreset] = useState<{ mode?: 'login' | 'register'; role?: UserRole }>({});
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {};
+      setAuthPreset({ mode: detail.mode, role: detail.role });
+      setAuthOpen(true);
+    };
+    window.addEventListener('reservia:open-auth', handler);
+    return () => window.removeEventListener('reservia:open-auth', handler);
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -157,7 +169,7 @@ const Header: React.FC = () => {
 
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthModal isOpen={authOpen} onClose={() => { setAuthOpen(false); setAuthPreset({}); }} defaultMode={authPreset.mode} defaultRole={authPreset.role} />
       <MobileDrawer
         open={mobileOpen}
         onClose={() => setMobileOpen(false)}
