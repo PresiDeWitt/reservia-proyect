@@ -1,21 +1,23 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1
 
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar e instalar dependencias de Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copiar el código del backend
 COPY . .
 
-RUN mkdir -p /data
-
+# Exponer el puerto
 EXPOSE 8000
 
-CMD ["sh", "-c", \
-  "python manage.py migrate --noinput && \
-   python manage.py seed && \
-   python manage.py collectstatic --noinput && \
-   gunicorn reservia.wsgi:application --bind 0.0.0.0:8000 --workers 2"]
+# Ejecutar migraciones y arrancar con gunicorn
+CMD python manage.py migrate --noinput && gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:8000

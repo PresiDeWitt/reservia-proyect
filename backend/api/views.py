@@ -108,7 +108,7 @@ def my_reservations(request):
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def chat_view(request):
-    import anthropic
+    from openai import OpenAI
     from django.conf import settings as django_settings
 
     message = request.data.get('message', '').strip()
@@ -119,7 +119,7 @@ def chat_view(request):
     if not message:
         return Response({'error': 'Message required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    api_key = getattr(django_settings, 'ANTHROPIC_API_KEY', '')
+    api_key = getattr(django_settings, 'OPENROUTER_API_KEY', '')
     if not api_key:
         return Response({'error': 'AI service not configured'}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
 
@@ -162,14 +162,13 @@ def chat_view(request):
     ]
     safe_history.append({'role': 'user', 'content': message})
 
-    client = anthropic.Anthropic(api_key=api_key)
-    response = client.messages.create(
-        model='claude-haiku-4-5-20251001',
+    client = OpenAI(api_key=api_key, base_url='https://openrouter.ai/api/v1')
+    response = client.chat.completions.create(
+        model='meta-llama/llama-3.2-3b-instruct',
         max_tokens=400,
-        system=system_prompt,
-        messages=safe_history,
+        messages=[{'role': 'system', 'content': system_prompt}] + safe_history,
     )
-    return Response({'reply': response.content[0].text})
+    return Response({'reply': response.choices[0].message.content})
 
 
 @api_view(['DELETE'])

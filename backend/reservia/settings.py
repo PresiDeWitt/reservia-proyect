@@ -95,8 +95,8 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
 }
 
-# Anthropic
-ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
+# OpenRouter
+OPENROUTER_API_KEY = os.environ.get('OPENROUTER_API_KEY', '')
 
 # CORS — allow the Vite dev server and Docker Nginx
 _cors = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost')
