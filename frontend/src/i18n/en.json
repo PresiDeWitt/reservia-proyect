@@ -218,6 +218,10 @@
     "placeholder": "e.g. Romantic Italian for tonight...",
     "error": "Sorry, something went wrong. Please try again.",
     "locationOn": "Location enabled",
-    "locationOff": "Enable location for nearby suggestions"
+    "locationOff": "Enable location for nearby suggestions",
+    "suggestions": {
+      "romantic": "Romantic dinner with good wine",
+      "group": "Table for a group with lively vibe"
+    }
   }
 }

@@ -32,8 +32,8 @@ const ChatBot: React.FC = () => {
     }
   };
 
-  const send = async () => {
-    const text = input.trim();
+  const send = async (override?: string) => {
+    const text = (override ?? input).trim();
     if (!text || loading) return;
 
     const userMsg: ChatMessage = { role: 'user', content: text };
@@ -110,6 +110,20 @@ const ChatBot: React.FC = () => {
                     auto_awesome
                   </span>
                   {t('chat.welcome')}
+                  <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                    {[
+                      t('chat.suggestions.romantic'),
+                      t('chat.suggestions.group'),
+                    ].map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => send(s)}
+                        className="text-xs px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
 

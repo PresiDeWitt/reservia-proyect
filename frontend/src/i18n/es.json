@@ -218,6 +218,10 @@
     "placeholder": "Ej: italiano romántico para esta noche",
     "error": "Lo siento, algo salió mal. Inténtalo de nuevo.",
     "locationOn": "Ubicación activada",
-    "locationOff": "Activar ubicación para sugerencias cercanas"
+    "locationOff": "Activar ubicación para sugerencias cercanas",
+    "suggestions": {
+      "romantic": "Cena romántica con buen vino",
+      "group": "Mesa para grupo con ambiente animado"
+    }
   }
 }
