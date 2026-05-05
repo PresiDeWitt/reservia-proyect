@@ -335,7 +335,7 @@ const Hero: React.FC = () => {
               marginTop: 40,
               padding: 24,
               maxWidth: 860,
-              background: 'var(--cream)',
+              background: 'var(--surface)',
               color: 'var(--ink)',
               boxShadow: 'var(--sh-lg)',
               borderRadius: 'var(--r-xl)',

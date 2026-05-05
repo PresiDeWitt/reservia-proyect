@@ -44,7 +44,7 @@ const AdminDashboard: React.FC = () => {
   const maxRevenue = Math.max(...REVENUE_CHART);
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh', padding: '48px 24px 96px' }}>
+    <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="eyebrow" style={{ marginBottom: 10 }}>Admin · Plataforma</div>
@@ -96,7 +96,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, background: '#fff', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: 4, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
           {([['overview', 'Visión general', 'analytics'], ['restaurants', 'Top restaurantes', 'workspace_premium'], ['pending', `Aprobaciones (${pendingItems.length})`, 'pending_actions']] as const).map(([id, label, icon]) => (
             <button
               key={id}
@@ -120,10 +120,10 @@ const AdminDashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
               {/* Revenue chart */}
-              <div style={{ background: '#fff', borderRadius: 20, border: '1px solid var(--border)', padding: 28 }}>
+              <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 28 }}>
                 <div className="eyebrow" style={{ marginBottom: 4 }}>Ingresos mensuales</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28 }}>
-                  <div style={{ fontSize: 32, fontWeight: 700, fontFamily: '"Fraunces", serif', letterSpacing: '-0.03em', color: 'var(--navy)' }}>142.000€</div>
+                  <div style={{ fontSize: 32, fontWeight: 700, fontFamily: '"Fraunces", serif', letterSpacing: '-0.03em', color: 'var(--ink)' }}>142.000€</div>
                   <span style={{ padding: '4px 12px', borderRadius: 999, background: '#ecfdf5', color: '#10b981', fontSize: 12, fontWeight: 700 }}>+31% vs 2025</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 140 }}>
@@ -144,12 +144,12 @@ const AdminDashboard: React.FC = () => {
               </div>
 
               {/* Cities */}
-              <div style={{ background: '#fff', borderRadius: 20, border: '1px solid var(--border)', padding: 24 }}>
+              <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 24 }}>
                 <div className="eyebrow" style={{ marginBottom: 16 }}>Distribución por ciudad</div>
                 {CITIES.map(c => (
                   <div key={c.name} style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{c.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{c.name}</span>
                       <span style={{ fontSize: 12, color: 'var(--ink-55)' }}>{c.restaurants} restaurantes</span>
                     </div>
                     <div style={{ height: 6, background: 'var(--ink-10)', borderRadius: 999, overflow: 'hidden' }}>
@@ -166,7 +166,7 @@ const AdminDashboard: React.FC = () => {
         {/* Top restaurants tab */}
         {activeTab === 'restaurants' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div style={{ background: '#fff', borderRadius: 20, border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -191,7 +191,7 @@ const AdminDashboard: React.FC = () => {
                           fontSize: 12, fontWeight: 700,
                         }}>{i + 1}</span>
                       </td>
-                      <td style={{ padding: '16px 20px', fontWeight: 700, fontSize: 14, color: 'var(--navy)' }}>{r.name}</td>
+                      <td style={{ padding: '16px 20px', fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>{r.name}</td>
                       <td style={{ padding: '16px 20px', fontSize: 13, color: 'var(--ink-55)' }}>{r.city}</td>
                       <td style={{ padding: '16px 20px', fontSize: 13, fontWeight: 600 }}>{r.bookings.toLocaleString()}</td>
                       <td style={{ padding: '16px 20px', fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>{r.revenue}</td>
@@ -228,7 +228,7 @@ const AdminDashboard: React.FC = () => {
                     exit={{ opacity: 0, x: 16 }}
                     transition={{ delay: i * 0.05 }}
                     style={{
-                      background: '#fff', borderRadius: 16,
+                      background: 'var(--surface-3)', borderRadius: 16,
                       border: '1px solid var(--border)',
                       padding: '20px 24px',
                       display: 'flex', alignItems: 'center', gap: 20,
@@ -243,7 +243,7 @@ const AdminDashboard: React.FC = () => {
                       <span className="material-symbols-outlined" style={{ fontSize: 24, color: 'var(--primary)' }}>storefront</span>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--navy)' }}>{r.name}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>{r.name}</div>
                       <div style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 2 }}>
                         {r.city} · {r.cuisine} · Enviado {r.submitted}
                       </div>

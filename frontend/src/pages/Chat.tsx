@@ -63,7 +63,7 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh', padding: '48px 24px 96px' }}>
+    <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <div className="eyebrow" style={{ marginBottom: 10 }}>Mensajes</div>
         <h1 className="editorial" style={{ fontSize: 'clamp(36px,5vw,56px)', fontWeight: 300, letterSpacing: '-0.02em', margin: '0 0 32px' }}>
@@ -72,21 +72,21 @@ const ChatPage: React.FC = () => {
 
         <div style={{
           display: 'grid', gridTemplateColumns: '320px 1fr', gap: 0,
-          background: '#fff', borderRadius: 24,
+          background: 'var(--surface-3)', borderRadius: 24,
           border: '1px solid var(--border)',
           overflow: 'hidden', height: 620, boxShadow: 'var(--sh-md)',
         }} className="chat-layout">
 
           {/* Sidebar */}
-          <div style={{ borderRight: '1px solid var(--border)', background: 'var(--cream-2)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ borderRight: '1px solid var(--border)', background: 'var(--surface-2)', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '16px 16px 10px' }}>
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 14px', background: '#fff',
+                padding: '10px 14px', background: 'var(--surface-3)',
                 border: '1px solid var(--border)', borderRadius: 12,
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 16, color: 'var(--ink-40)' }}>search</span>
-                <input placeholder="Buscar…" style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, flex: 1, color: 'var(--navy)' }} />
+                <input placeholder="Buscar…" style={{ border: 'none', outline: 'none', background: 'transparent', fontSize: 13, flex: 1, color: 'var(--ink)' }} />
               </div>
             </div>
             <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -123,7 +123,7 @@ const ChatPage: React.FC = () => {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</span>
                       <span style={{ fontSize: 10, color: 'var(--ink-55)', flexShrink: 0 }}>{c.time}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--ink-55)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.lastMsg}</div>
@@ -159,7 +159,7 @@ const ChatPage: React.FC = () => {
                 </div>
               </div>
               {[{ i: 'call' }, { i: 'videocam' }, { i: 'more_horiz' }].map(b => (
-                <button key={b.i} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: '#fff', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--ink-55)' }}>
+                <button key={b.i} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', background: 'var(--surface-3)', cursor: 'pointer', display: 'grid', placeItems: 'center', color: 'var(--ink-55)' }}>
                   <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{b.i}</span>
                 </button>
               ))}
@@ -168,7 +168,7 @@ const ChatPage: React.FC = () => {
             {/* Messages */}
             <div
               ref={bodyRef}
-              style={{ flex: 1, padding: 24, overflowY: 'auto', background: 'var(--cream-2)', display: 'flex', flexDirection: 'column', gap: 10 }}
+              style={{ flex: 1, padding: 24, overflowY: 'auto', background: 'var(--surface-2)', display: 'flex', flexDirection: 'column', gap: 10 }}
             >
               {(messages[activeId] || []).map(msg => (
                 <div
@@ -202,7 +202,7 @@ const ChatPage: React.FC = () => {
                   <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--primary)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 10, fontWeight: 700 }}>
                     {active.name[0]}
                   </div>
-                  <div style={{ padding: '12px 16px', borderRadius: '18px 18px 18px 4px', background: '#fff', boxShadow: 'var(--sh-sm)', display: 'flex', gap: 4 }}>
+                  <div style={{ padding: '12px 16px', borderRadius: '18px 18px 18px 4px', background: 'var(--surface-3)', boxShadow: 'var(--sh-sm)', display: 'flex', gap: 4 }}>
                     {[0, 1, 2].map(i => (
                       <span key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ink-40)', animation: `typingDot 1.2s ${i * 0.15}s infinite` }} />
                     ))}
@@ -214,7 +214,7 @@ const ChatPage: React.FC = () => {
             {/* Input */}
             <form
               onSubmit={send}
-              style={{ padding: '14px 16px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8, alignItems: 'center', background: '#fff' }}
+              style={{ padding: '14px 16px', borderTop: '1px solid var(--border)', display: 'flex', gap: 8, alignItems: 'center', background: 'var(--surface-3)' }}
             >
               <input
                 value={draft}
@@ -223,7 +223,7 @@ const ChatPage: React.FC = () => {
                 style={{
                   flex: 1, border: '1px solid var(--border)', outline: 'none',
                   borderRadius: 12, padding: '10px 14px', fontSize: 13,
-                  background: 'var(--cream-2)', color: 'var(--navy)',
+                  background: 'var(--surface-2)', color: 'var(--ink)',
                   transition: 'border-color 0.2s',
                 }}
                 onFocus={e => (e.currentTarget.style.borderColor = 'var(--primary)')}

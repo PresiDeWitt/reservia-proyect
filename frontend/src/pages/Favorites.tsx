@@ -23,7 +23,7 @@ const Favorites: React.FC = () => {
   const favs = all.filter(r => r.rating >= 4.7).slice(0, 6);
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh', padding: '48px 0 96px' }}>
+    <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 0 96px' }}>
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="eyebrow" style={{ marginBottom: 10 }}>Tu colección</div>

@@ -120,6 +120,55 @@
 }
 [data-theme="dark"] ::selection { background: var(--primary); color: #0b1018; }
 
+/* Dark mode — overrides for components that hardcode light-theme colors.
+   Maps Tailwind utility classes to theme variables so text and surfaces
+   remain legible without rewriting every component. */
+[data-theme="dark"] .bg-white { background-color: var(--surface-3) !important; }
+[data-theme="dark"] .bg-white\/70 { background-color: rgba(26, 34, 54, 0.7) !important; }
+[data-theme="dark"] .bg-cream,
+[data-theme="dark"] .bg-cream-2,
+[data-theme="dark"] .bg-paper { background-color: var(--surface-2) !important; }
+
+[data-theme="dark"] .text-navy { color: var(--ink) !important; }
+[data-theme="dark"] .text-navy\/80 { color: var(--ink-55) !important; }
+[data-theme="dark"] .text-navy\/55,
+[data-theme="dark"] .text-navy\/50 { color: var(--ink-55) !important; }
+[data-theme="dark"] .text-navy\/45,
+[data-theme="dark"] .text-navy\/40,
+[data-theme="dark"] .text-navy\/35 { color: var(--ink-40) !important; }
+
+[data-theme="dark"] .border-navy\/10,
+[data-theme="dark"] .border-navy\/20,
+[data-theme="dark"] .border-slate-100,
+[data-theme="dark"] .border-slate-200 { border-color: var(--border) !important; }
+
+[data-theme="dark"] .text-slate-200,
+[data-theme="dark"] .text-slate-300 { color: var(--ink-20) !important; }
+[data-theme="dark"] .text-slate-400,
+[data-theme="dark"] .text-slate-500 { color: var(--ink-55) !important; }
+[data-theme="dark"] .text-slate-700,
+[data-theme="dark"] .text-slate-800,
+[data-theme="dark"] .text-slate-900 { color: var(--ink) !important; }
+
+[data-theme="dark"] .bg-slate-50 { background-color: var(--ink-5) !important; }
+[data-theme="dark"] .bg-slate-100 { background-color: var(--ink-10) !important; }
+[data-theme="dark"] .bg-slate-200 { background-color: var(--ink-20) !important; }
+
+[data-theme="dark"] .hover\:bg-navy\/5:hover { background-color: var(--ink-5) !important; }
+[data-theme="dark"] .hover\:text-navy:hover { color: var(--ink) !important; }
+[data-theme="dark"] .hover\:text-navy\/80:hover { color: var(--ink-55) !important; }
+
+/* Inputs, placeholders, generic light surfaces */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select { color: var(--ink); }
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder { color: var(--ink-40); }
+
+/* AuthModal cream/paper backgrounds */
+[data-theme="dark"] [class*="bg-cream"],
+[data-theme="dark"] [class*="bg-paper"] { background-color: var(--surface-2) !important; }
+
 /* Density variants */
 [data-density="compact"] {
   --d-gap: 10px;

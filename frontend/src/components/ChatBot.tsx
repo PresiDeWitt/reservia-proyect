@@ -78,7 +78,8 @@ const ChatBot: React.FC = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] h-[min(480px,calc(100vh-8rem))] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-100"
+            className="fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[360px] max-w-[360px] h-[min(480px,calc(100vh-8rem))] rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            style={{ background: 'var(--surface-3)', color: 'var(--ink)', border: '1px solid var(--border)' }}
           >
             {/* Header */}
             <div className="grain px-4 py-3 flex items-center gap-3" style={{ background: 'var(--navy)', color: 'var(--cream)' }}>
@@ -105,8 +106,8 @@ const ChatBot: React.FC = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {messages.length === 0 && (
-                <div className="text-center text-slate-400 text-sm mt-8 px-4">
-                  <span className="material-symbols-outlined text-4xl block mb-2 text-slate-300">
+                <div className="text-center text-sm mt-8 px-4" style={{ color: 'var(--ink-55)' }}>
+                  <span className="material-symbols-outlined text-4xl block mb-2" style={{ color: 'var(--ink-40)' }}>
                     auto_awesome
                   </span>
                   {t('chat.welcome')}
@@ -118,7 +119,8 @@ const ChatBot: React.FC = () => {
                       <button
                         key={s}
                         onClick={() => send(s)}
-                        className="text-xs px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                        className="text-xs px-3 py-1.5 rounded-full transition-colors"
+                        style={{ background: 'var(--ink-5)', color: 'var(--ink)', border: '1px solid var(--border)' }}
                       >
                         {s}
                       </button>
@@ -136,8 +138,9 @@ const ChatBot: React.FC = () => {
                     className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
                       msg.role === 'user'
                         ? 'bg-primary text-white rounded-br-sm'
-                        : 'bg-slate-100 text-slate-800 rounded-bl-sm'
+                        : 'rounded-bl-sm'
                     }`}
+                    style={msg.role === 'assistant' ? { background: 'var(--ink-5)', color: 'var(--ink)' } : undefined}
                   >
                     {msg.content}
                   </div>
@@ -146,11 +149,12 @@ const ChatBot: React.FC = () => {
 
               {loading && (
                 <div className="flex justify-start">
-                  <div className="bg-slate-100 rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center">
+                  <div className="rounded-2xl rounded-bl-sm px-4 py-3 flex gap-1.5 items-center" style={{ background: 'var(--ink-5)' }}>
                     {[0, 1, 2].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-2 h-2 rounded-full bg-slate-400"
+                        className="w-2 h-2 rounded-full"
+                        style={{ background: 'var(--ink-40)' }}
                         animate={{ y: [0, -5, 0] }}
                         transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
                       />
@@ -162,17 +166,18 @@ const ChatBot: React.FC = () => {
             </div>
 
             {/* Input */}
-            <div className="p-3 border-t border-slate-100 flex gap-2">
+            <div className="p-3 flex gap-2" style={{ borderTop: '1px solid var(--border)' }}>
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && send()}
                 placeholder={t('chat.placeholder')}
-                className="flex-1 bg-slate-50 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 border border-slate-200"
+                className="flex-1 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                style={{ background: 'var(--ink-5)', color: 'var(--ink)', border: '1px solid var(--border)' }}
               />
               <button
-                onClick={send}
+                onClick={() => send()}
                 disabled={!input.trim() || loading}
                 className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center disabled:opacity-40 hover:bg-orange-600 transition-colors shrink-0"
               >

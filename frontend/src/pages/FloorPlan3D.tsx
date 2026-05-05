@@ -350,7 +350,7 @@ const FloorPlan3D: React.FC = () => {
               bottom: 0,
               left: 0,
               right: 0,
-              background: 'var(--cream)',
+              background: 'var(--surface)',
               padding: 20,
               borderTop: '1px solid var(--border)',
               boxShadow: '0 -20px 60px rgba(0,0,0,0.4)',

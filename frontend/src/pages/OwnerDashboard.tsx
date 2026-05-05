@@ -63,7 +63,7 @@ const OwnerDashboard: React.FC = () => {
   const filtered = filter === 'all' ? RESERVATIONS : RESERVATIONS.filter(r => r.status === filter);
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh', padding: '48px 24px 96px' }}>
+    <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="eyebrow" style={{ marginBottom: 10 }}>Panel de gestión</div>
@@ -83,7 +83,7 @@ const OwnerDashboard: React.FC = () => {
               </button>
               <button style={{
                 height: 40, padding: '0 18px', borderRadius: 12,
-                background: '#fff', color: 'var(--navy)',
+                background: 'var(--surface-3)', color: 'var(--ink)',
                 border: '1px solid var(--border)', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 6,
               }}>
@@ -104,12 +104,12 @@ const OwnerDashboard: React.FC = () => {
               transition={{ delay: i * 0.07 }}
               style={{
                 padding: '22px 20px', borderRadius: 20,
-                background: '#fff', border: '1px solid var(--border)',
+                background: 'var(--surface-3)', border: '1px solid var(--border)',
                 position: 'relative', overflow: 'hidden',
               }}
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--primary)', marginBottom: 12, display: 'block' }}>{s.icon}</span>
-              <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--navy)', fontFamily: '"Fraunces", serif' }}>{s.value}</div>
+              <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--ink)', fontFamily: '"Fraunces", serif' }}>{s.value}</div>
               <div style={{ fontSize: 12, color: 'var(--ink-55)', marginTop: 4 }}>{s.label}</div>
               <div style={{
                 marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4,
@@ -126,7 +126,7 @@ const OwnerDashboard: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, background: '#fff', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
+        <div style={{ display: 'flex', gap: 4, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
           {([['reservations', 'Reservas', 'event'], ['floor', 'Plano de sala', 'table_restaurant'], ['heatmap', 'Ocupación', 'bar_chart']] as const).map(([id, label, icon]) => (
             <button
               key={id}
@@ -169,7 +169,7 @@ const OwnerDashboard: React.FC = () => {
               ))}
             </div>
 
-            <div style={{ background: '#fff', borderRadius: 20, border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', overflow: 'hidden' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
@@ -185,16 +185,16 @@ const OwnerDashboard: React.FC = () => {
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
                       <td style={{ padding: '14px 16px' }}>
-                        <span style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--ink-5)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 700, color: 'var(--navy)' }}>{r.table}</span>
+                        <span style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--ink-5)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{r.table}</span>
                       </td>
-                      <td style={{ padding: '14px 16px', fontWeight: 600, fontSize: 14, color: 'var(--navy)' }}>{r.name}</td>
+                      <td style={{ padding: '14px 16px', fontWeight: 600, fontSize: 14, color: 'var(--ink)' }}>{r.name}</td>
                       <td style={{ padding: '14px 16px', color: 'var(--ink-55)', fontSize: 13 }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                           <span className="material-symbols-outlined" style={{ fontSize: 14 }}>group</span>
                           {r.guests}
                         </span>
                       </td>
-                      <td style={{ padding: '14px 16px', fontWeight: 700, fontSize: 13, color: 'var(--navy)' }}>{r.time}</td>
+                      <td style={{ padding: '14px 16px', fontWeight: 700, fontSize: 13, color: 'var(--ink)' }}>{r.time}</td>
                       <td style={{ padding: '14px 16px' }}>
                         <span style={{
                           padding: '3px 10px', borderRadius: 999,
@@ -227,7 +227,7 @@ const OwnerDashboard: React.FC = () => {
         {activeTab === 'floor' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 20 }}>
-              <div style={{ background: '#fff', borderRadius: 20, border: '1px solid var(--border)', padding: 24, overflow: 'hidden' }}>
+              <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 24, overflow: 'hidden' }}>
                 <div className="eyebrow" style={{ marginBottom: 16 }}>Plano de sala — Turno noche</div>
                 <svg viewBox="0 0 100 90" style={{ width: '100%', fontFamily: 'inherit' }}>
                   <rect x="0" y="0" width="100" height="90" fill="#f8f7f5" rx="2" />
@@ -251,21 +251,21 @@ const OwnerDashboard: React.FC = () => {
                 </svg>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--border)', padding: 18 }}>
+                <div style={{ background: 'var(--surface-3)', borderRadius: 16, border: '1px solid var(--border)', padding: 18 }}>
                   <div className="eyebrow" style={{ marginBottom: 12 }}>Leyenda</div>
                   {[['free', '#10b981', 'Libre'], ['taken', '#ef4444', 'Ocupada'], ['reserved', '#f59e0b', 'Reservada']].map(([, c, l]) => (
                     <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                       <span style={{ width: 12, height: 12, borderRadius: 4, background: `${c}33`, border: `1.5px solid ${c}`, flexShrink: 0 }} />
-                      <span style={{ fontSize: 13, color: 'var(--navy)', fontWeight: 600 }}>{l}</span>
+                      <span style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 600 }}>{l}</span>
                     </div>
                   ))}
                 </div>
-                <div style={{ background: '#fff', borderRadius: 16, border: '1px solid var(--border)', padding: 18 }}>
+                <div style={{ background: 'var(--surface-3)', borderRadius: 16, border: '1px solid var(--border)', padding: 18 }}>
                   <div className="eyebrow" style={{ marginBottom: 12 }}>Resumen</div>
                   {[['Mesas libres', FLOOR.filter(t => t.status === 'free').length], ['Ocupadas', FLOOR.filter(t => t.status === 'taken').length], ['Reservadas', FLOOR.filter(t => t.status === 'reserved').length]].map(([l, v]) => (
                     <div key={l as string} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                       <span style={{ fontSize: 13, color: 'var(--ink-55)' }}>{l}</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{v}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{v}</span>
                     </div>
                   ))}
                 </div>
@@ -277,7 +277,7 @@ const OwnerDashboard: React.FC = () => {
         {/* Heatmap tab */}
         {activeTab === 'heatmap' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <div style={{ background: '#fff', borderRadius: 20, border: '1px solid var(--border)', padding: 32 }}>
+            <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 32 }}>
               <div className="eyebrow" style={{ marginBottom: 6 }}>Ocupación por hora</div>
               <p style={{ fontSize: 14, color: 'var(--ink-55)', marginBottom: 28 }}>Distribución de reservas durante el día</p>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 200 }}>
@@ -299,9 +299,9 @@ const OwnerDashboard: React.FC = () => {
               </div>
               <div style={{ marginTop: 24, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
                 {[['Pico máximo', '20h — 90%'], ['Hora tranquila', '16h — 35%'], ['Media diaria', '65%']].map(([l, v]) => (
-                  <div key={l} style={{ padding: '12px 18px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--cream-2)' }}>
+                  <div key={l} style={{ padding: '12px 18px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--surface-2)' }}>
                     <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700, marginBottom: 4 }}>{l}</div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--navy)', fontFamily: '"Fraunces", serif' }}>{v}</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Fraunces", serif' }}>{v}</div>
                   </div>
                 ))}
               </div>

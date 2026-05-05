@@ -8,7 +8,7 @@ const Account: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--cream)', padding: 24 }}>
+      <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--surface)', padding: 24 }}>
         <span className="material-symbols-outlined" style={{ fontSize: 56, color: 'var(--ink-20)', marginBottom: 16 }}>person</span>
         <p className="editorial" style={{ fontSize: 28, fontWeight: 300, marginBottom: 8 }}>Tu cuenta te espera.</p>
         <p style={{ color: 'var(--ink-55)', fontSize: 14 }}>Inicia sesión para ver tu perfil.</p>
@@ -30,7 +30,7 @@ const Account: React.FC = () => {
   ];
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh', padding: '48px 24px 96px' }}>
+    <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
       <div style={{ maxWidth: 820, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="eyebrow" style={{ marginBottom: 10 }}>Mi cuenta</div>
