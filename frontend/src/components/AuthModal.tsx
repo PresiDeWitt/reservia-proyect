@@ -97,8 +97,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
             className="relative w-full max-w-5xl bg-background-light rounded-2xl sm:rounded-[28px] shadow-[0_40px_120px_-20px_rgba(15,23,42,0.45)] overflow-hidden grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              onClick={onClose}
+              aria-label="Cerrar"
+              className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full flex items-center justify-center bg-white/15 hover:bg-white/25 backdrop-blur-md text-white lg:bg-transparent lg:text-navy/50 lg:hover:text-navy lg:hover:bg-navy/5 transition-all"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+            </button>
             {/* ── Editorial panel (left) ───────────────────────────── */}
-            <aside className="relative hidden lg:flex flex-col justify-between p-10 xl:p-12 text-background-light overflow-hidden bg-navy">
+            <aside className="relative flex flex-col justify-between gap-6 sm:gap-8 p-6 sm:p-8 lg:p-10 xl:p-12 text-background-light overflow-hidden bg-navy">
               <div className="absolute inset-0 auth-grain opacity-95" aria-hidden="true" />
               <div
                 className="absolute -bottom-20 -left-20 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
@@ -107,7 +114,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
               />
 
               <div className="relative z-10 flex items-center justify-between">
-                <Logo size={90} />
+                <Logo size={64} />
                 <span className="text-[10px] tracking-[0.3em] uppercase text-background-light/60 font-semibold">
                   Est. 2026
                 </span>
@@ -119,7 +126,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                 </span>
                 <h2
                   id="auth-title"
-                  className="auth-editorial text-[36px] lg:text-[44px] xl:text-[56px] leading-[0.95] tracking-tight"
+                  className="auth-editorial text-[30px] sm:text-[36px] lg:text-[44px] xl:text-[56px] leading-[0.95] tracking-tight"
                   style={{ fontWeight: 300, fontVariationSettings: "'SOFT' 50, 'opsz' 144" }}
                 >
                   {isRegister ? (
@@ -145,7 +152,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                 </p>
               </div>
 
-              <div className="relative z-10 flex items-end justify-between gap-6">
+              <div className="relative z-10 hidden sm:flex items-end justify-between gap-6">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-baseline gap-1.5">
                     <span className="auth-editorial italic text-primary text-4xl" style={{ fontWeight: 500 }}>
@@ -184,34 +191,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
             </aside>
 
             {/* ── Form panel (right) ──────────────────────────────── */}
-            <section className="relative flex flex-col p-7 sm:p-10 lg:p-12 bg-background-light overflow-y-auto">
-              <button
-                onClick={onClose}
-                aria-label="Cerrar"
-                className="absolute top-5 right-5 w-10 h-10 rounded-full flex items-center justify-center text-navy/50 hover:text-navy hover:bg-navy/5 transition-all"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>close</span>
-              </button>
-
-              <div key={mode} className="auth-rise flex flex-col gap-6 mt-4 lg:mt-0">
-                {/* Mobile-only editorial header */}
-                <div className="lg:hidden flex flex-col gap-1">
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-primary font-bold">
-                    {stepLabel}
-                  </span>
-                  <h2
-                    className="auth-editorial text-navy text-2xl sm:text-4xl leading-none"
-                    style={{ fontWeight: 400 }}
-                  >
-                    {isRegister ? (
-                      <>Reserva tu <em className="italic text-primary">asiento</em>.</>
-                    ) : (
-                      <>Bienvenido <em className="italic text-primary">de vuelta</em>.</>
-                    )}
-                  </h2>
-                </div>
-
-                <div className="hidden lg:flex flex-col gap-1.5">
+            <section className="relative flex flex-col p-5 sm:p-8 lg:p-12 bg-background-light overflow-y-auto">
+              <div key={mode} className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
+                <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">
                     {isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
                   </span>
