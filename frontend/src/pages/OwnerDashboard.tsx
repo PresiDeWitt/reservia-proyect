@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { getOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
+import OwnerOnboarding from '../components/OwnerOnboarding';
 
 const RESERVATIONS = [
   { id: 1, name: 'Elena Martínez', guests: 4, time: '13:00', date: 'Hoy', status: 'confirmed', table: 'A2' },
@@ -27,12 +30,29 @@ const FLOOR = [
 const HEATMAP = [55, 70, 85, 60, 45, 90, 75, 80, 65, 50, 40, 35];
 const HOURS = ['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
 
-const STATS = [
-  { label: 'Reservas hoy', value: '24', delta: '+12%', icon: 'event', up: true },
-  { label: 'Comensales', value: '86', delta: '+8%', icon: 'group', up: true },
-  { label: 'Cancelaciones', value: '3', delta: '-2', icon: 'event_busy', up: false },
-  { label: 'Ingresos est.', value: '2.840€', delta: '+18%', icon: 'payments', up: true },
-];
+// Daily-deterministic pseudo-random based on date+capacity, so stats refresh each day.
+const dailySeed = (capacity: number) => {
+  const today = new Date().toISOString().slice(0, 10);
+  let h = 0;
+  for (const c of today + capacity) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return () => { h = (h * 1664525 + 1013904223) >>> 0; return (h % 1000) / 1000; };
+};
+
+const buildStats = (capacity: number) => {
+  const r = dailySeed(capacity);
+  const occupancy = 0.6 + r() * 0.35;
+  const reservas = Math.round(capacity * occupancy * 0.6);
+  const comensales = Math.round(capacity * occupancy);
+  const cancelaciones = Math.max(0, Math.round(reservas * (0.02 + r() * 0.08)));
+  const ingresos = Math.round(comensales * (32 + r() * 18));
+  const dPct = (n: number) => `${n >= 0 ? '+' : ''}${n}%`;
+  return [
+    { label: 'Reservas hoy', value: String(reservas), delta: dPct(Math.round(r() * 20 - 5)), icon: 'event', up: true },
+    { label: 'Comensales', value: String(comensales), delta: dPct(Math.round(r() * 15 - 3)), icon: 'group', up: true },
+    { label: 'Cancelaciones', value: String(cancelaciones), delta: `-${Math.round(r() * 3)}`, icon: 'event_busy', up: false },
+    { label: 'Ingresos est.', value: `${ingresos.toLocaleString('es-ES')}€`, delta: dPct(Math.round(r() * 25 - 5)), icon: 'payments', up: true },
+  ];
+};
 
 const statusColor: Record<string, string> = {
   confirmed: 'var(--emerald)',
@@ -57,8 +77,35 @@ const floorBorder: Record<string, string> = {
 };
 
 const OwnerDashboard: React.FC = () => {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<OwnerProfile | null>(() =>
+    user?.email ? getOwnerProfile(user.email) : null,
+  );
   const [activeTab, setActiveTab] = useState<'reservations' | 'floor' | 'heatmap'>('reservations');
   const [filter, setFilter] = useState('all');
+
+  const [editing, setEditing] = useState(false);
+
+  if (!profile && user?.email) {
+    return <OwnerOnboarding email={user.email} initialName={user.name} onDone={setProfile} />;
+  }
+  if (editing && user?.email && profile) {
+    return (
+      <OwnerOnboarding
+        email={user.email}
+        initialProfile={profile}
+        onDone={(p) => { setProfile(p); setEditing(false); }}
+        onCancel={() => setEditing(false)}
+      />
+    );
+  }
+
+  const stats = buildStats(profile?.capacity ?? 40);
+
+  const restName = profile?.name ?? 'Tu restaurante';
+  const restCuisine = profile?.cuisine ?? '';
+  const [firstWord, ...restWords] = restName.split(' ');
+  const restRest = restWords.join(' ');
 
   const filtered = filter === 'all' ? RESERVATIONS : RESERVATIONS.filter(r => r.status === filter);
 
@@ -66,10 +113,10 @@ const OwnerDashboard: React.FC = () => {
     <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="eyebrow" style={{ marginBottom: 10 }}>Panel de gestión</div>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>{restCuisine ? `Panel · ${restCuisine}` : 'Panel de gestión'}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
             <h1 className="editorial" style={{ fontSize: 'clamp(36px,5vw,56px)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0 }}>
-              Osteria <span className="italic-accent">del Borgo</span>
+              {firstWord} {restRest && <span className="italic-accent">{restRest}</span>}
             </h1>
             <div style={{ display: 'flex', gap: 8 }}>
               <button style={{
@@ -81,14 +128,17 @@ const OwnerDashboard: React.FC = () => {
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>add</span>
                 Nueva reserva
               </button>
-              <button style={{
-                height: 40, padding: '0 18px', borderRadius: 12,
-                background: 'var(--surface-3)', color: 'var(--ink)',
-                border: '1px solid var(--border)', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 6,
-              }}>
+              <button
+                onClick={() => setEditing(true)}
+                style={{
+                  height: 40, padding: '0 18px', borderRadius: 12,
+                  background: 'var(--surface-3)', color: 'var(--ink)',
+                  border: '1px solid var(--border)', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}
+              >
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>settings</span>
-                Config
+                Editar
               </button>
             </div>
           </div>
@@ -96,7 +146,7 @@ const OwnerDashboard: React.FC = () => {
 
         {/* KPIs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }} className="kpi-grid">
-          {STATS.map((s, i) => (
+          {stats.map((s, i) => (
             <motion.div
               key={s.label}
               initial={{ opacity: 0, y: 20 }}
