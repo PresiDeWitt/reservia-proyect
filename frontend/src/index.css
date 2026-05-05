@@ -169,6 +169,18 @@
 [data-theme="dark"] [class*="bg-cream"],
 [data-theme="dark"] [class*="bg-paper"] { background-color: var(--surface-2) !important; }
 
+/* AuthModal: form panel + floating inputs */
+[data-theme="dark"] .bg-background-light { background-color: var(--surface-3) !important; }
+[data-theme="dark"] .bg-white\/70 { background-color: var(--ink-5) !important; }
+
+/* AuthModal segmented tabs (Iniciar sesión / Registrarse) */
+[data-theme="dark"] [role="tablist"].bg-navy\/5 { background-color: var(--ink-10) !important; }
+[data-theme="dark"] [role="tablist"] .bg-background-light {
+  background-color: var(--primary) !important;
+  box-shadow: 0 6px 20px -6px rgba(0,0,0,0.6) !important;
+}
+[data-theme="dark"] [role="tablist"] [role="tab"][aria-selected="true"] { color: #fff !important; }
+
 /* Density variants */
 [data-density="compact"] {
   --d-gap: 10px;

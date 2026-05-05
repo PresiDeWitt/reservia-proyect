@@ -1,19 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { authApi } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
+import { authApi, type UserRole } from '../api/auth';
+import { setRole, getRole } from '../api/roles';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  defaultMode?: 'login' | 'register';
+  defaultRole?: UserRole;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, defaultRole }) => {
   const { t } = useTranslation();
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [role, setRoleState] = useState<UserRole>('customer');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (defaultMode) setMode(defaultMode);
+      if (defaultRole) setRoleState(defaultRole);
+    }
+  }, [isOpen, defaultMode, defaultRole]);
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -38,8 +51,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               email,
               password,
             });
-      login(res.token, res.user);
+      const finalRole: UserRole = mode === 'register' ? role : getRole(email);
+      if (mode === 'register') setRole(email, finalRole);
+      login(res.token, { ...res.user, role: finalRole });
       onClose();
+      if (finalRole === 'owner') navigate('/owner');
+      else if (finalRole === 'admin') navigate('/admin');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -275,6 +292,35 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         autoComplete="tel"
                         required
                       />
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] tracking-[0.3em] uppercase font-bold" style={{ color: 'var(--ink-55)' }}>
+                          Tipo de cuenta
+                        </span>
+                        <div className="grid grid-cols-2 gap-2">
+                          {([
+                            { v: 'customer', label: 'Cliente', icon: 'person' },
+                            { v: 'owner', label: 'Restaurante', icon: 'storefront' },
+                          ] as { v: UserRole; label: string; icon: string }[]).map((opt) => {
+                            const active = role === opt.v;
+                            return (
+                              <button
+                                key={opt.v}
+                                type="button"
+                                onClick={() => setRoleState(opt.v)}
+                                className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all"
+                                style={{
+                                  background: active ? 'var(--primary)' : 'var(--ink-5)',
+                                  color: active ? '#fff' : 'var(--ink)',
+                                  border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                                }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{opt.icon}</span>
+                                <span className="text-xs font-semibold">{opt.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </>
                   )}
                   <FloatField

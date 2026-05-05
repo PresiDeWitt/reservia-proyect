@@ -1,9 +1,12 @@
 import { api } from './client';
 
+export type UserRole = 'customer' | 'owner' | 'admin';
+
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
+  role?: UserRole;
 }
 
 export interface AuthResponse {
