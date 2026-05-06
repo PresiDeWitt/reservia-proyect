@@ -56,11 +56,6 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ variant = 'dark' }) => {
     navigate('/');
   };
 
-  const go = (path: string) => {
-    setOpen(false);
-    navigate(path);
-  };
-
   return (
     <div ref={wrapperRef} className="relative">
       <button

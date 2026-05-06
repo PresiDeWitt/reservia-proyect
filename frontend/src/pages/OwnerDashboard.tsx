@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
@@ -75,6 +76,7 @@ const floorBorder: Record<string, string> = {
 const OwnerDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<OwnerProfile | null>(() =>
     user?.email ? getOwnerProfile(user.email) : null,
   );
@@ -82,6 +84,20 @@ const OwnerDashboard: React.FC = () => {
   const [filter, setFilter] = useState('all');
 
   const [editing, setEditing] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('reservia_staff_role');
+    localStorage.removeItem('reservia_staff_token');
+    navigate('/staff', { replace: true });
+  };
+
+  useEffect(() => {
+    const role = localStorage.getItem('reservia_staff_role');
+    const token = localStorage.getItem('reservia_staff_token');
+    if (role !== 'owner' || !token) {
+      navigate('/staff', { replace: true });
+    }
+  }, [navigate]);
 
   if (!profile && user?.email) {
     return <OwnerOnboarding email={user.email} initialName={user.name} onDone={setProfile} />;
@@ -146,6 +162,15 @@ const OwnerDashboard: React.FC = () => {
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>settings</span>
                 {t('owner.edit')}
+              </button>
+              <button onClick={handleLogout} style={{
+                height: 40, padding: '0 18px', borderRadius: 12,
+                background: '#fef2f2', color: '#ef4444',
+                border: '1px solid #fecaca', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>logout</span>
+                {t('profile.logout')}
               </button>
             </div>
           </div>

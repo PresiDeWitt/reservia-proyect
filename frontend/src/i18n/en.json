@@ -344,17 +344,11 @@
   },
   "cuisines": {
     "Italian": "Italian",
-    "Sushi": "Sushi",
-    "Steak": "Steak",
-    "Mexican": "Mexican",
-    "Burgers": "Burgers",
-    "Healthy": "Healthy",
-    "Bakery": "Bakery",
-    "Asian": "Asian",
     "Japanese": "Japanese",
     "Steakhouse": "Steakhouse",
+    "Fusion": "Fusion",
     "French": "French",
-    "Fusion": "Fusion"
+    "Healthy": "Healthy"
   },
   "chat": {
     "subtitle": "Find your perfect restaurant",

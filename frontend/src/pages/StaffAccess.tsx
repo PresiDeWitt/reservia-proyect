@@ -1,26 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-
-const STAFF_CODES: Record<string, string> = {
-  owner: 'OWNER-2026',
-  admin: 'ADMIN-2026',
-};
+import { staffApi } from '../api/staff';
 
 const StaffAccess: React.FC = () => {
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const role = Object.entries(STAFF_CODES).find(([, c]) => c === code.trim().toUpperCase())?.[0];
-    if (!role) {
-      setError('Código no válido');
-      return;
+    setError('');
+    setLoading(true);
+    try {
+      const res = await staffApi.login(code.trim());
+      localStorage.setItem('reservia_staff_token', res.token);
+      localStorage.setItem('reservia_staff_role', res.role);
+      navigate(res.role === 'owner' ? '/owner' : '/admin');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Invalid access code');
+    } finally {
+      setLoading(false);
     }
-    localStorage.setItem('reservia_staff_role', role);
-    navigate(role === 'owner' ? '/owner' : '/admin');
   };
 
   return (
@@ -75,15 +77,17 @@ const StaffAccess: React.FC = () => {
             }}
           />
           {error && <div style={{ color: 'var(--ruby)', fontSize: 12 }}>{error}</div>}
-          <button type="submit" className="btn btn-primary" style={{ height: 52 }}>
-            <span>Entrar</span>
-            <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
+          <button type="submit" disabled={loading} className="btn btn-primary" style={{ height: 52 }}>
+            {loading ? (
+              <span className="spin" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid currentColor', borderTopColor: 'transparent', display: 'inline-block' }} />
+            ) : (
+              <>
+                <span>Entrar</span>
+                <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
+              </>
+            )}
           </button>
         </form>
-        <div style={{ fontSize: 11, opacity: 0.5, marginTop: 24 }}>
-          Demo: <span style={{ fontFamily: 'monospace' }}>OWNER-2026</span> ·{' '}
-          <span style={{ fontFamily: 'monospace' }}>ADMIN-2026</span>
-        </div>
       </motion.div>
     </div>
   );

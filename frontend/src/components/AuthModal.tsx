@@ -52,9 +52,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
               email,
               password,
             });
-      const finalRole: UserRole = mode === 'register' ? role : getRole(email);
-      if (mode === 'register') setRole(email, finalRole);
-      login(res.token, { ...res.user, role: finalRole });
+      const finalRole: UserRole =
+        mode === 'register' ? role : getRole(res.user.email);
+      if (mode === 'register') setRole(res.user.email, finalRole);
+      login(res.token, res.refresh, { ...res.user, role: finalRole });
       onClose();
       if (finalRole === 'owner') navigate('/owner');
       else if (finalRole === 'admin') navigate('/admin');
@@ -72,7 +73,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
       const res = await authApi.google(credential);
       const finalRole: UserRole = mode === 'register' ? role : getRole(res.user.email);
       if (mode === 'register') setRole(res.user.email, finalRole);
-      login(res.token, { ...res.user, role: finalRole });
+      login(res.token, res.refresh, { ...res.user, role: finalRole });
       onClose();
       if (finalRole === 'owner') navigate('/owner');
       else if (finalRole === 'admin') navigate('/admin');

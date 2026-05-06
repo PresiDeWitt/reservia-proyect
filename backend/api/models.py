@@ -51,3 +51,11 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"{self.user.email} @ {self.restaurant.name} on {self.date}"
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
+    phone = models.CharField(max_length=30, blank=True)
+
+    def __str__(self):
+        return f"Profile<{self.user.email}>"
