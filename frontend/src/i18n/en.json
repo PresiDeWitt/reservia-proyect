@@ -155,7 +155,32 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "contact": "Contact",
-    "rights": "© 2026 ReserVia Inc. All rights reserved."
+    "rights": "© 2026 ReserVia Inc. All rights reserved.",
+    "diners": "Diners",
+    "restaurateurs": "Restaurateurs",
+    "company": "Company",
+    "tagline": "Booking a table shouldn't feel like",
+    "taglineAccent": "filling out a form",
+    "madeWith": "Made with",
+    "madeWithAccent": "love for good food",
+    "madeWithIn": ", in Granada.",
+    "links": {
+      "explore": "Explore restaurants",
+      "tableMap": "Table map",
+      "experiences": "Experiences",
+      "mobileApp": "Mobile app",
+      "giftCards": "Gift cards",
+      "joinReservia": "Join ReserVia",
+      "managementPanel": "Management panel",
+      "pos": "Integrated POS",
+      "successCases": "Success stories",
+      "pricing": "Pricing",
+      "about": "About us",
+      "editorial": "Editorial",
+      "press": "Press",
+      "careers": "Careers",
+      "contact": "Contact"
+    }
   },
   "auth": {
     "signIn": "Sign In",
@@ -165,7 +190,126 @@
     "lastNamePlaceholder": "Last name",
     "phonePlaceholder": "Phone number",
     "emailPlaceholder": "Email address",
-    "passwordPlaceholder": "Password (min. 6 characters)"
+    "passwordPlaceholder": "Password (min. 6 characters)",
+    "subtitleLogin": "Return to your favourite restaurants, manage bookings and discover hidden tables.",
+    "subtitleRegister": "Join a community of curious diners. Instant bookings, favourites at hand.",
+    "creating": "Creating account…",
+    "entering": "Signing in…",
+    "haveAccount": "Already have an account? ",
+    "newHere": "First time here? ",
+    "accountType": "Account type",
+    "customer": "Customer",
+    "restaurant": "Restaurant",
+    "stepLogin": "01 — Access",
+    "stepRegister": "02 — New account",
+    "or": "or",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "errorGeneric": "Something went wrong",
+    "errorGoogle": "Google sign-in failed"
+  },
+  "owner": {
+    "panel": "Management panel",
+    "yourRestaurant": "Your restaurant",
+    "newReservation": "New reservation",
+    "edit": "Edit",
+    "stats": {
+      "reservations": "Today's bookings",
+      "guests": "Guests",
+      "cancellations": "Cancellations",
+      "revenue": "Est. revenue"
+    },
+    "tabs": {
+      "reservations": "Bookings",
+      "floor": "Floor plan",
+      "heatmap": "Occupancy"
+    },
+    "filters": {
+      "all": "All",
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "table": "Table",
+      "client": "Client",
+      "guests": "Guests",
+      "time": "Time",
+      "status": "Status",
+      "actions": "Actions",
+      "confirm": "Confirm"
+    },
+    "status": {
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "cancelled": "Cancelled"
+    },
+    "floor": {
+      "title": "Floor plan — Evening shift",
+      "legend": "Legend",
+      "free": "Free",
+      "taken": "Taken",
+      "reserved": "Reserved",
+      "summary": "Summary",
+      "freeTables": "Free tables",
+      "takenTables": "Taken",
+      "reservedTables": "Reserved"
+    },
+    "heatmap": {
+      "title": "Occupancy by hour",
+      "subtitle": "Booking distribution across the day",
+      "peak": "Peak hour",
+      "quiet": "Quiet hour",
+      "average": "Daily average"
+    }
+  },
+  "admin": {
+    "eyebrow": "Admin · Platform",
+    "title": "Dashboard",
+    "systemsOk": "All systems operational",
+    "stats": {
+      "activeRestaurants": "Active restaurants",
+      "totalBookings": "Total bookings",
+      "registeredUsers": "Registered users",
+      "netRevenue": "Net revenue"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "topRestaurants": "Top restaurants",
+      "pending": "Approvals"
+    },
+    "monthlyRevenue": "Monthly revenue",
+    "vsLastYear": "+31% vs 2025",
+    "cityDistribution": "Distribution by city",
+    "restaurantsLabel": "restaurants",
+    "bookingsLabel": "bookings",
+    "table": {
+      "restaurant": "Restaurant",
+      "city": "City",
+      "bookings": "Bookings",
+      "revenue": "Revenue",
+      "rating": "Rating"
+    },
+    "approve": "Approve",
+    "reject": "Reject",
+    "allClear": "All clear",
+    "noPending": "No pending approval requests.",
+    "submitted": "Submitted"
+  },
+  "account": {
+    "loginPrompt": "Sign in to view your",
+    "loginPromptAccent": "account",
+    "backHome": "Back to home",
+    "hello": "Hello,",
+    "points": "Points",
+    "pointsHint": "Keep booking to level up",
+    "myBookings": "My bookings",
+    "myBookingsHint": "Upcoming and past",
+    "favorites": "Favourites",
+    "favoritesHint": "Saved restaurants",
+    "map": "Map",
+    "mapHint": "Discover near you",
+    "logout": "Log out"
   },
   "profile": {
     "menu": "Profile menu",

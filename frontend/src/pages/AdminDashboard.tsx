@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-
-const PLATFORM_STATS = [
-  { label: 'Restaurantes activos', value: '1.284', delta: '+34 este mes', icon: 'storefront', up: true },
-  { label: 'Reservas totales', value: '48.920', delta: '+22%', icon: 'event', up: true },
-  { label: 'Usuarios registrados', value: '210.450', delta: '+15%', icon: 'group', up: true },
-  { label: 'Ingresos netos', value: '142.000€', delta: '+31%', icon: 'payments', up: true },
-];
+import { useTranslation } from 'react-i18next';
 
 const PENDING = [
   { id: 1, name: 'Taberna del Sol', city: 'Sevilla', cuisine: 'Spanish', submitted: 'hace 2h', rating: null },
@@ -35,8 +29,16 @@ const REVENUE_CHART = [42, 58, 51, 67, 75, 62, 88, 91, 79, 95, 102, 114];
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
 const AdminDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'overview' | 'restaurants' | 'pending'>('overview');
   const [pendingItems, setPendingItems] = useState(PENDING);
+
+  const PLATFORM_STATS = [
+    { label: t('admin.stats.activeRestaurants'), value: '1.284', delta: '+34', icon: 'storefront', up: true },
+    { label: t('admin.stats.totalBookings'), value: '48.920', delta: '+22%', icon: 'event', up: true },
+    { label: t('admin.stats.registeredUsers'), value: '210.450', delta: '+15%', icon: 'group', up: true },
+    { label: t('admin.stats.netRevenue'), value: '142.000€', delta: '+31%', icon: 'payments', up: true },
+  ];
 
   const approve = (id: number) => setPendingItems(p => p.filter(r => r.id !== id));
   const reject = (id: number) => setPendingItems(p => p.filter(r => r.id !== id));
@@ -47,10 +49,10 @@ const AdminDashboard: React.FC = () => {
     <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="eyebrow" style={{ marginBottom: 10 }}>Admin · Plataforma</div>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>{t('admin.eyebrow')}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
             <h1 className="editorial" style={{ fontSize: 'clamp(36px,5vw,56px)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0 }}>
-              Panel <span className="italic-accent">ReserVia</span>
+              {t('admin.title')} <span className="italic-accent">ReserVia</span>
             </h1>
             <div style={{
               padding: '8px 16px', borderRadius: 999,
@@ -59,7 +61,7 @@ const AdminDashboard: React.FC = () => {
               display: 'flex', alignItems: 'center', gap: 6,
             }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981' }} />
-              Todos los sistemas operativos
+              {t('admin.systemsOk')}
             </div>
           </div>
         </motion.div>
@@ -97,7 +99,7 @@ const AdminDashboard: React.FC = () => {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
-          {([['overview', 'Visión general', 'analytics'], ['restaurants', 'Top restaurantes', 'workspace_premium'], ['pending', `Aprobaciones (${pendingItems.length})`, 'pending_actions']] as const).map(([id, label, icon]) => (
+          {([['overview', t('admin.tabs.overview'), 'analytics'], ['restaurants', t('admin.tabs.topRestaurants'), 'workspace_premium'], ['pending', `${t('admin.tabs.pending')} (${pendingItems.length})`, 'pending_actions']] as const).map(([id, label, icon]) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
@@ -121,10 +123,10 @@ const AdminDashboard: React.FC = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
               {/* Revenue chart */}
               <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 28 }}>
-                <div className="eyebrow" style={{ marginBottom: 4 }}>Ingresos mensuales</div>
+                <div className="eyebrow" style={{ marginBottom: 4 }}>{t('admin.monthlyRevenue')}</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28 }}>
                   <div style={{ fontSize: 32, fontWeight: 700, fontFamily: '"Fraunces", serif', letterSpacing: '-0.03em', color: 'var(--ink)' }}>142.000€</div>
-                  <span style={{ padding: '4px 12px', borderRadius: 999, background: '#ecfdf5', color: '#10b981', fontSize: 12, fontWeight: 700 }}>+31% vs 2025</span>
+                  <span style={{ padding: '4px 12px', borderRadius: 999, background: '#ecfdf5', color: '#10b981', fontSize: 12, fontWeight: 700 }}>{t('admin.vsLastYear')}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 140 }}>
                   {REVENUE_CHART.map((v, i) => (
@@ -145,17 +147,17 @@ const AdminDashboard: React.FC = () => {
 
               {/* Cities */}
               <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 24 }}>
-                <div className="eyebrow" style={{ marginBottom: 16 }}>Distribución por ciudad</div>
+                <div className="eyebrow" style={{ marginBottom: 16 }}>{t('admin.cityDistribution')}</div>
                 {CITIES.map(c => (
                   <div key={c.name} style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{c.name}</span>
-                      <span style={{ fontSize: 12, color: 'var(--ink-55)' }}>{c.restaurants} restaurantes</span>
+                      <span style={{ fontSize: 12, color: 'var(--ink-55)' }}>{c.restaurants} {t('admin.restaurantsLabel')}</span>
                     </div>
                     <div style={{ height: 6, background: 'var(--ink-10)', borderRadius: 999, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${c.pct}%`, background: 'var(--primary)', borderRadius: 999 }} />
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 3 }}>{c.bookings.toLocaleString()} reservas · {c.pct}%</div>
+                    <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 3 }}>{c.bookings.toLocaleString()} {t('admin.bookingsLabel')} · {c.pct}%</div>
                   </div>
                 ))}
               </div>
@@ -170,7 +172,7 @@ const AdminDashboard: React.FC = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['#', 'Restaurante', 'Ciudad', 'Reservas', 'Ingresos', 'Valoración'].map(h => (
+                    {['#', t('admin.table.restaurant'), t('admin.table.city'), t('admin.table.bookings'), t('admin.table.revenue'), t('admin.table.rating')].map(h => (
                       <th key={h} style={{ padding: '12px 20px', textAlign: 'left', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700 }}>{h}</th>
                     ))}
                   </tr>
@@ -215,8 +217,8 @@ const AdminDashboard: React.FC = () => {
             {pendingItems.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--ink-55)' }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 56, display: 'block', marginBottom: 16, color: 'var(--emerald)' }}>check_circle</span>
-                <p className="editorial" style={{ fontSize: 28, fontWeight: 300 }}>Todo al día</p>
-                <p style={{ fontSize: 14, marginTop: 8 }}>No hay solicitudes pendientes de aprobación.</p>
+                <p className="editorial" style={{ fontSize: 28, fontWeight: 300 }}>{t('admin.allClear')}</p>
+                <p style={{ fontSize: 14, marginTop: 8 }}>{t('admin.noPending')}</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -245,7 +247,7 @@ const AdminDashboard: React.FC = () => {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>{r.name}</div>
                       <div style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 2 }}>
-                        {r.city} · {r.cuisine} · Enviado {r.submitted}
+                        {r.city} · {r.cuisine} · {t('admin.submitted')} {r.submitted}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
@@ -257,7 +259,7 @@ const AdminDashboard: React.FC = () => {
                           color: '#ef4444', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                         }}
                       >
-                        Rechazar
+                        {t('admin.reject')}
                       </button>
                       <button
                         onClick={() => approve(r.id)}
@@ -267,7 +269,7 @@ const AdminDashboard: React.FC = () => {
                           color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                         }}
                       >
-                        Aprobar
+                        {t('admin.approve')}
                       </button>
                     </div>
                   </motion.div>

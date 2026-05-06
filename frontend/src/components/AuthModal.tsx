@@ -59,7 +59,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
       if (finalRole === 'owner') navigate('/owner');
       else if (finalRole === 'admin') navigate('/admin');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : t('auth.errorGeneric'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
       if (finalRole === 'owner') navigate('/owner');
       else if (finalRole === 'admin') navigate('/admin');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Google sign-in failed');
+      setError(err instanceof Error ? err.message : t('auth.errorGoogle'));
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
 
   const isRegister = mode === 'register';
   const title = isRegister ? t('auth.createAccount') : t('auth.signIn');
-  const stepLabel = isRegister ? '02 — Nueva cuenta' : '01 — Acceso';
+  const stepLabel = isRegister ? t('auth.stepRegister') : t('auth.stepLogin');
 
   return (
     <AnimatePresence>
@@ -165,9 +165,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                   )}
                 </h2>
                 <p className="text-background-light/70 text-sm max-w-xs leading-relaxed">
-                  {isRegister
-                    ? 'Únete a una comunidad de comensales curiosos. Reservas al instante, favoritos a mano.'
-                    : 'Vuelve a tus restaurantes favoritos, gestiona reservas y descubre mesas escondidas.'}
+                  {isRegister ? t('auth.subtitleRegister') : t('auth.subtitleLogin')}
                 </p>
               </div>
 
@@ -214,7 +212,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
               <div key={mode} className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">
-                    {isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
+                    {isRegister ? t('auth.createAccount') : t('auth.signIn')}
                   </span>
                   <h3 className="auth-editorial text-navy text-3xl" style={{ fontWeight: 400 }}>
                     {isRegister ? (
@@ -295,12 +293,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                       />
                       <div className="flex flex-col gap-2">
                         <span className="text-[10px] tracking-[0.3em] uppercase font-bold" style={{ color: 'var(--ink-55)' }}>
-                          Tipo de cuenta
+                          {t('auth.accountType')}
                         </span>
                         <div className="grid grid-cols-2 gap-2">
                           {([
-                            { v: 'customer', label: 'Cliente', icon: 'person' },
-                            { v: 'owner', label: 'Restaurante', icon: 'storefront' },
+                            { v: 'customer', label: t('auth.customer'), icon: 'person' },
+                            { v: 'owner', label: t('auth.restaurant'), icon: 'storefront' },
                           ] as { v: UserRole; label: string; icon: string }[]).map((opt) => {
                             const active = role === opt.v;
                             return (
@@ -346,7 +344,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                         className="text-navy/40 hover:text-navy transition-colors"
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
@@ -387,7 +385,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                       {loading ? (
                         <>
                           <span className="w-4 h-4 border-2 border-background-light/30 border-t-background-light rounded-full animate-spin" />
-                          <span>{isRegister ? 'Creando cuenta…' : 'Entrando…'}</span>
+                          <span>{isRegister ? t('auth.creating') : t('auth.entering')}</span>
                         </>
                       ) : (
                         <>
@@ -405,7 +403,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                 <div className="flex items-center gap-3 my-1">
                   <span className="flex-1 h-px bg-navy/10" />
                   <span className="text-[10px] tracking-[0.3em] uppercase text-navy/45 font-bold">
-                    o
+                    {t('auth.or')}
                   </span>
                   <span className="flex-1 h-px bg-navy/10" />
                 </div>
@@ -424,7 +422,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                 </div>
 
                 <p className="text-xs text-navy/55 text-center">
-                  {isRegister ? '¿Ya tienes cuenta? ' : '¿Primera vez aquí? '}
+                  {isRegister ? t('auth.haveAccount') : t('auth.newHere')}
                   <button
                     type="button"
                     onClick={() => switchMode(isRegister ? 'login' : 'register')}

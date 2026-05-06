@@ -2,16 +2,19 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Logo from './Logo';
 
-const COLUMNS = [
+const COLUMN_KEYS = [
   {
-    title: 'Comensales',
-    links: ['Explorar restaurantes', 'Mapa de mesas', 'Experiencias', 'App móvil', 'Tarjetas regalo'],
+    titleKey: 'footer.diners',
+    linkKeys: ['footer.links.explore', 'footer.links.tableMap', 'footer.links.experiences', 'footer.links.mobileApp', 'footer.links.giftCards'],
   },
   {
-    title: 'Restauradores',
-    links: ['Únete a ReserVia', 'Panel de gestión', 'POS integrado', 'Casos de éxito', 'Precios'],
+    titleKey: 'footer.restaurateurs',
+    linkKeys: ['footer.links.joinReservia', 'footer.links.managementPanel', 'footer.links.pos', 'footer.links.successCases', 'footer.links.pricing'],
   },
-  { title: 'Compañía', links: ['Sobre nosotros', 'Editorial', 'Prensa', 'Carreras', 'Contacto'] },
+  {
+    titleKey: 'footer.company',
+    linkKeys: ['footer.links.about', 'footer.links.editorial', 'footer.links.press', 'footer.links.careers', 'footer.links.contact'],
+  },
 ];
 
 const SOCIAL: { label: string; path: string }[] = [
@@ -63,8 +66,8 @@ const Footer: React.FC = () => {
                 color: 'rgba(248,247,245,0.82)',
               }}
             >
-              Reservar una mesa no debería sentirse como{' '}
-              <em style={{ color: 'var(--primary)', fontStyle: 'italic' }}>rellenar un formulario</em>.
+              {t('footer.tagline')}{' '}
+              <em style={{ color: 'var(--primary)', fontStyle: 'italic' }}>{t('footer.taglineAccent')}</em>.
             </p>
 
             {/* Social icons */}
@@ -106,8 +109,8 @@ const Footer: React.FC = () => {
           </div>
 
           {/* Nav columns */}
-          {COLUMNS.map((col) => (
-            <div key={col.title}>
+          {COLUMN_KEYS.map((col) => (
+            <div key={col.titleKey}>
               <div
                 style={{
                   fontSize: 11,
@@ -118,12 +121,12 @@ const Footer: React.FC = () => {
                   marginBottom: 20,
                 }}
               >
-                {col.title}
+                {t(col.titleKey)}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
-                {col.links.map((label) => (
+                {col.linkKeys.map((key) => (
                   <a
-                    key={label}
+                    key={key}
                     href="#"
                     className="link-underline"
                     style={{
@@ -133,7 +136,7 @@ const Footer: React.FC = () => {
                       lineHeight: 1.4,
                     }}
                   >
-                    {label}
+                    {t(key)}
                   </a>
                 ))}
               </div>
@@ -168,9 +171,9 @@ const Footer: React.FC = () => {
           </div>
 
           <p className="editorial" style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)', fontStyle: 'italic', margin: 0 }}>
-            Hecho con{' '}
-            <span style={{ color: 'var(--primary)' }}>amor al buen comer</span>
-            , en Granada.
+            {t('footer.madeWith')}{' '}
+            <span style={{ color: 'var(--primary)' }}>{t('footer.madeWithAccent')}</span>
+            {t('footer.madeWithIn')}
           </p>
         </div>
       </div>

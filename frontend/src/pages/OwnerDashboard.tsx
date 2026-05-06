@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { getOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
 import OwnerOnboarding from '../components/OwnerOnboarding';
@@ -38,7 +39,7 @@ const dailySeed = (capacity: number) => {
   return () => { h = (h * 1664525 + 1013904223) >>> 0; return (h % 1000) / 1000; };
 };
 
-const buildStats = (capacity: number) => {
+const buildStats = (capacity: number, labels: { reservations: string; guests: string; cancellations: string; revenue: string }) => {
   const r = dailySeed(capacity);
   const occupancy = 0.6 + r() * 0.35;
   const reservas = Math.round(capacity * occupancy * 0.6);
@@ -47,10 +48,10 @@ const buildStats = (capacity: number) => {
   const ingresos = Math.round(comensales * (32 + r() * 18));
   const dPct = (n: number) => `${n >= 0 ? '+' : ''}${n}%`;
   return [
-    { label: 'Reservas hoy', value: String(reservas), delta: dPct(Math.round(r() * 20 - 5)), icon: 'event', up: true },
-    { label: 'Comensales', value: String(comensales), delta: dPct(Math.round(r() * 15 - 3)), icon: 'group', up: true },
-    { label: 'Cancelaciones', value: String(cancelaciones), delta: `-${Math.round(r() * 3)}`, icon: 'event_busy', up: false },
-    { label: 'Ingresos est.', value: `${ingresos.toLocaleString('es-ES')}€`, delta: dPct(Math.round(r() * 25 - 5)), icon: 'payments', up: true },
+    { label: labels.reservations, value: String(reservas), delta: dPct(Math.round(r() * 20 - 5)), icon: 'event', up: true },
+    { label: labels.guests, value: String(comensales), delta: dPct(Math.round(r() * 15 - 3)), icon: 'group', up: true },
+    { label: labels.cancellations, value: String(cancelaciones), delta: `-${Math.round(r() * 3)}`, icon: 'event_busy', up: false },
+    { label: labels.revenue, value: `${ingresos.toLocaleString('es-ES')}€`, delta: dPct(Math.round(r() * 25 - 5)), icon: 'payments', up: true },
   ];
 };
 
@@ -58,11 +59,6 @@ const statusColor: Record<string, string> = {
   confirmed: 'var(--emerald)',
   pending: '#f59e0b',
   cancelled: 'var(--ruby)',
-};
-const statusLabel: Record<string, string> = {
-  confirmed: 'Confirmada',
-  pending: 'Pendiente',
-  cancelled: 'Cancelada',
 };
 
 const floorColor: Record<string, string> = {
@@ -77,6 +73,7 @@ const floorBorder: Record<string, string> = {
 };
 
 const OwnerDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [profile, setProfile] = useState<OwnerProfile | null>(() =>
     user?.email ? getOwnerProfile(user.email) : null,
@@ -100,9 +97,19 @@ const OwnerDashboard: React.FC = () => {
     );
   }
 
-  const stats = buildStats(profile?.capacity ?? 40);
+  const stats = buildStats(profile?.capacity ?? 40, {
+    reservations: t('owner.stats.reservations'),
+    guests: t('owner.stats.guests'),
+    cancellations: t('owner.stats.cancellations'),
+    revenue: t('owner.stats.revenue'),
+  });
+  const statusLabel: Record<string, string> = {
+    confirmed: t('owner.status.confirmed'),
+    pending: t('owner.status.pending'),
+    cancelled: t('owner.status.cancelled'),
+  };
 
-  const restName = profile?.name ?? 'Tu restaurante';
+  const restName = profile?.name ?? t('owner.yourRestaurant');
   const restCuisine = profile?.cuisine ?? '';
   const [firstWord, ...restWords] = restName.split(' ');
   const restRest = restWords.join(' ');
@@ -113,7 +120,7 @@ const OwnerDashboard: React.FC = () => {
     <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="eyebrow" style={{ marginBottom: 10 }}>{restCuisine ? `Panel · ${restCuisine}` : 'Panel de gestión'}</div>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>{restCuisine ? `${t('owner.panel')} · ${restCuisine}` : t('owner.panel')}</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
             <h1 className="editorial" style={{ fontSize: 'clamp(36px,5vw,56px)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0 }}>
               {firstWord} {restRest && <span className="italic-accent">{restRest}</span>}
@@ -126,7 +133,7 @@ const OwnerDashboard: React.FC = () => {
                 display: 'flex', alignItems: 'center', gap: 6,
               }}>
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>add</span>
-                Nueva reserva
+                {t('owner.newReservation')}
               </button>
               <button
                 onClick={() => setEditing(true)}
@@ -138,7 +145,7 @@ const OwnerDashboard: React.FC = () => {
                 }}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: 16 }}>settings</span>
-                Editar
+                {t('owner.edit')}
               </button>
             </div>
           </div>
@@ -177,7 +184,7 @@ const OwnerDashboard: React.FC = () => {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
-          {([['reservations', 'Reservas', 'event'], ['floor', 'Plano de sala', 'table_restaurant'], ['heatmap', 'Ocupación', 'bar_chart']] as const).map(([id, label, icon]) => (
+          {([['reservations', t('owner.tabs.reservations'), 'event'], ['floor', t('owner.tabs.floor'), 'table_restaurant'], ['heatmap', t('owner.tabs.heatmap'), 'bar_chart']] as const).map(([id, label, icon]) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
@@ -200,7 +207,7 @@ const OwnerDashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {/* Filter pills */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-              {[['all', 'Todas'], ['confirmed', 'Confirmadas'], ['pending', 'Pendientes'], ['cancelled', 'Canceladas']].map(([v, l]) => (
+              {[['all', t('owner.filters.all')], ['confirmed', t('owner.filters.confirmed')], ['pending', t('owner.filters.pending')], ['cancelled', t('owner.filters.cancelled')]].map(([v, l]) => (
                 <button
                   key={v}
                   onClick={() => setFilter(v)}
@@ -223,7 +230,7 @@ const OwnerDashboard: React.FC = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                    {['Mesa', 'Cliente', 'Comensales', 'Hora', 'Estado', 'Acciones'].map(h => (
+                    {[t('owner.table.table'), t('owner.table.client'), t('owner.table.guests'), t('owner.table.time'), t('owner.table.status'), t('owner.table.actions')].map(h => (
                       <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700 }}>{h}</th>
                     ))}
                   </tr>
@@ -258,7 +265,7 @@ const OwnerDashboard: React.FC = () => {
                       <td style={{ padding: '14px 16px' }}>
                         <div style={{ display: 'flex', gap: 6 }}>
                           {r.status === 'pending' && (
-                            <button style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', background: '#ecfdf5', color: '#10b981', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Confirmar</button>
+                            <button style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', background: '#ecfdf5', color: '#10b981', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{t('owner.table.confirm')}</button>
                           )}
                           <button style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--ink-55)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
                             <span className="material-symbols-outlined" style={{ fontSize: 14 }}>more_horiz</span>
@@ -278,7 +285,7 @@ const OwnerDashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 20 }}>
               <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 24, overflow: 'hidden' }}>
-                <div className="eyebrow" style={{ marginBottom: 16 }}>Plano de sala — Turno noche</div>
+                <div className="eyebrow" style={{ marginBottom: 16 }}>{t('owner.floor.title')}</div>
                 <svg viewBox="0 0 100 90" style={{ width: '100%', fontFamily: 'inherit' }}>
                   <rect x="0" y="0" width="100" height="90" fill="#f8f7f5" rx="2" />
                   <rect x="0" y="0" width="100" height="6" fill="#e2e0db" />
@@ -302,8 +309,8 @@ const OwnerDashboard: React.FC = () => {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <div style={{ background: 'var(--surface-3)', borderRadius: 16, border: '1px solid var(--border)', padding: 18 }}>
-                  <div className="eyebrow" style={{ marginBottom: 12 }}>Leyenda</div>
-                  {[['free', '#10b981', 'Libre'], ['taken', '#ef4444', 'Ocupada'], ['reserved', '#f59e0b', 'Reservada']].map(([, c, l]) => (
+                  <div className="eyebrow" style={{ marginBottom: 12 }}>{t('owner.floor.legend')}</div>
+                  {[['free', '#10b981', t('owner.floor.free')], ['taken', '#ef4444', t('owner.floor.taken')], ['reserved', '#f59e0b', t('owner.floor.reserved')]].map(([, c, l]) => (
                     <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                       <span style={{ width: 12, height: 12, borderRadius: 4, background: `${c}33`, border: `1.5px solid ${c}`, flexShrink: 0 }} />
                       <span style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 600 }}>{l}</span>
@@ -311,8 +318,8 @@ const OwnerDashboard: React.FC = () => {
                   ))}
                 </div>
                 <div style={{ background: 'var(--surface-3)', borderRadius: 16, border: '1px solid var(--border)', padding: 18 }}>
-                  <div className="eyebrow" style={{ marginBottom: 12 }}>Resumen</div>
-                  {[['Mesas libres', FLOOR.filter(t => t.status === 'free').length], ['Ocupadas', FLOOR.filter(t => t.status === 'taken').length], ['Reservadas', FLOOR.filter(t => t.status === 'reserved').length]].map(([l, v]) => (
+                  <div className="eyebrow" style={{ marginBottom: 12 }}>{t('owner.floor.summary')}</div>
+                  {[[t('owner.floor.freeTables'), FLOOR.filter(x => x.status === 'free').length], [t('owner.floor.takenTables'), FLOOR.filter(x => x.status === 'taken').length], [t('owner.floor.reservedTables'), FLOOR.filter(x => x.status === 'reserved').length]].map(([l, v]) => (
                     <div key={l as string} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                       <span style={{ fontSize: 13, color: 'var(--ink-55)' }}>{l}</span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{v}</span>
@@ -328,8 +335,8 @@ const OwnerDashboard: React.FC = () => {
         {activeTab === 'heatmap' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 32 }}>
-              <div className="eyebrow" style={{ marginBottom: 6 }}>Ocupación por hora</div>
-              <p style={{ fontSize: 14, color: 'var(--ink-55)', marginBottom: 28 }}>Distribución de reservas durante el día</p>
+              <div className="eyebrow" style={{ marginBottom: 6 }}>{t('owner.heatmap.title')}</div>
+              <p style={{ fontSize: 14, color: 'var(--ink-55)', marginBottom: 28 }}>{t('owner.heatmap.subtitle')}</p>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 200 }}>
                 {HEATMAP.map((v, i) => (
                   <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
@@ -348,7 +355,7 @@ const OwnerDashboard: React.FC = () => {
                 ))}
               </div>
               <div style={{ marginTop: 24, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {[['Pico máximo', '20h — 90%'], ['Hora tranquila', '16h — 35%'], ['Media diaria', '65%']].map(([l, v]) => (
+                {[[t('owner.heatmap.peak'), '20h — 90%'], [t('owner.heatmap.quiet'), '16h — 35%'], [t('owner.heatmap.average'), '65%']].map(([l, v]) => (
                   <div key={l} style={{ padding: '12px 18px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--surface-2)' }}>
                     <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700, marginBottom: 4 }}>{l}</div>
                     <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Fraunces", serif' }}>{v}</div>

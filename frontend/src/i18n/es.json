@@ -155,7 +155,32 @@
     "privacy": "Política de privacidad",
     "terms": "Términos de servicio",
     "contact": "Contacto",
-    "rights": "© 2026 ReserVia Inc. Todos los derechos reservados."
+    "rights": "© 2026 ReserVia Inc. Todos los derechos reservados.",
+    "diners": "Comensales",
+    "restaurateurs": "Restauradores",
+    "company": "Compañía",
+    "tagline": "Reservar una mesa no debería sentirse como",
+    "taglineAccent": "rellenar un formulario",
+    "madeWith": "Hecho con",
+    "madeWithAccent": "amor al buen comer",
+    "madeWithIn": ", en Granada.",
+    "links": {
+      "explore": "Explorar restaurantes",
+      "tableMap": "Mapa de mesas",
+      "experiences": "Experiencias",
+      "mobileApp": "App móvil",
+      "giftCards": "Tarjetas regalo",
+      "joinReservia": "Únete a ReserVia",
+      "managementPanel": "Panel de gestión",
+      "pos": "POS integrado",
+      "successCases": "Casos de éxito",
+      "pricing": "Precios",
+      "about": "Sobre nosotros",
+      "editorial": "Editorial",
+      "press": "Prensa",
+      "careers": "Carreras",
+      "contact": "Contacto"
+    }
   },
   "auth": {
     "signIn": "Iniciar sesión",
@@ -165,7 +190,126 @@
     "lastNamePlaceholder": "Apellidos",
     "phonePlaceholder": "Teléfono",
     "emailPlaceholder": "Correo electrónico",
-    "passwordPlaceholder": "Contraseña (mín. 6 caracteres)"
+    "passwordPlaceholder": "Contraseña (mín. 6 caracteres)",
+    "subtitleLogin": "Vuelve a tus restaurantes favoritos, gestiona reservas y descubre mesas escondidas.",
+    "subtitleRegister": "Únete a una comunidad de comensales curiosos. Reservas al instante, favoritos a mano.",
+    "creating": "Creando cuenta…",
+    "entering": "Entrando…",
+    "haveAccount": "¿Ya tienes cuenta? ",
+    "newHere": "¿Primera vez aquí? ",
+    "accountType": "Tipo de cuenta",
+    "customer": "Cliente",
+    "restaurant": "Restaurante",
+    "stepLogin": "01 — Acceso",
+    "stepRegister": "02 — Nueva cuenta",
+    "or": "o",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "errorGeneric": "Algo salió mal",
+    "errorGoogle": "Error al iniciar sesión con Google"
+  },
+  "owner": {
+    "panel": "Panel de gestión",
+    "yourRestaurant": "Tu restaurante",
+    "newReservation": "Nueva reserva",
+    "edit": "Editar",
+    "stats": {
+      "reservations": "Reservas hoy",
+      "guests": "Comensales",
+      "cancellations": "Cancelaciones",
+      "revenue": "Ingresos est."
+    },
+    "tabs": {
+      "reservations": "Reservas",
+      "floor": "Plano de sala",
+      "heatmap": "Ocupación"
+    },
+    "filters": {
+      "all": "Todas",
+      "confirmed": "Confirmadas",
+      "pending": "Pendientes",
+      "cancelled": "Canceladas"
+    },
+    "table": {
+      "table": "Mesa",
+      "client": "Cliente",
+      "guests": "Comensales",
+      "time": "Hora",
+      "status": "Estado",
+      "actions": "Acciones",
+      "confirm": "Confirmar"
+    },
+    "status": {
+      "confirmed": "Confirmada",
+      "pending": "Pendiente",
+      "cancelled": "Cancelada"
+    },
+    "floor": {
+      "title": "Plano de sala — Turno noche",
+      "legend": "Leyenda",
+      "free": "Libre",
+      "taken": "Ocupada",
+      "reserved": "Reservada",
+      "summary": "Resumen",
+      "freeTables": "Mesas libres",
+      "takenTables": "Ocupadas",
+      "reservedTables": "Reservadas"
+    },
+    "heatmap": {
+      "title": "Ocupación por hora",
+      "subtitle": "Distribución de reservas durante el día",
+      "peak": "Pico máximo",
+      "quiet": "Hora tranquila",
+      "average": "Media diaria"
+    }
+  },
+  "admin": {
+    "eyebrow": "Admin · Plataforma",
+    "title": "Panel",
+    "systemsOk": "Todos los sistemas operativos",
+    "stats": {
+      "activeRestaurants": "Restaurantes activos",
+      "totalBookings": "Reservas totales",
+      "registeredUsers": "Usuarios registrados",
+      "netRevenue": "Ingresos netos"
+    },
+    "tabs": {
+      "overview": "Visión general",
+      "topRestaurants": "Top restaurantes",
+      "pending": "Aprobaciones"
+    },
+    "monthlyRevenue": "Ingresos mensuales",
+    "vsLastYear": "+31% vs 2025",
+    "cityDistribution": "Distribución por ciudad",
+    "restaurantsLabel": "restaurantes",
+    "bookingsLabel": "reservas",
+    "table": {
+      "restaurant": "Restaurante",
+      "city": "Ciudad",
+      "bookings": "Reservas",
+      "revenue": "Ingresos",
+      "rating": "Valoración"
+    },
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "allClear": "Todo al día",
+    "noPending": "No hay solicitudes pendientes de aprobación.",
+    "submitted": "Enviado"
+  },
+  "account": {
+    "loginPrompt": "Identifícate para ver tu",
+    "loginPromptAccent": "cuenta",
+    "backHome": "Volver al inicio",
+    "hello": "Hola,",
+    "points": "Puntos",
+    "pointsHint": "Sigue reservando para subir de nivel",
+    "myBookings": "Mis reservas",
+    "myBookingsHint": "Próximas y pasadas",
+    "favorites": "Favoritos",
+    "favoritesHint": "Restaurantes guardados",
+    "map": "Mapa",
+    "mapHint": "Explora cerca de ti",
+    "logout": "Cerrar sesión"
   },
   "profile": {
     "menu": "Menú de perfil",
