@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { authApi, type UserRole } from '../api/auth';
 import { setRole, getRole } from '../api/roles';
 import { useAuth } from '../context/AuthContext';
@@ -64,6 +65,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
     }
   };
 
+  const handleGoogle = async (credential: string) => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await authApi.google(credential);
+      const finalRole: UserRole = mode === 'register' ? role : getRole(res.user.email);
+      if (mode === 'register') setRole(res.user.email, finalRole);
+      login(res.token, { ...res.user, role: finalRole });
+      onClose();
+      if (finalRole === 'owner') navigate('/owner');
+      else if (finalRole === 'admin') navigate('/admin');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Google sign-in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const switchMode = (next: 'login' | 'register') => {
     setMode(next);
     setError('');
@@ -105,7 +124,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
             </button>
             {/* ── Editorial panel (left) ───────────────────────────── */}
-            <aside className="relative flex flex-col justify-between gap-6 sm:gap-8 p-6 sm:p-8 lg:p-10 xl:p-12 text-background-light overflow-hidden bg-navy">
+            <aside className="relative flex flex-col gap-6 sm:gap-8 p-6 sm:p-8 lg:p-10 xl:p-12 text-background-light overflow-hidden bg-navy">
               <div className="absolute inset-0 auth-grain opacity-95" aria-hidden="true" />
               <div
                 className="absolute -bottom-20 -left-20 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
@@ -120,7 +139,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                 </span>
               </div>
 
-              <div className="relative z-10 flex flex-col gap-6">
+              <div className="relative z-10 flex flex-col gap-6 flex-1 justify-center">
                 <span className="text-[11px] tracking-[0.35em] uppercase text-primary font-bold">
                   {stepLabel}
                 </span>
@@ -382,6 +401,27 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                   </button>
 
                 </form>
+
+                <div className="flex items-center gap-3 my-1">
+                  <span className="flex-1 h-px bg-navy/10" />
+                  <span className="text-[10px] tracking-[0.3em] uppercase text-navy/45 font-bold">
+                    o
+                  </span>
+                  <span className="flex-1 h-px bg-navy/10" />
+                </div>
+
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={(cred) => {
+                      if (cred.credential) handleGoogle(cred.credential);
+                    }}
+                    onError={() => setError('Google sign-in failed')}
+                    text={isRegister ? 'signup_with' : 'signin_with'}
+                    shape="pill"
+                    size="large"
+                    width="320"
+                  />
+                </div>
 
                 <p className="text-xs text-navy/55 text-center">
                   {isRegister ? '¿Ya tienes cuenta? ' : '¿Primera vez aquí? '}
