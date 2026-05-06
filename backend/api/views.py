@@ -109,6 +109,48 @@ def staff_login_view(request):
     )
 
 
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def google_auth_view(request):
+    from django.conf import settings as django_settings
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
+
+    credential = request.data.get('credential', '')
+    if not credential:
+        return Response({'error': 'Missing credential'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        info = id_token.verify_oauth2_token(
+            credential, google_requests.Request(), django_settings.GOOGLE_CLIENT_ID
+        )
+    except ValueError:
+        return Response({'error': 'Invalid Google token'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    email = info.get('email')
+    if not email or not info.get('email_verified'):
+        return Response({'error': 'Email not verified by Google'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    user, created = User.objects.get_or_create(
+        username=email,
+        defaults={
+            'email': email,
+            'first_name': info.get('given_name', ''),
+            'last_name': info.get('family_name', ''),
+        },
+    )
+    if created:
+        user.set_unusable_password()
+        user.save()
+
+    refresh = RefreshToken.for_user(user)
+    return Response({
+        'token': str(refresh.access_token),
+        'refresh': str(refresh),
+        'user': UserSerializer(user).data,
+    })
+
+
 # ---------- Restaurants ----------
 
 

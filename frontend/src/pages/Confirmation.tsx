@@ -225,7 +225,7 @@ const Confirmation: React.FC = () => {
                     style={{
                       width: i % 3 === 0 ? 3 : 1,
                       height: '100%',
-                      background: 'var(--cream)',
+                      background: 'var(--surface)',
                       opacity: ((i * 13) % 7) > 1 ? 1 : 0.3,
                     }}
                   />

@@ -1,19 +1,21 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 
 const AccountPage: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout, isAuthenticated } = useAuth();
 
   if (!isAuthenticated || !user) {
     return (
       <div className="container" style={{ padding: '120px 24px', textAlign: 'center' }}>
         <h1 className="editorial" style={{ fontSize: 56, fontWeight: 300 }}>
-          Identifícate para ver tu <span className="italic-accent">cuenta</span>
+          {t('account.loginPrompt')} <span className="italic-accent">{t('account.loginPromptAccent')}</span>
         </h1>
         <Link to="/" className="btn btn-primary" style={{ marginTop: 28 }}>
-          <span>Volver al inicio</span>
+          <span>{t('account.backHome')}</span>
         </Link>
       </div>
     );
@@ -61,18 +63,18 @@ const AccountPage: React.FC = () => {
             {initials}
           </div>
           <div>
-            <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.5)' }}>Hola,</div>
+            <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.5)' }}>{t('account.hello')}</div>
             <h1 className="editorial" style={{ fontSize: 56, fontWeight: 300, marginTop: 4 }}>
               {user.name || user.email}
             </h1>
             <div style={{ fontSize: 14, opacity: 0.7, marginTop: 4 }}>{user.email}</div>
           </div>
           <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-            <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.5)' }}>Puntos</div>
+            <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.5)' }}>{t('account.points')}</div>
             <div className="editorial mono-num" style={{ fontSize: 56, fontWeight: 300, color: 'var(--primary)' }}>
               0
             </div>
-            <div style={{ fontSize: 11, opacity: 0.6 }}>Sigue reservando para subir de nivel</div>
+            <div style={{ fontSize: 11, opacity: 0.6 }}>{t('account.pointsHint')}</div>
           </div>
         </div>
       </div>
@@ -86,9 +88,9 @@ const AccountPage: React.FC = () => {
         }}
       >
         {[
-          { to: '/my-bookings', icon: 'event', t: 'Mis reservas', d: 'Próximas y pasadas' },
-          { to: '/favorites', icon: 'favorite', t: 'Favoritos', d: 'Restaurantes guardados' },
-          { to: '/map', icon: 'map', t: 'Mapa', d: 'Explora cerca de ti' },
+          { to: '/my-bookings', icon: 'event', t: t('account.myBookings'), d: t('account.myBookingsHint') },
+          { to: '/favorites', icon: 'favorite', t: t('account.favorites'), d: t('account.favoritesHint') },
+          { to: '/map', icon: 'map', t: t('account.map'), d: t('account.mapHint') },
         ].map((x) => (
           <Link
             key={x.to}
@@ -128,7 +130,7 @@ const AccountPage: React.FC = () => {
         style={{ marginTop: 32, color: 'var(--ruby)', borderColor: 'rgba(225,29,72,0.3)' }}
       >
         <span className="mat" style={{ fontSize: 16 }}>logout</span>
-        <span>Cerrar sesión</span>
+        <span>{t('account.logout')}</span>
       </button>
     </motion.div>
   );

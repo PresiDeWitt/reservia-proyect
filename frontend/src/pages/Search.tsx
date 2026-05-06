@@ -42,7 +42,7 @@ const Search: React.FC = () => {
   };
 
   return (
-    <div style={{ background: 'var(--cream)', minHeight: '100vh', padding: '48px 0 96px' }}>
+    <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 0 96px' }}>
       <div style={{ maxWidth: 1320, margin: '0 auto', padding: '0 24px' }}>
         {/* Header */}
         <div className="eyebrow" style={{ marginBottom: 10 }}>Explorar</div>

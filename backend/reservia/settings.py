@@ -202,8 +202,14 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
 }
 
-# Anthropic
+# OpenRouter
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+
+# Google OAuth
+GOOGLE_CLIENT_ID = os.environ.get(
+    "GOOGLE_CLIENT_ID",
+    "352082109619-btd5099um4joj644ig10rhg7nk03nibi.apps.googleusercontent.com",
+)
 
 # CORS — allow the Vite dev server, Docker, and Railway
 _cors = os.environ.get(

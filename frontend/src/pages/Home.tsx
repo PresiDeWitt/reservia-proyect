@@ -125,7 +125,7 @@ const Home: React.FC = () => {
       {/* Editorial pull quote */}
       <section
         className="grain"
-        style={{ padding: '64px 0', background: 'var(--cream-2)', position: 'relative' }}
+        style={{ padding: '64px 0', background: 'var(--surface-2)', position: 'relative' }}
       >
         <div className="container-narrow" style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
           <div className="eyebrow" style={{ color: 'var(--primary)' }}>
@@ -316,12 +316,18 @@ const Home: React.FC = () => {
               de cobertura. Todo en un panel que aprende de tu servicio.
             </p>
             <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
-              <button className="btn btn-ember">
-                <span>Más información</span>
+              <button
+                className="btn btn-ember"
+                onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }))}
+              >
+                <span>Registra tu restaurante</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
               </button>
-              <button className="btn btn-dark">
-                <span>Hablar con ventas</span>
+              <button
+                className="btn btn-dark"
+                onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'login', role: 'owner' } }))}
+              >
+                <span>Ya tengo cuenta</span>
               </button>
             </div>
           </div>
@@ -343,7 +349,7 @@ const Home: React.FC = () => {
                 bottom: -28,
                 left: -28,
                 padding: 18,
-                background: 'var(--cream)',
+                background: 'var(--surface-3)',
                 color: 'var(--ink)',
                 minWidth: 220,
                 borderRadius: 'var(--r-lg)',

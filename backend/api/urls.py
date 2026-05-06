@@ -5,6 +5,7 @@ urlpatterns = [
     # Auth
     path("auth/register/", views.RegisterView.as_view(), name="register"),
     path("auth/login/", views.login_view, name="login"),
+    path("auth/google/", views.google_auth_view, name="google-auth"),
     path("auth/staff/", views.staff_login_view, name="staff-login"),
     # Restaurants
     path("restaurants/", views.RestaurantListView.as_view(), name="restaurant-list"),

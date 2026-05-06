@@ -62,7 +62,7 @@ const MapExplorer: React.FC = () => {
   const activeRestaurant = restaurants.find(r => r.id === selectedId);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 72px)', overflow: 'hidden', background: 'var(--cream)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 72px)', overflow: 'hidden', background: 'var(--surface)' }}>
       {/* Filter bar */}
       <div style={{
         padding: '12px 24px', background: 'rgba(248,247,245,0.95)',
@@ -95,9 +95,9 @@ const MapExplorer: React.FC = () => {
       {/* Main layout */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }} className="map-main">
         {/* Sidebar */}
-        <div style={{ width: 380, flexShrink: 0, overflowY: 'auto', background: '#fff', borderRight: '1px solid var(--border)', zIndex: 5 }}>
+        <div style={{ width: 380, flexShrink: 0, overflowY: 'auto', background: 'var(--surface-3)', borderRight: '1px solid var(--border)', zIndex: 5 }}>
           <div style={{ padding: '16px 16px 10px' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)' }}>{restaurants.length} restaurantes</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{restaurants.length} restaurantes</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {restaurants.map((rest) => (
@@ -115,7 +115,7 @@ const MapExplorer: React.FC = () => {
               >
                 <img src={rest.image} alt={rest.name} style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rest.name}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{rest.name}</div>
                   <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 2 }}>
                     {t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} · {rest.location}
                   </div>
@@ -125,7 +125,7 @@ const MapExplorer: React.FC = () => {
                       {rest.rating}
                     </span>
                     <span style={{ fontSize: 11, color: 'var(--ink-40)' }}>·</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--navy)' }}>{rest.priceRange}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)' }}>{rest.priceRange}</span>
                   </div>
                 </div>
                 {rest.id === selectedId && (
@@ -175,7 +175,7 @@ const MapExplorer: React.FC = () => {
                   <Popup>
                     <div style={{ minWidth: 180 }}>
                       <img src={rest.image} alt={rest.name} style={{ width: '100%', height: 90, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }} />
-                      <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--navy)', marginBottom: 3 }}>{rest.name}</div>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 3 }}>{rest.name}</div>
                       <div style={{ fontSize: 12, color: 'var(--ink-55)', marginBottom: 8 }}>
                         {t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} · {rest.priceRange}
                       </div>

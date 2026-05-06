@@ -1,9 +1,12 @@
 import { api } from './client';
 
+export type UserRole = 'customer' | 'owner' | 'admin';
+
 export interface AuthUser {
   id: number;
   name: string;
   email: string;
+  role?: UserRole;
 }
 
 export interface AuthResponse {
@@ -23,4 +26,7 @@ export const authApi = {
 
   login: (data: { email: string; password: string }) =>
     api.post<AuthResponse>('/auth/login/', data),
+
+  google: (credential: string) =>
+    api.post<AuthResponse>('/auth/google/', { credential }),
 };

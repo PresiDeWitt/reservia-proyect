@@ -1,19 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { authApi } from '../api/auth';
+import { useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
+import { authApi, type UserRole } from '../api/auth';
+import { setRole, getRole } from '../api/roles';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  defaultMode?: 'login' | 'register';
+  defaultRole?: UserRole;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, defaultRole }) => {
   const { t } = useTranslation();
   const { login } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [role, setRoleState] = useState<UserRole>('customer');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (defaultMode) setMode(defaultMode);
+      if (defaultRole) setRoleState(defaultRole);
+    }
+  }, [isOpen, defaultMode, defaultRole]);
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -38,10 +52,33 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               email,
               password,
             });
-      login(res.token, res.refresh, res.user);
+      const finalRole: UserRole =
+        mode === 'register' ? role : getRole(res.user.email);
+      if (mode === 'register') setRole(res.user.email, finalRole);
+      login(res.token, res.refresh, { ...res.user, role: finalRole });
       onClose();
+      if (finalRole === 'owner') navigate('/owner');
+      else if (finalRole === 'admin') navigate('/admin');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : t('auth.errorGeneric'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogle = async (credential: string) => {
+    setError('');
+    setLoading(true);
+    try {
+      const res = await authApi.google(credential);
+      const finalRole: UserRole = mode === 'register' ? role : getRole(res.user.email);
+      if (mode === 'register') setRole(res.user.email, finalRole);
+      login(res.token, res.refresh, { ...res.user, role: finalRole });
+      onClose();
+      if (finalRole === 'owner') navigate('/owner');
+      else if (finalRole === 'admin') navigate('/admin');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t('auth.errorGoogle'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +91,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   const isRegister = mode === 'register';
   const title = isRegister ? t('auth.createAccount') : t('auth.signIn');
-  const stepLabel = isRegister ? '02 — Nueva cuenta' : '01 — Acceso';
+  const stepLabel = isRegister ? t('auth.stepRegister') : t('auth.stepLogin');
 
   return (
     <AnimatePresence>
@@ -80,8 +117,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             className="relative w-full max-w-5xl bg-background-light rounded-2xl sm:rounded-[28px] shadow-[0_40px_120px_-20px_rgba(15,23,42,0.45)] overflow-hidden grid grid-cols-1 lg:grid-cols-[1.05fr_1fr] max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              onClick={onClose}
+              aria-label="Cerrar"
+              className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full flex items-center justify-center bg-white/15 hover:bg-white/25 backdrop-blur-md text-white lg:bg-transparent lg:text-navy/50 lg:hover:text-navy lg:hover:bg-navy/5 transition-all"
+            >
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
+            </button>
             {/* ── Editorial panel (left) ───────────────────────────── */}
-            <aside className="relative hidden lg:flex flex-col justify-between p-10 xl:p-12 text-background-light overflow-hidden bg-navy">
+            <aside className="relative flex flex-col gap-6 sm:gap-8 p-6 sm:p-8 lg:p-10 xl:p-12 text-background-light overflow-hidden bg-navy">
               <div className="absolute inset-0 auth-grain opacity-95" aria-hidden="true" />
               <div
                 className="absolute -bottom-20 -left-20 w-[420px] h-[420px] rounded-full blur-3xl opacity-40"
@@ -90,19 +134,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               />
 
               <div className="relative z-10 flex items-center justify-between">
-                <Logo size={90} />
+                <Logo size={64} />
                 <span className="text-[10px] tracking-[0.3em] uppercase text-background-light/60 font-semibold">
                   Est. 2026
                 </span>
               </div>
 
-              <div className="relative z-10 flex flex-col gap-6">
+              <div className="relative z-10 flex flex-col gap-6 flex-1 justify-center">
                 <span className="text-[11px] tracking-[0.35em] uppercase text-primary font-bold">
                   {stepLabel}
                 </span>
                 <h2
                   id="auth-title"
-                  className="auth-editorial text-[36px] lg:text-[44px] xl:text-[56px] leading-[0.95] tracking-tight"
+                  className="auth-editorial text-[30px] sm:text-[36px] lg:text-[44px] xl:text-[56px] leading-[0.95] tracking-tight"
                   style={{ fontWeight: 300, fontVariationSettings: "'SOFT' 50, 'opsz' 144" }}
                 >
                   {isRegister ? (
@@ -122,13 +166,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   )}
                 </h2>
                 <p className="text-background-light/70 text-sm max-w-xs leading-relaxed">
-                  {isRegister
-                    ? 'Únete a una comunidad de comensales curiosos. Reservas al instante, favoritos a mano.'
-                    : 'Vuelve a tus restaurantes favoritos, gestiona reservas y descubre mesas escondidas.'}
+                  {isRegister ? t('auth.subtitleRegister') : t('auth.subtitleLogin')}
                 </p>
               </div>
 
-              <div className="relative z-10 flex items-end justify-between gap-6">
+              <div className="relative z-10 hidden sm:flex items-end justify-between gap-6">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-baseline gap-1.5">
                     <span className="auth-editorial italic text-primary text-4xl" style={{ fontWeight: 500 }}>
@@ -167,36 +209,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </aside>
 
             {/* ── Form panel (right) ──────────────────────────────── */}
-            <section className="relative flex flex-col p-7 sm:p-10 lg:p-12 bg-background-light overflow-y-auto">
-              <button
-                onClick={onClose}
-                aria-label="Cerrar"
-                className="absolute top-5 right-5 w-10 h-10 rounded-full flex items-center justify-center text-navy/50 hover:text-navy hover:bg-navy/5 transition-all"
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 22 }}>close</span>
-              </button>
-
-              <div key={mode} className="auth-rise flex flex-col gap-6 mt-4 lg:mt-0">
-                {/* Mobile-only editorial header */}
-                <div className="lg:hidden flex flex-col gap-1">
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-primary font-bold">
-                    {stepLabel}
-                  </span>
-                  <h2
-                    className="auth-editorial text-navy text-2xl sm:text-4xl leading-none"
-                    style={{ fontWeight: 400 }}
-                  >
-                    {isRegister ? (
-                      <>Reserva tu <em className="italic text-primary">asiento</em>.</>
-                    ) : (
-                      <>Bienvenido <em className="italic text-primary">de vuelta</em>.</>
-                    )}
-                  </h2>
-                </div>
-
-                <div className="hidden lg:flex flex-col gap-1.5">
+            <section className="relative flex flex-col p-5 sm:p-8 lg:p-12 bg-background-light overflow-y-auto">
+              <div key={mode} className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
+                <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">
-                    {isRegister ? 'Crear cuenta' : 'Iniciar sesión'}
+                    {isRegister ? t('auth.createAccount') : t('auth.signIn')}
                   </span>
                   <h3 className="auth-editorial text-navy text-3xl" style={{ fontWeight: 400 }}>
                     {isRegister ? (
@@ -275,6 +292,35 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                         autoComplete="tel"
                         required
                       />
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] tracking-[0.3em] uppercase font-bold" style={{ color: 'var(--ink-55)' }}>
+                          {t('auth.accountType')}
+                        </span>
+                        <div className="grid grid-cols-2 gap-2">
+                          {([
+                            { v: 'customer', label: t('auth.customer'), icon: 'person' },
+                            { v: 'owner', label: t('auth.restaurant'), icon: 'storefront' },
+                          ] as { v: UserRole; label: string; icon: string }[]).map((opt) => {
+                            const active = role === opt.v;
+                            return (
+                              <button
+                                key={opt.v}
+                                type="button"
+                                onClick={() => setRoleState(opt.v)}
+                                className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all"
+                                style={{
+                                  background: active ? 'var(--primary)' : 'var(--ink-5)',
+                                  color: active ? '#fff' : 'var(--ink)',
+                                  border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                                }}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{opt.icon}</span>
+                                <span className="text-xs font-semibold">{opt.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </>
                   )}
                   <FloatField
@@ -299,7 +345,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       <button
                         type="button"
                         onClick={() => setShowPassword((v) => !v)}
-                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                         className="text-navy/40 hover:text-navy transition-colors"
                       >
                         <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
@@ -340,7 +386,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                       {loading ? (
                         <>
                           <span className="w-4 h-4 border-2 border-background-light/30 border-t-background-light rounded-full animate-spin" />
-                          <span>{isRegister ? 'Creando cuenta…' : 'Entrando…'}</span>
+                          <span>{isRegister ? t('auth.creating') : t('auth.entering')}</span>
                         </>
                       ) : (
                         <>
@@ -355,8 +401,29 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
                 </form>
 
+                <div className="flex items-center gap-3 my-1">
+                  <span className="flex-1 h-px bg-navy/10" />
+                  <span className="text-[10px] tracking-[0.3em] uppercase text-navy/45 font-bold">
+                    {t('auth.or')}
+                  </span>
+                  <span className="flex-1 h-px bg-navy/10" />
+                </div>
+
+                <div className="flex justify-center">
+                  <GoogleLogin
+                    onSuccess={(cred) => {
+                      if (cred.credential) handleGoogle(cred.credential);
+                    }}
+                    onError={() => setError('Google sign-in failed')}
+                    text={isRegister ? 'signup_with' : 'signin_with'}
+                    shape="pill"
+                    size="large"
+                    width="320"
+                  />
+                </div>
+
                 <p className="text-xs text-navy/55 text-center">
-                  {isRegister ? '¿Ya tienes cuenta? ' : '¿Primera vez aquí? '}
+                  {isRegister ? t('auth.haveAccount') : t('auth.newHere')}
                   <button
                     type="button"
                     onClick={() => switchMode(isRegister ? 'login' : 'register')}
