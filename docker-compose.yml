@@ -11,6 +11,7 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       STAFF_OWNER_CODE: ${STAFF_OWNER_CODE:-}
       STAFF_ADMIN_CODE: ${STAFF_ADMIN_CODE:-}
+      SECURE_SSL_REDIRECT: "False"
     volumes:
       - db_data:/data
     restart: unless-stopped
