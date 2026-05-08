@@ -424,7 +424,7 @@ const Hero: React.FC = () => {
                 </div>
                 <select
                   className="input"
-                  style={{ background: 'var(--ink-5)', border: 'none' }}
+                  style={{ background: 'var(--ink-5)', border: 'none', color: 'var(--ink)' }}
                   value={day}
                   onChange={(e) => setDay(e.target.value)}
                 >
@@ -440,7 +440,7 @@ const Hero: React.FC = () => {
                 </div>
                 <select
                   className="input"
-                  style={{ background: 'var(--ink-5)', border: 'none' }}
+                  style={{ background: 'var(--ink-5)', border: 'none', color: 'var(--ink)' }}
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                 >
@@ -458,7 +458,7 @@ const Hero: React.FC = () => {
                 </div>
                 <select
                   className="input"
-                  style={{ background: 'var(--ink-5)', border: 'none' }}
+                  style={{ background: 'var(--ink-5)', border: 'none', color: 'var(--ink)' }}
                   value={people}
                   onChange={(e) => setPeople(e.target.value)}
                 >

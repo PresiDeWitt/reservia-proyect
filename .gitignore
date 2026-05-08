@@ -103,3 +103,14 @@ frontend/.pnpm-store/
 # Obsidian
 *.canvas
 docs/documento/
+
+# Excluir frontend/src/lib del ignore anterior de lib/
+!frontend/src/lib/
+
+# Scripts de análisis temporales
+analyze_git.py
+git_stats.txt
+
+# Archivos temporales de instalación
+frontend/map_registry.json
+frontend/map_file_*.txt
