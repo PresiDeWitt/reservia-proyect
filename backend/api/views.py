@@ -242,7 +242,10 @@ def my_reservations(request):
 @throttle_classes([ChatRateThrottle])
 def chat_view(request):
     import requests as http_requests
+    import logging
     from django.conf import settings as django_settings
+
+    logger = logging.getLogger(__name__)
 
     message = request.data.get("message", "").strip()
     history = request.data.get("history", [])
@@ -261,19 +264,18 @@ def chat_view(request):
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
-    restaurants = Restaurant.objects.prefetch_related("menu_items").all()
+    restaurants = Restaurant.objects.only("id", "name", "cuisine", "rating", "price_range", "address", "description", "lat", "lng")
     restaurant_lines = []
-    for r in restaurants:
-        menu = ", ".join(f"{m.name} ({m.price:.2f}€)" for m in r.menu_items.all()[:4])
+    for r in restaurants[:30]:
         restaurant_lines.append(
-            f"- ID:{r.pk} | {r.name} | {r.cuisine} | Rating: {r.rating}/5 | {r.price_range} | "
-            f"{r.address} | {r.description} | Menu: {menu}"
+            f"- {r.name} | {r.cuisine} | {r.rating}/5 | {r.price_range} | {r.address}"
+            + (f" | {r.description[:80]}" if r.description else "")
         )
 
     location_note = ""
     if lat and lng:
         location_note = (
-            f"\nUser GPS: lat={lat}, lng={lng}. "
+            f"\nUser GPS: lat={lat:.4f}, lng={lng:.4f}. "
             "Mention distance or closeness when relevant using restaurant coordinates."
         )
 
@@ -313,11 +315,18 @@ def chat_view(request):
                 "messages": safe_history,
                 "max_tokens": 400,
             },
-            timeout=30,
+            timeout=20,
         )
         data = resp.json()
         reply = data["choices"][0]["message"]["content"]
-    except Exception:
+    except http_requests.Timeout:
+        logger.warning("OpenRouter chat request timed out after 20s")
+        return Response(
+            {"error": "AI service timed out, please try again"},
+            status=status.HTTP_504_GATEWAY_TIMEOUT,
+        )
+    except Exception as e:
+        logger.error("Chat error: %s", str(e))
         return Response(
             {"error": "AI service temporarily unavailable"},
             status=status.HTTP_502_BAD_GATEWAY,

@@ -1,5 +1,32 @@
 const BASE = '/api';
 
+const MAX_RETRIES = 6;
+const INITIAL_RETRY_MS = 1000;
+
+const RETRYABLE_STATUSES = new Set([502, 503, 504]);
+
+async function fetchWithRetry(url: string, options: RequestInit): Promise<Response> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (res.ok || !RETRYABLE_STATUSES.has(res.status)) {
+        return res;
+      }
+      // 502/503/504: backend still starting, retry
+      const delay = INITIAL_RETRY_MS * Math.pow(2, attempt);
+      await new Promise((r) => setTimeout(r, delay));
+    } catch (err) {
+      lastError = err;
+      if (attempt < MAX_RETRIES) {
+        const delay = INITIAL_RETRY_MS * Math.pow(2, attempt);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError ?? new Error('Request failed after retries');
+}
+
 function getToken(): string | null {
   return localStorage.getItem('reservia_token');
 }
@@ -15,7 +42,7 @@ async function refreshAccessToken(): Promise<string | null> {
   if (!refresh) return null;
 
   try {
-    const res = await fetch(`${BASE}/auth/token/refresh/`, {
+    const res = await fetchWithRetry(`${BASE}/auth/token/refresh/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh }),
@@ -33,7 +60,7 @@ async function refreshAccessToken(): Promise<string | null> {
   }
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, options: RequestInit = {}, noRetry = false, timeoutMs?: number): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -43,8 +70,22 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  let res = await fetch(`${BASE}${path}`, { ...options, headers });
-  const data = await res.json();
+  const doFetch = (url: string, opts: RequestInit) => {
+    if (!timeoutMs) return (noRetry ? fetch(url, opts) : fetchWithRetry(url, opts));
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const fetchOpts = { ...opts, signal: controller.signal };
+    const promise = noRetry ? fetch(url, fetchOpts) : fetchWithRetry(url, fetchOpts);
+    return promise.finally(() => clearTimeout(timer));
+  };
+
+  let res = await doFetch(`${BASE}${path}`, { ...options, headers });
+  let data: Record<string, unknown>;
+  try {
+    data = await res.json() as Record<string, unknown>;
+  } catch {
+    throw new Error(res.status >= 500 ? 'Server error' : 'Invalid response');
+  }
 
   if (res.status === 401 && token) {
     if (!refreshPromise) {
@@ -55,10 +96,15 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
     if (newToken) {
       headers['Authorization'] = `Bearer ${newToken}`;
-      res = await fetch(`${BASE}${path}`, { ...options, headers });
-      const retryData = await res.json();
+      res = await doFetch(`${BASE}${path}`, { ...options, headers });
+      let retryData: Record<string, unknown>;
+      try {
+        retryData = await res.json();
+      } catch {
+        throw new Error('Server error');
+      }
       if (!res.ok) {
-        throw new Error(retryData.error || 'Request failed');
+        throw new Error((retryData.error as string) || 'Request failed');
       }
       return retryData as T;
     }
@@ -70,14 +116,14 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     throw new Error('Session expired');
   }
   if (!res.ok) {
-    throw new Error(data.error || 'Request failed');
+    throw new Error((data.error as string) || 'Request failed');
   }
   return data as T;
 }
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
-  post: <T>(path: string, body: unknown) =>
-    request<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+  post: <T>(path: string, body: unknown, noRetry?: boolean, timeoutMs?: number) =>
+    request<T>(path, { method: 'POST', body: JSON.stringify(body) }, noRetry, timeoutMs),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 };
