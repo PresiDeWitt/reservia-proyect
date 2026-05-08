@@ -12,6 +12,7 @@ services:
       STAFF_OWNER_CODE: ${STAFF_OWNER_CODE:-}
       STAFF_ADMIN_CODE: ${STAFF_ADMIN_CODE:-}
       SECURE_SSL_REDIRECT: "False"
+      SECURE_HSTS_SECONDS: "0"
     volumes:
       - db_data:/data
     restart: unless-stopped
@@ -20,6 +21,7 @@ services:
     build: ./frontend
     ports:
       - "80:80"
+      - "8443:443"
     depends_on:
       - backend
     restart: unless-stopped
