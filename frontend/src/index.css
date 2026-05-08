@@ -76,6 +76,18 @@
   --color-background-light: #f8f7f5;
   --color-background-dark: #23170f;
 
+  /* shadcn/ui compatible tokens (required by mapcn / shadcn components) */
+  --color-background: #ffffff;
+  --color-foreground: #0F172A;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0F172A;
+  --color-muted: rgba(15, 23, 42, 0.05);
+  --color-muted-foreground: rgba(15, 23, 42, 0.55);
+  --color-accent: rgba(15, 23, 42, 0.05);
+  --color-accent-foreground: #0F172A;
+  --color-border: rgba(15, 23, 42, 0.08);
+  --color-ring: #f97415;
+
   --font-display: "Inter", system-ui, sans-serif;
   --font-editorial: "Fraunces", "Times New Roman", Georgia, serif;
 
@@ -105,6 +117,18 @@
   --border: rgba(241, 236, 228, 0.14);
   --border-strong: rgba(241, 236, 228, 0.28);
   --on-surface: var(--ink);
+
+  /* shadcn/ui tokens — dark */
+  --color-background: #1a2236;
+  --color-foreground: #f1ece4;
+  --color-popover: #1a2236;
+  --color-popover-foreground: #f1ece4;
+  --color-muted: rgba(241, 236, 228, 0.07);
+  --color-muted-foreground: rgba(241, 236, 228, 0.65);
+  --color-accent: rgba(241, 236, 228, 0.07);
+  --color-accent-foreground: #f1ece4;
+  --color-border: rgba(241, 236, 228, 0.14);
+  --color-ring: #f97415;
 
   --primary-glow: rgba(249, 116, 21, 0.40);
 
@@ -161,9 +185,11 @@
 /* Inputs, placeholders, generic light surfaces */
 [data-theme="dark"] input,
 [data-theme="dark"] textarea,
-[data-theme="dark"] select { color: var(--ink); }
+[data-theme="dark"] select { color: var(--ink); background-color: var(--surface-3); }
+[data-theme="dark"] select option { background-color: var(--surface-3); color: var(--ink); }
 [data-theme="dark"] input::placeholder,
 [data-theme="dark"] textarea::placeholder { color: var(--ink-40); }
+select option { background-color: var(--surface-3); color: var(--ink); }
 
 /* AuthModal cream/paper backgrounds */
 [data-theme="dark"] [class*="bg-cream"],
@@ -303,18 +329,13 @@ a { color: inherit; text-decoration: none; }
 .btn-primary {
   background: var(--navy);
   color: var(--cream);
+  transition: background 0.35s var(--ease-out-expo), box-shadow 0.35s, color 0.2s;
 }
-.btn-primary::before {
-  content: "";
-  position: absolute; inset: 0;
-  background: var(--primary);
-  transform: translateY(101%);
-  transition: transform 0.45s var(--ease-out-expo);
-  z-index: 0;
+.btn-primary:hover {
+  background: var(--primary-700);
+  box-shadow: var(--sh-glow);
 }
-.btn-primary:hover::before { transform: translateY(0); }
 .btn-primary > * { position: relative; z-index: 1; }
-.btn-primary:hover { box-shadow: var(--sh-glow); }
 
 .btn-ember {
   background: var(--primary);
@@ -613,9 +634,12 @@ a { color: inherit; text-decoration: none; }
   box-shadow: var(--sh-lg);
 }
 
-/* Fav button hover */
-.fav-btn:hover { transform: scale(1.12); background: rgba(255,255,255,1) !important; }
-.fav-btn:active { transform: scale(0.95); }
+/* Fav button */
+.fav-btn:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important;
+}
+.fav-btn:active { transform: scale(0.9); }
 
 /* Card image zoom — pure CSS, replaces JS onMouseEnter/Leave */
 .card-img-zoom {
@@ -787,4 +811,14 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .chat-aura {
   animation: chat-aura-pulse 2.2s ease-in-out infinite;
+}
+
+/* MapLibre GL — override default popup chrome so MapCN handles styling */
+@layer base {
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+  }
+  .maplibregl-popup-tip {
+    @apply hidden!;
+  }
 }

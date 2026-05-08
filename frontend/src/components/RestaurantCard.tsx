@@ -104,29 +104,31 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
           )}
         </div>
 
-        {/* Fav button — 44×44 touch target */}
+        {/* Fav button */}
         <button
           onClick={toggleFav}
           aria-label={fav ? t('restaurant.removeFromFavorites', { defaultValue: 'Quitar de favoritos' }) : t('restaurant.addToFavorites', { defaultValue: 'Añadir a favoritos' })}
+          className="fav-btn"
           style={{
             position: 'absolute',
-            top: 10,
-            right: 10,
-            zIndex: 1,
-            width: 44,
-            height: 44,
+            top: 12,
+            right: 12,
+            zIndex: 2,
+            width: 40,
+            height: 40,
             borderRadius: '50%',
-            background: 'rgba(255,255,255,0.92)',
-            color: fav ? 'var(--ruby)' : 'var(--ink-55)',
+            background: fav ? '#fff' : 'rgba(0,0,0,0.35)',
+            color: fav ? '#E11D48' : '#fff',
             border: 'none',
             cursor: 'pointer',
-            display: 'grid',
-            placeItems: 'center',
-            transition: 'transform 0.2s var(--ease-out-expo), background 0.2s',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+            transition: 'transform 0.2s ease, background 0.2s, color 0.2s, box-shadow 0.2s',
           }}
-          className="fav-btn"
         >
-          <span className={`mat ${fav ? 'mat-fill' : ''}`} style={{ fontSize: 20 }}>
+          <span className={`mat ${fav ? 'mat-fill' : ''}`} style={{ fontSize: 22 }}>
             favorite
           </span>
         </button>
