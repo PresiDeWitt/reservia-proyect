@@ -25,6 +25,14 @@ import RequireRole from './components/RequireRole';
 const HIDE_FOOTER = ['/floor', '/staff'];
 const HIDE_CHAT = ['/floor', '/staff', '/owner', '/admin'];
 
+const ScrollToTop: React.FC = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [pathname]);
+  return null;
+};
+
 const AppShell: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,6 +51,7 @@ const AppShell: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--surface)' }}>
+      <ScrollToTop />
       <Header />
       <main style={{ flex: 1 }}>
         <AnimatePresence mode="wait">
