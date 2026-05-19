@@ -9,7 +9,7 @@ Plataforma de reservas de restaurantes con IA. Encuentra y reserva los mejores r
 - **Frontend**: React + TypeScript + Tailwind CSS + Vite
 - **Backend**: Django + Django REST Framework + JWT
 - **Base de datos**: PostgreSQL
-- **IA**: Anthropic Claude
+- **IA**: OpenRouter (Gemma 3)
 - **Deploy**: Railway
 
 ## Desarrollo local
@@ -82,5 +82,5 @@ Crea un archivo `backend/.env`:
 ```dotenv
 SECRET_KEY=tu-secret-key
 DEBUG=True
-ANTHROPIC_API_KEY=tu-clave-anthropic
+OPENROUTER_API_KEY=tu-clave-openrouter
 ```
