@@ -21,6 +21,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import StaffAccess from './pages/StaffAccess';
 import NotFound from './pages/NotFound';
 import RequireRole from './components/RequireRole';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const HIDE_FOOTER = ['/floor', '/staff'];
 const HIDE_CHAT = ['/floor', '/staff', '/owner', '/admin'];
@@ -54,6 +55,7 @@ const AppShell: React.FC = () => {
       <ScrollToTop />
       <Header />
       <main style={{ flex: 1 }}>
+        <ErrorBoundary key={location.pathname}>
         <AnimatePresence mode="wait">
           <Routes location={location} key={location.pathname}>
             <Route path="/" element={<Home />} />
@@ -71,6 +73,7 @@ const AppShell: React.FC = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
+        </ErrorBoundary>
       </main>
       {!hideChat && <ChatBot />}
       {!hideFooter && <Footer />}
