@@ -13,6 +13,12 @@ services:
       STAFF_ADMIN_CODE: ${STAFF_ADMIN_CODE:-}
       SECURE_SSL_REDIRECT: "False"
       SECURE_HSTS_SECONDS: "0"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     volumes:
       - db_data:/data
     restart: unless-stopped

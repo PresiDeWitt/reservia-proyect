@@ -55,6 +55,13 @@ class SmokeSystemTests(APITestCase):
         self.assertEqual(login.status_code, status.HTTP_200_OK)
         self.assertIn('token', login.data)
 
+    def test_health_endpoint_returns_ok(self):
+        response = self.client.get('/api/health/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'ok')
+        self.assertEqual(response.data['database'], 'connected')
+        self.assertIn('timestamp', response.data)
+
     def test_authenticated_user_can_create_and_read_own_reservation_smoke(self):
         user = create_user(email='smoke-reservation@example.com')
         self.client.force_authenticate(user=user)

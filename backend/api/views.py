@@ -1,4 +1,6 @@
 import os
+from datetime import timezone as dt_timezone
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from rest_framework import generics, permissions, status
@@ -347,3 +349,22 @@ def cancel_reservation(request, pk):
     reservation.status = "cancelled"
     reservation.save()
     return Response({"message": "Reservation cancelled"})
+
+
+# ---------- Health ----------
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def health_check(request):
+    try:
+        Restaurant.objects.exists()
+        db_status = "connected"
+    except Exception:
+        db_status = "error"
+
+    return Response({
+        "status": "ok",
+        "database": db_status,
+        "timestamp": datetime.now(dt_timezone.utc).isoformat(),
+    })

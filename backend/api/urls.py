@@ -15,6 +15,8 @@ urlpatterns = [
         views.RestaurantDetailView.as_view(),
         name="restaurant-detail",
     ),
+    # Health
+    path("health/", views.health_check, name="health"),
     # AI Chat
     path("chat/", views.chat_view, name="chat"),
     # Reservations
