@@ -1,6 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, useLocation } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 import Header from '../../src/components/Header';
@@ -23,18 +23,25 @@ vi.mock('../../src/components/ProfileMenu', () => ({
   default: () => <div data-testid="profile-menu" />,
 }));
 
-const mockedUseAuth = vi.mocked(useAuth);
+vi.mock('../../src/components/SearchModal', () => ({
+  default: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="search-modal" /> : null,
+}));
 
-const LocationProbe = () => {
-  const location = useLocation();
-  return <div data-testid="location">{location.pathname + location.search}</div>;
-};
+vi.mock('../../src/components/NotificationsMenu', () => ({
+  default: () => <div data-testid="notifications-menu" />,
+}));
+
+vi.mock('../../src/components/MobileDrawer', () => ({
+  default: () => null,
+}));
+
+const mockedUseAuth = vi.mocked(useAuth);
 
 const renderHeader = () =>
   render(
     <MemoryRouter initialEntries={['/']}>
       <Header />
-      <LocationProbe />
     </MemoryRouter>
   );
 
@@ -70,7 +77,7 @@ describe('Header flow', () => {
     expect(screen.getByTestId('profile-menu')).toBeInTheDocument();
   });
 
-  it('navega con query search al enviar el formulario del header', async () => {
+  it('abre modal de busqueda al pulsar el icono de busqueda', async () => {
     const user = userEvent.setup();
     mockedUseAuth.mockReturnValue({
       user: null,
@@ -82,10 +89,8 @@ describe('Header flow', () => {
 
     renderHeader();
 
-    await user.type(screen.getByPlaceholderText('header.searchPlaceholder'), 'sushi{enter}');
-
-    await waitFor(() => {
-      expect(screen.getByTestId('location')).toHaveTextContent('/?search=sushi');
-    });
+    expect(screen.queryByTestId('search-modal')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Buscar' }));
+    expect(screen.getByTestId('search-modal')).toBeInTheDocument();
   });
 });

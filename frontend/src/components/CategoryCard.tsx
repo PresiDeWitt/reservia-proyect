@@ -27,7 +27,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ name, image, onClick, activ
     >
       <img
         src={image}
-        alt={name}
+        alt=""
         loading="lazy"
         style={{
           width: '100%',
@@ -48,7 +48,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ name, image, onClick, activ
         style={{ color: '#fff' }}
       >
         <div
-          className="editorial"
+          className={`editorial${active ? ' text-primary' : ''}`}
           style={{
             fontSize: 22,
             fontWeight: 400,

@@ -48,7 +48,7 @@ describe('MyBookings flow', () => {
     mockedMyReservations.mockResolvedValue([]);
     renderMyBookings();
 
-    expect(await screen.findByText('Sign in to see your bookings.')).toBeInTheDocument();
+    expect(await screen.findByText('bookings.loginMessage')).toBeInTheDocument();
     expect(mockedMyReservations).not.toHaveBeenCalled();
   });
 
@@ -86,7 +86,10 @@ describe('MyBookings flow', () => {
       expect(mockedCancel).toHaveBeenCalledWith(10);
     });
 
-    expect(screen.getByText('bookings.cancelled')).toBeInTheDocument();
+    // cancelled bookings move out of 'upcoming' filter — switch to see them
+    await user.click(screen.getByRole('button', { name: 'bookings.filterCancelled' }));
+
+    expect(await screen.findByText('bookings.cancelled')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'bookings.cancel' })).not.toBeInTheDocument();
   });
 });
