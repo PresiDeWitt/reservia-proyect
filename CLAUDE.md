@@ -6,8 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ReserVia** is a restaurant reservation platform with:
 
-- **Backend**: Django 4.2 REST API with JWT auth and Anthropic AI chatbot
-- **Frontend**: React native + TypeScript + Vite + Tailwind CSS v4 + React Router v7
+- **Backend**: Django 4.2 REST API with JWT auth and OpenRouter AI chatbot
+- **Frontend**: React + TypeScript + Vite + Tailwind CSS v4 + React Router v7
 - **DB**: SQLite (file-based, configurable path via `DB_PATH` env var)
 
 ## Development Commands
@@ -49,7 +49,7 @@ docker compose up --build   # http://localhost
 - `api/views.py` — All API logic (auth, restaurants, reservations, AI chat)
 - `api/serializers.py` — DRF serializers
 - `api/urls.py` — All routes under `/api/`
-- `reservia/settings.py` — Config via env vars: `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `DB_PATH`, `ANTHROPIC_API_KEY`
+- `reservia/settings.py` — Config via env vars: `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `DB_PATH`, `OPENROUTER_API_KEY`
 
 **API endpoints:**
 
@@ -57,7 +57,7 @@ docker compose up --build   # http://localhost
 - `GET /api/restaurants/` — List with `?search=`, `?cuisine=` filters
 - `GET /api/restaurants/<id>/` — Detail with menu items
 - `GET /api/restaurants/cuisines/` — Distinct cuisine list
-- `POST /api/chat/` — AI chatbot (requires `ANTHROPIC_API_KEY`)
+- `POST /api/chat/` — AI chatbot (requires `OPENROUTER_API_KEY`)
 - `POST /api/reservations/` — Create reservation (auth required)
 - `GET /api/reservations/my/` — User's reservations (auth required)
 - `DELETE /api/reservations/<id>/` — Cancel reservation (auth required)
@@ -76,7 +76,7 @@ docker compose up --build   # http://localhost
 Create `backend/.env` for local development:
 
 ```
-ANTHROPIC_API_KEY=sk-ant-...
+OPENROUTER_API_KEY=sk-or-...
 ```
 
 All other settings have development defaults. The chatbot is non-functional without the API key but the rest of the app works normally.

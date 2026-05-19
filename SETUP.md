@@ -43,8 +43,7 @@ Accede a: `http://localhost:5173`
 ```bash
 cd reservia-proyect
 
-# Opcional: añade tu API key de Anthropic
-# Edita docker-compose.yml y pon tu key en ANTHROPIC_API_KEY
+# Opcional: añade tu API key de OpenRouter para el chatbot IA
 
 docker compose up --build
 ```
@@ -55,15 +54,15 @@ Accede a: `http://localhost`
 
 ## 🤖 Configurar Chatbot IA
 
-El chatbot usa Claude para hacer búsquedas inteligentes. Necesitas una API key:
+El chatbot usa OpenRouter (Gemma 3 free tier). Necesitas una API key:
 
-1. Crea una en: https://console.anthropic.com/
+1. Crea una en: https://openrouter.ai/
 2. En **desarrollo local**:
    - Crea un archivo `.env` en `backend/`:
    ```
-   ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxx
+   OPENROUTER_API_KEY=sk-or-xxxxxxxxxxxxx
    ```
-3. En **Docker**: edita `docker-compose.yml` línea 10
+3. En **Docker**: configura la variable `OPENROUTER_API_KEY` en el entorno
 
 ---
 
@@ -108,8 +107,7 @@ reservia-proyect/
 - Revisa el proxy en `frontend/vite.config.ts`
 
 **Chatbot no funciona**:
-- Comprueba que `ANTHROPIC_API_KEY` está definida
-- Verifica en `backend/.env` o `docker-compose.yml`
+- Comprueba que `OPENROUTER_API_KEY` está definida en `backend/.env`
 
 **Base de datos vacía**:
 ```bash
