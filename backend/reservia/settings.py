@@ -26,7 +26,7 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "")
 if not SECRET_KEY:
-    if DEBUG:
+    if DEBUG or IS_TEST:
         SECRET_KEY = "reservia-dev-local-key-2026-not-for-production"
     else:
         raise RuntimeError("SECRET_KEY environment variable is required.")
@@ -210,3 +210,16 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "ReserVia <noreply@reservia.app>")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+
+REDIS_URL = os.environ.get("REDIS_URL", "")
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+        }
+    }

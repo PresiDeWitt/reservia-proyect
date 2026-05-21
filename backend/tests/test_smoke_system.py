@@ -1,12 +1,16 @@
+from datetime import date, time
+
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from tests.factories import create_restaurant, create_user
+from tests.factories import create_restaurant, create_slot, create_table, create_user
 
 
 class SmokeSystemTests(APITestCase):
     def setUp(self):
         self.restaurant = create_restaurant()
+        table = create_table(self.restaurant, capacity=4)
+        create_slot(table, slot_date=date(2026, 10, 21), slot_time=time(21, 0))
 
     def test_public_endpoints_are_reachable(self):
         list_response = self.client.get('/api/restaurants/')

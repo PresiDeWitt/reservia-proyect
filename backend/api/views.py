@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models.functions import ExtractHour
 
 from .models import Restaurant, Reservation, RestaurantTable, AvailabilitySlot, Review
+from .pagination import StandardPagination
 from .permissions import IsStaffOwner, IsStaffAdmin, get_staff_email
 
 SERVICE_HOURS = {
@@ -273,6 +274,7 @@ def password_change(request):
 class RestaurantListView(generics.ListAPIView):
     serializer_class = RestaurantListSerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = StandardPagination
 
     def get_queryset(self):
         qs = Restaurant.objects.all()
@@ -287,29 +289,6 @@ class RestaurantListView(generics.ListAPIView):
         if cuisine:
             qs = qs.filter(cuisine__iexact=cuisine)
         return qs.order_by("-rating")
-
-    def list(self, request, *args, **kwargs):
-        qs = self.get_queryset()
-        total = qs.count()
-
-        page = int(request.query_params.get("page", 1))
-        page_size = int(request.query_params.get("page_size", 20))
-        page_size = min(page_size, 100)
-
-        start = (page - 1) * page_size
-        end = start + page_size
-        paged_qs = qs[start:end]
-
-        serializer = self.get_serializer(paged_qs, many=True)
-        return Response(
-            {
-                "restaurants": serializer.data,
-                "total": total,
-                "page": page,
-                "page_size": page_size,
-                "total_pages": max(1, (total + page_size - 1) // page_size),
-            }
-        )
 
 
 @api_view(["GET"])
@@ -354,6 +333,7 @@ class ReservationCreateView(generics.CreateAPIView):
                 table__capacity__gte=guests,
             )
             .select_related('table')
+            .order_by('table__capacity')
             .first()
         )
         if slot is None:
