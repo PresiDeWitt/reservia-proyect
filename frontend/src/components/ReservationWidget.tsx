@@ -47,6 +47,16 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
       onAuthRequired?.();
       return;
     }
+
+    // Reject past date/time before hitting the server
+    const [h, m] = time.split(':').map(Number);
+    const reservationDt = new Date(date);
+    reservationDt.setHours(h, m, 0, 0);
+    if (reservationDt <= new Date()) {
+      setError(t('reservation.pastTimeError'));
+      return;
+    }
+
     setLoading(true);
     setError('');
     try {
@@ -62,8 +72,14 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
       setDone({ code });
       navigate('/confirmation', { state: { restaurant, date, time, guests, occasion, note, code } });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error');
-      navigate('/booking-error', { state: { reason: 'no_availability', restaurant } });
+      const msg = err instanceof Error ? err.message : 'Error';
+      const isNoAvail = msg.includes('disponible') || msg.includes('availability') || msg === 'Request failed';
+      if (isNoAvail) {
+        navigate('/booking-error', { state: { reason: 'no_availability', restaurant } });
+      } else {
+        setError(msg);
+        setStep(3);
+      }
     } finally {
       setLoading(false);
     }
