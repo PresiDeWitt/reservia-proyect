@@ -1,443 +1,482 @@
 # ESTADO ACTUAL DEL PROYECTO — ReserVia
 
 > Auditoria de completitud — 21 de mayo de 2026
-> Nivel de completitud estimado: **~90%**
+>
+> **Completitud estimada: ~90%**
+> Esfuerzo restante: ~25 horas (P0-P2) + ~3-4 semanas (P3 nice-to-have)
 
 ---
 
-## Resumen ejecutivo
+# 1. LO QUE YA ESTA COMPLETO (~90%)
 
-De las 42 tareas del PLAN_REMEDIACION_AUDITORIA y las ~40 tareas del ROADMAP_COMPLETITUD,
-la mayoria ya fueron implementadas. Este documento registra que esta **hecho**, que
-**falta**, y que **errores de documentacion** persisten.
+## 1.1 — Backend: modelos, endpoints, infraestructura
+
+### Modelos (10 en `api/models.py`)
+`Restaurant`, `MenuItem`, `RestaurantTable`, `AvailabilitySlot`, `Reservation`,
+`Review`, `Notification`, `UserProfile`, `StaffCode`, `Favorite` — todos creados,
+migrados, con signals, validators, indices, y `unique_together` donde aplica.
+
+### API Endpoints (~30 en `api/urls.py`)
+
+| Categoria | Endpoints | Estado |
+|---|---|---|
+| Auth | register, login, google, staff login, password reset/confirm/change, token refresh | HECHO |
+| Restaurantes | list (pag + search + cuisine filter), detail (con menuItems), cuisines, nearby (Haversine), availability (date+guests slots), tables (posiciones) | HECHO |
+| Reservas | create (slot-based, best-fit table), my reservations, cancel (libera slot) | HECHO |
+| AI Chat | OpenRouter/Gemma 3, prompt con restaurantes, rate throttling | HECHO |
+| Favoritos | list, add, remove (DB, no localStorage) | HECHO |
+| Notificaciones | list, mark read, mark all read, unread count | HECHO |
+| Reviews | GET (con metadatos can_review/has_reviewed), POST (requiere reserva completada) | HECHO |
+| Owner Dashboard | stats (KPIs, hour distribution), reservations (pag + filtros) | HECHO |
+| Admin Dashboard | stats (con estimatedRevenue), top restaurants, city distribution | HECHO |
+| Health | `GET /api/health/` con DB check | HECHO |
+
+### Infraestructura backend
+- JWT SimpleJWT con refresh flow y blacklist
+- Rate throttling por IP (register, login, chat, password reset)
+- `StandardPagination` unificada con respuestas `{items, total, page, page_size, total_pages}`
+- Permission classes `IsStaffOwner`, `IsStaffAdmin`
+- `StaffCode` vinculado a usuario real via `get_or_create`
+- Signal `post_save`/`post_delete` en Review que recalcula `restaurant.rating` y `reviews_count`
+- Signal que crea `Notification` automaticamente al crear/cancelar reserva
+- Management command `generate_slots` idempotente
+- Docker con Redis, healthcheck
+- `SECRET_KEY` sin default en produccion (lanza error si falta)
+- `GOOGLE_CLIENT_ID` sin fallback hardcodeado
+
+### Tests backend (11 archivos)
+`test_models_unit.py`, `test_serializers_unit.py`, `test_auth_api.py`,
+`test_restaurants_api.py`, `test_reservations_api.py`, `test_availability_api.py`,
+`test_reviews_api.py`, `test_chat_api.py`, `test_smoke_system.py`,
+`test_security_throttling.py`, `factories.py`
 
 ---
 
-# 1. COMPLETADO (verificado)
+## 1.2 — Frontend: paginas, componentes, infraestructura
 
-## 1.1 — Bloque 0: Pre-flight
+### Paginas (15 rutas en `App.tsx`) — todas con lazy loading
+`Home`, `RestaurantDetails`, `FloorPlan3D`, `MapExplorer`, `MyBookings`,
+`AccountPage`, `FavoritesPage`, `Confirmation`, `BookingError`, `StaffAccess`,
+`OwnerDashboard`, `AdminDashboard`, `ResetPassword`, `HelpPage`, `NotFound`
 
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| T0.1 | Arreglar tests frontend rotos | HECHO |
-| T0.2 | Limpiar codigo muerto (Search.tsx, Chat.tsx, anthropic de requirements.txt) | HECHO |
-| T0.3 | Healthcheck endpoint `GET /api/health/` | HECHO |
-| T0.4 | ErrorBoundary en React | HECHO |
+### Componentes principales
+`AuthModal` (editorial split login/register), `ChatBot` (flotante, OpenRouter API),
+`ReservationWidget` (3-step stepper con slots reales de API),
+`Header`, `Footer`, `Hero`, `SearchModal`, `RestaurantCard`, `CategoryCard`,
+`ProfileMenu`, `NotificationsMenu`, `MobileDrawer`, `LanguageMenu`, `Logo`,
+`OwnerOnboarding`, `RequireRole`, `ErrorBoundary`
 
-## 1.2 — Bloque 1: Disponibilidad y reservas reales
+### Infraestructura frontend
+- Lazy loading via `React.lazy` + `Suspense` para todas las paginas
+- `AuthContext` con persistencia en localStorage + refresh de token automatico
+- `ThemeContext` (dark/light mode)
+- i18n EN/ES con i18next (~453 claves por idioma)
+- `fetchWithRetry` (2 retries, exponential backoff, token refresh en 401, AbortController timeout)
+- `staffApi` en `client.ts` con soporte para token de staff
+- `storage.ts` con `STORAGE_KEYS` centralizado
+- `ErrorBoundary` envolviendo cada ruta
+- Vite proxy `/api` -> `127.0.0.1:8000`
 
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| T1.1 | Modelo `RestaurantTable` + `AvailabilitySlot` | HECHO |
-| T1.2 | Endpoint `GET /api/restaurants/{id}/availability/` | HECHO |
-| T1.3 | Endpoint `GET /api/restaurants/{id}/tables/` | HECHO |
-| T1.4 | Management command `generate_slots` | HECHO |
-| T1.5 | Crear/cancelar reserva consume/libera slot | HECHO |
-| T1.6 | ReservationWidget con slots reales (API) | HECHO |
-| T1.7 | FloorPlan3D con mesas reales (API) | HECHO |
-| T1.8 | Tests de disponibilidad (`test_availability_api.py`) | HECHO |
+### API clients frontend
+`client.ts` (fetch wrapper + staffApi), `restaurants.ts`, `auth.ts`, `favorites.ts`,
+`notifications.ts`, `reviews.ts`, `admin.ts`, `owner.ts` — todos refactorizados
+usando `staffApi` o `apiRequest` segun corresponda.
 
-## 1.3 — Bloque 2: Dashboards con datos reales
-
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| T2.1 | Permission classes IsStaffOwner, IsStaffAdmin | HECHO |
-| T2.2 | Endpoints Owner Dashboard (stats, reservations) | HECHO |
-| T2.3 | Endpoints Admin Dashboard (stats, top restaurants, city distribution) | HECHO |
-| T2.4 | `staff_login_view` vinculado a usuario real via StaffCode | HECHO |
-| T2.5 | Frontend: conectar OwnerDashboard y AdminDashboard a API | HECHO (KPIs, tabla, heatmap -- salvo floor plan) |
-
-## 1.4 — Bloque 3: Features sociales
-
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| T3.1 | Favoritos (modelo + API + frontend real) | HECHO |
-| T3.2 | Reviews (modelo + signal + API + frontend) | HECHO (salvo sub-ratings) |
-| T3.3 | Notificaciones (modelo + API) | HECHO backend. Frontend sigue mock (ver 2.1) |
-
-## 1.5 — Bloque 4: Mejoras UX y plataforma
-
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| T4.1 | Busqueda geoespacial `GET /api/restaurants/nearby/` | HECHO |
-| T4.2 | Password reset (endpoints + frontend ResetPassword) | HECHO |
-| T4.3 | Lazy loading de todas las rutas | HECHO |
-| T4.4 | Paginacion unificada (`StandardPagination`) | HECHO |
-| T4.5 | Refactorizar codigo duplicado | **PENDIENTE** (ver 2.4) |
-
-## 1.6 — Fase 0: Parche de seguridad inmediato
-
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| T0.1 | Eliminar fallback inseguro de `_owner_restaurant()` | HECHO |
-| T0.2 | Eliminar GOOGLE_CLIENT_ID hardcodeado | HECHO |
-| T0.3 | Eliminar SECRET_KEY con default en produccion | HECHO |
-
-## 1.7 — Fase 1 items especificos completados
-
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| F1.2 | Unificar API clients (staffApi en client.ts, admin.ts/owner.ts refactorizados) | HECHO |
-| F1.3 | Limpiar dependencias no usadas (leaflet, flag-icons) | HECHO |
-| F1.4 | Unificar constantes de localStorage (`STORAGE_KEYS` + `storage.ts`) | HECHO |
-| F1.5 | Arreglar modelos: distance -> FloatField, occasion -> TextChoices, indices | HECHO |
-| F1.6 | Refactorizar recalculo de rating con signals de Django | HECHO (signal existe) |
-| F1.7 | Sincronizar minLength de password (8 en backend y frontend) | HECHO |
-
-## 1.8 — Fase 2 items especificos completados
-
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| F2.1 | Paginacion unificada (`StandardPagination`) | HECHO |
-| F2.2 | Mejorar algoritmo best-fit (`.order_by('table__capacity')`) | HECHO |
-| F2.3 | Corregir staff_login_view (token vinculado a usuario real) | HECHO |
-| F2.4 | Modelo StaffCode creado | HECHO |
-| F2.5 | Endpoints de favoritos (modelo + API) | HECHO |
-
-## 1.9 — Fase 4 items especificos completados
-
-| Tarea | Descripcion | Estado |
-|---|---|---|
-| T4.2 | Redis en docker-compose + settings | HECHO |
-| T4.3 | Reducir MAX_RETRIES a 2 | HECHO |
+### Tests frontend (8 archivos, ~18 tests)
+`CategoryCard.test.tsx`, `RestaurantCard.test.tsx`, `AuthContext.test.tsx`,
+`Header.flow.test.tsx`, `Home.flow.test.tsx`, `MyBookings.flow.test.tsx`,
+`restaurants.api.test.ts`, `services.api.test.ts`
 
 ---
 
-# 2. PENDIENTE — Lo que falta implementar
+# 2. LO QUE FALTA — Inventario completo de gaps
 
-## 2.1 — P0: CRITICO
+---
 
-### views.py DUPLICADO — El chat usa la version sin optimizar
+## 2.1 — P0: CRITICO (bloquea funcionalidad o causa bugs reales)
 
-**Archivo:** `backend/api/views.py` (842 lineas)
+### GAP-01: views.py duplicado — urls.py usa la version sin optimizar
 
-`urls.py` sigue importando desde `views.py` para casi todos los endpoints, en lugar de
-usar los modulos separados ya creados. Esto causa un bug real:
+**Archivos:**
+- `backend/api/views.py` (850 lineas) — version ACTIVA usada por `urls.py`
+- `backend/api/views_chat.py` (118 lineas) — CODIGO MUERTO
+- `backend/api/views_auth.py` (234 lineas) — CODIGO MUERTO
+- `backend/api/views_restaurants.py` (187 lineas) — CODIGO MUERTO (salvo `nearby_restaurants`)
+- `backend/api/views_reservations.py` (70 lineas) — CODIGO MUERTO
 
-- `views_chat.py:36-43` tiene filtro geoespacial que limita restaurantes por ubicacion GPS
-- `views.py:388-394` (version activa) carga TODOS los restaurantes sin filtrar: `restaurants[:30]`
-- El codigo optimizado de `views_chat.py` es **codigo muerto**
-
-**Los modulos separados existen pero solo se usan para 3 imports en `urls.py`:**
+**`urls.py` importa desde los modulos separados SOLO para:**
 - `views_favorites` (usado)
 - `views_notifications` (usado)
 - `views_restaurants.nearby_restaurants` (usado)
 
-Todos los demas (`views_auth`, `views_restaurants`, `views_reservations`, `views_chat`,
-`views_dashboards`, `views_reviews`, `views_health`) NO se usan.
+**TODO LO DEMAS se importa de `views.py`**, dejando como codigo muerto las
+versiones separadas. Esto causa bugs reales:
 
-**Accion:** Cambiar `urls.py` para importar desde los modulos separados, eliminar codigo
-duplicado de `views.py`, y verificar que `python manage.py test` sigue pasando.
+| Endpoint | views.py (activo) | modulo separado (muerto) | Diferencia |
+|---|---|---|---|
+| `chat_view` | `restaurants[:30]` sin filtro GPS | Filtra por bounding box GPS (`lat +/- 0.05`) y limita a 20 | El activo NO filtra por ubicacion |
+| `staff_login_view` | Usa solo env vars | Usa modelo `StaffCode` (DB) | El activo no escala |
+| `ReservationCreateView` | Tiene validacion `reservation_dt <= datetime.now()` | NO tiene esa validacion | Inconsistencia si se activara |
+| `SERVICE_HOURS` | Definido inline en `views.py:22-25` | Importado de `constants.py` | Duplicacion |
 
-**Esfuerzo estimado:** 3-4 horas
+**Impacto real:** Cada llamada al chat carga TODOS los restaurantes de la DB en el
+prompt, ignorando la ubicacion GPS del usuario. El endpoint activo envia mas tokens
+y da respuestas menos relevantes.
 
----
-
-### NotificationsMenu usa datos hardcodeados (no conectado a API)
-
-**Archivo:** `frontend/src/components/NotificationsMenu.tsx`
-
-El componente define un array `INITIAL` con 5 notificaciones falsas (lineas 13-19) y
-nunca llama a la API real. La funcion `markAllRead` solo actualiza estado local.
-
-Mientras tanto, el backend tiene 4 endpoints completamente funcionales:
-- `GET /api/notifications/`
-- `POST /api/notifications/{id}/read/`
-- `POST /api/notifications/read-all/`
-- `GET /api/notifications/unread-count/`
-
-**Accion:** Conectar el componente a `notificationsApi`, eliminar el array `INITIAL`,
-y hacer que `markAllRead` llame al endpoint correspondiente.
-
-**Esfuerzo estimado:** 2 horas
+**Esfuerzo:** 3-4 horas
 
 ---
 
-## 2.2 — P1: ALTO
+### GAP-02: NotificationsMenu usa datos hardcodeados, no consume la API
 
-### OwnerDashboard floor plan — SVG hardcodeado
+**Archivo:** `frontend/src/components/NotificationsMenu.tsx:13-19`
 
-**Archivo:** `frontend/src/pages/OwnerDashboard.tsx` (lineas 11-23)
+```typescript
+const INITIAL: Notification[] = [
+  { id: 1, icon: 'check_circle', title: 'Reserva confirmada', description: 'Kinoko Izakaya...', time: 'HACE 2H', unread: true },
+  { id: 2, icon: 'schedule', title: 'Mañana tienes mesa', description: 'Panadería Miga...', time: 'HACE 6H', unread: true },
+  { id: 3, icon: 'local_fire_department', title: 'Tu restaurante favorito tiene hueco', ...},
+  { id: 4, icon: 'chat_bubble', title: '¿Qué tal Le Petit Atelier?', ...},
+  { id: 5, icon: 'star', title: 'Has subido a Habitué', ...},
+];
+```
 
-El array `FLOOR` define 11 mesas falsas con posiciones y estados inventados. Existe el
-endpoint `GET /api/restaurants/{id}/tables/` que devuelve posiciones reales (`posX`,
-`posY`, `rotation`, `capacity`, `zone`, `available`), pero el dashboard nunca lo consume.
+El componente nunca llama a `notificationsApi`. `markAllRead` (linea 42) solo
+actualiza estado local, no hace `POST /api/notifications/read-all/`.
 
-**Accion:** Eliminar `FLOOR`, cargar mesas desde `restaurantsApi.tables()`, y renderizar
-dinamicamente usando las posiciones reales del backend.
+El backend tiene 4 endpoints 100% funcionales listos para consumir.
 
-**Esfuerzo estimado:** 2 horas
-
----
-
-### 19 referencias a ANTHROPIC_API_KEY en documentacion
-
-Los siguientes archivos aun mencionan `ANTHROPIC_API_KEY` o "Anthropic" en lugar de
-`OPENROUTER_API_KEY` o "OpenRouter / Gemma 3":
-
-| Archivo | Incidencias |
-|---|---|
-| `docs/Home.md` | 3 (Claude, Anthropic, Leaflet en vez de MapLibre) |
-| `docs/03-Backend/AI Chat Integration.md` | 4 |
-| `docs/07-Development/Local Setup.md` | 4 |
-| `docs/06-Deployment/Railway Deployment.md` | 2 |
-| `docs/06-Deployment/Docker Setup.md` | 1 |
-| `docs/08-Security/Security Incidents.md` | 1 |
-| `docs/07-Development/4.2 Registro de Pruebas.md` | 2 |
-| `docs/07-Development/4.2.3 Pruebas de Seguridad.md` | 1 |
-| `docs/07-Development/4.2.5 Copias de Seguridad.md` | 1 |
-| `docs/09-Notify/Telegram Notifications.md` | 1 ("Anthropic") |
-
-**Accion:** Reemplazo masivo `ANTHROPIC_API_KEY` -> `OPENROUTER_API_KEY` y referencias
-a "Claude"/"Anthropic" por "Gemma 3 / OpenRouter" en todos los archivos listados.
-
-**Esfuerzo estimado:** 1 hora
+**Esfuerzo:** 2 horas
 
 ---
 
-### CLAUDE.md desactualizado
+## 2.2 — P1: ALTO (features incompletas o bugs de datos)
+
+### GAP-03: OwnerDashboard — plano de mesas hardcodeado
+
+**Archivo:** `frontend/src/pages/OwnerDashboard.tsx:11-23`
+
+```typescript
+const FLOOR = [
+  { id: 'A1', x: 8, y: 10, w: 14, h: 14, status: 'free', cap: 2 },
+  { id: 'A2', x: 8, y: 30, w: 14, h: 14, status: 'taken', cap: 4, who: 'Elena M.' },
+  // ... 11 entradas hardcodeadas con estados y nombres inventados
+];
+```
+
+`GET /api/restaurants/{id}/tables/` devuelve `posX`, `posY`, `rotation`, `capacity`,
+`zone`, `available` reales. El dashboard nunca lo consume.
+
+**Esfuerzo:** 2 horas
+
+---
+
+### GAP-04: Rating recalculo redundante en views.py
+
+**Archivo:** `backend/api/views.py:826-829`
+
+```python
+agg = Review.objects.filter(restaurant=restaurant).aggregate(avg=Avg('rating'), cnt=Count('id'))
+restaurant.rating = round(agg['avg'], 1)
+restaurant.reviews_count = agg['cnt']
+restaurant.save(update_fields=['rating', 'reviews_count'])
+```
+
+`models.py:200-208` ya tiene un signal `@receiver([post_save, post_delete], sender=Review)`
+que hace EXACTAMENTE esto. El codigo en la view es redundante y puede causar
+doble escritura.
+
+**Esfuerzo:** 10 minutos
+
+---
+
+### GAP-05: 19 referencias a ANTHROPIC/Claude/Leaflet en documentacion
+
+Archivos afectados: `docs/Home.md`, `docs/03-Backend/AI Chat Integration.md`,
+`docs/07-Development/Local Setup.md`, `docs/06-Deployment/Railway Deployment.md`,
+`docs/06-Deployment/Docker Setup.md`, `docs/08-Security/Security Incidents.md`,
+`docs/07-Development/4.2 Registro de Pruebas.md`,
+`docs/07-Development/4.2.3 Pruebas de Seguridad.md`,
+`docs/07-Development/4.2.5 Copias de Seguridad.md`,
+`docs/09-Notify/Telegram Notifications.md`
+
+Todavia mencionan `ANTHROPIC_API_KEY`, "Claude", "Anthropic" en lugar de
+`OPENROUTER_API_KEY`, "Gemma 3", "OpenRouter". Algunos tambien dicen "Leaflet.js"
+cuando ya se usa MapLibre GL JS. `docker-compose.yml:20` tambien pasa
+`ANTHROPIC_API_KEY` como env var innecesaria.
+
+**Esfuerzo:** 1 hora
+
+---
+
+### GAP-06: CLAUDE.md desactualizado
 
 **Archivo:** `CLAUDE.md`
 
-Errores detectados:
+| Linea | Dice | Deberia decir |
+|---|---|---|
+| 67 | "Axios base client" | "fetch-based API client" |
+| 48 | "Three models: Restaurant, MenuItem, Reservation" | 10+ modelos |
+| 53 | `DB_PATH` | `DATABASE_URL` para prod |
+| 56-63 | ~10 endpoints listados | Faltan ~20 endpoints |
+| 69 | 5 paginas listadas | 15 paginas |
+| — | Sin mencion de Redis, MapLibre, ErrorBoundary, Docker healthcheck | Agregar |
 
-1. **Linea 67:** Dice "Axios base client" -> deberia decir "fetch-based API client"
-2. **Linea 48:** Dice "Three models: Restaurant, MenuItem, Reservation" -> hay 10+ modelos
-3. **Linea 53:** Referencia `DB_PATH` -> deberia mencionar `DATABASE_URL` para prod
-4. **Lineas 56-63:** Faltan endpoints: staff auth, password reset, favorites, notifications,
-   reviews, health check, availability, tables, nearby, owner/admin dashboards
-5. **Linea 69:** Lista solo 5 paginas -> hay 15 paginas
-6. Falta mencionar Redis, MapLibre (no Leaflet), Docker healthcheck, ErrorBoundary
-
-**Accion:** Reescribir secciones obsoletas de CLAUDE.md.
-
-**Esfuerzo estimado:** 30 minutos
+**Esfuerzo:** 30 minutos
 
 ---
 
-### Recalculo manual de rating redundante en views.py
+## 2.3 — P2: MEDIO (datos mock, tests faltantes, deuda tecnica)
 
-**Archivo:** `backend/api/views.py` (lineas 818-821)
+### GAP-07: RestaurantDetails — datos hardcodeados en pestaña Info
 
-Despues de crear una review, el codigo recalcula manualmente `restaurant.rating` y
-`restaurant.reviews_count` con `aggregate(Avg('rating'), Count('id'))`. Pero
-`models.py:200-208` ya tiene un signal `@receiver([post_save, post_delete], sender=Review)`
-que hace esto automaticamente. El codigo en la view es redundante.
+**Archivo:** `frontend/src/pages/RestaurantDetails.tsx:532-538`
 
-**Accion:** Eliminar lineas 818-821 de `views.py`.
+```typescript
+{ k: 'phone', v: '+34 912 345 678', i: 'call' },
+{ k: 'hours', v: 'Mar a Dom · 13:00 a 16:00 · 20:00 a 23:30', i: 'schedule' },
+{ k: 'payment', v: 'Visa · MC · AmEx · Bizum', i: 'credit_card' },
+{ k: 'dress', v: 'Smart casual', i: 'checkroom' },
+{ k: 'parking', v: 'SER · parking 200m', i: 'local_parking' },
+```
 
-**Esfuerzo estimado:** 10 minutos
+Solo `address` viene de la API. Los demas campos son inventados.
+
+**Esfuerzo:** 30 min (agregar campos al modelo Restaurant) o 5 min (mover a i18n como
+texto generico si no se quiere ampliar el modelo)
 
 ---
 
-## 2.3 — P2: MEDIO
+### GAP-08: RestaurantDetails — fallback de menu hardcodeado
 
-### AdminDashboard sin grafico de revenue
+**Archivo:** `frontend/src/pages/RestaurantDetails.tsx:317-321`
+
+Cuando `restaurant.menuItems` esta vacio, muestra:
+```typescript
+{ name: 'Plato de temporada', description: 'Producto local de mercado', price: 18 },
+{ name: 'Especialidad de la casa', description: 'Receta de siempre', price: 24 },
+```
+
+**Esfuerzo:** 5 minutos (mostrar mensaje "sin platos" o empty state en vez de datos falsos)
+
+---
+
+### GAP-09: AdminDashboard — sin grafico de revenue
 
 **Archivo:** `frontend/src/pages/AdminDashboard.tsx`
 
-El endpoint `GET /api/admin/stats/` devuelve `estimatedRevenue` pero el frontend no
-renderiza ningun grafico (bar chart, line chart, etc.). La tarea T2.5 del roadmap pedia
-un chart basado en `estimatedRevenue`.
+El endpoint `GET /api/admin/stats/` devuelve `estimatedRevenue` pero solo se muestra
+como numero. La tarea T2.5 del roadmap pedia un grafico.
 
-**Accion:** Agregar un componente de grafico (usando recharts o similar, si ya esta en
-dependencias, o calcular datos sinteticos simples).
-
-**Esfuerzo estimado:** 2-3 horas
+**Esfuerzo:** 2-3 horas
 
 ---
 
-### Modelo Review sin sub-ratings
+### GAP-10: Review sin sub-ratings (food, service, ambiance)
 
-**Archivo:** `backend/api/models.py` (Review, lineas ~115-130)
+**Archivo:** `backend/api/models.py` — modelo `Review`
 
-El plan T3.2 pedia `food_rating`, `service_rating`, `ambiance_rating` como campos
-separados. Actualmente solo existe `rating` (1-5).
+El plan T3.2 pedia `food_rating`, `service_rating`, `ambiance_rating`. Solo existe
+`rating` generico (1-5).
 
-**Accion:** Agregar los 3 campos, actualizar serializer, migrar, y actualizar frontend.
-
-**Esfuerzo estimado:** 1-2 horas
+**Esfuerzo:** 1-2 horas (agregar campos, migrar, actualizar serializer y frontend)
 
 ---
 
-### Tests frontend con cobertura insuficiente
+### GAP-11: views_chat.py — excepciones silenciosas sin logging
 
-Componentes sin tests:
+**Archivo:** `backend/api/views_chat.py:44-45, 62-63`
+
+```python
+except (TypeError, ValueError):
+    pass
+```
+
+Cuando se active este modulo (tras GAP-01), los errores de parseo de coordenadas
+GPS no dejaran ningun rastro. Deberia usar `logger.warning()`.
+
+**Esfuerzo:** 5 minutos
+
+---
+
+### GAP-12: Tests faltantes en frontend — 11 componentes sin cobertura
 
 | Componente | Tipo |
 |---|---|
-| `ReservationWidget` | Widget de reserva (3 pasos) |
-| `ChatBot` | Chat flotante con IA |
+| `ReservationWidget` | Widget 3 pasos |
+| `ChatBot` | Chat IA flotante |
 | `AuthModal` | Login/registro |
 | `SearchModal` | Busqueda |
-| `FloorPlan3D` | Plano 3D con Three.js |
-| `OwnerDashboard` | Dashboard de dueño |
-| `AdminDashboard` | Dashboard de admin |
-| `FavoritesPage` | Pagina de favoritos |
-| `NotificationsMenu` | Menu de notificaciones |
-| `RestaurantDetails` | Detalle de restaurante |
-| `MapExplorer` | Mapa con MapLibre |
+| `FloorPlan3D` | Three.js 3D |
+| `OwnerDashboard` | KPIs + reservas |
+| `AdminDashboard` | Stats globales |
+| `FavoritesPage` | Favoritos |
+| `NotificationsMenu` | Notificaciones |
+| `RestaurantDetails` | Detalle restaurante |
+| `MapExplorer` | Mapa MapLibre |
 
-**Accion:** Crear tests unitarios para al menos los 5 componentes mas criticos
-(ReservationWidget, AuthModal, ChatBot, NotificationsMenu, RestaurantDetails).
-
-**Esfuerzo estimado:** 4-6 horas
+**Esfuerzo:** 4-6 horas para cubrir los 5 mas criticos
 
 ---
 
-### Sin tests de favorites API ni notifications API en backend
+### GAP-13: Tests faltantes en backend — favorites y notifications API
 
-Existen los modelos y endpoints pero no hay tests en `backend/tests/` que cubran:
-- `POST /api/favorites/`, `DELETE /api/favorites/{id}/`, `GET /api/favorites/`
-- `GET /api/notifications/`, `POST /api/notifications/{id}/read/`, etc.
+No existen `test_favorites_api.py` ni `test_notifications_api.py`.
 
-**Accion:** Crear `test_favorites_api.py` y `test_notifications_api.py`.
-
-**Esfuerzo estimado:** 2-3 horas
+**Esfuerzo:** 2-3 horas
 
 ---
 
-### views_chat.py con `pass` silenciosos en manejo de errores
+### GAP-14: docker-compose.yml — DB_PATH no usado por Django
 
-**Archivo:** `backend/api/views_chat.py` (lineas 45, 63)
+**Archivo:** `docker-compose.yml:18`
 
-Al parsear coordenadas GPS del request, las excepciones `TypeError` y `ValueError` se
-atrapan con `pass` sin ningun logging. Si un cliente envia coordenadas invalidas, el
-servidor simplemente las ignora sin dejar rastro.
+`DB_PATH: "/data/db.sqlite3"` se pasa como env var pero `settings.py` nunca la lee.
+Usa `DATABASE_URL` o cae a `BASE_DIR / "db.sqlite3"`. La variable es inerte.
 
-**Accion:** Agregar `logger.warning()` en ambos bloques `except`.
-
-**Esfuerzo estimado:** 5 minutos
+**Esfuerzo:** 5 minutos (eliminar la linea o documentar que es solo para referencia)
 
 ---
 
-### docs/Home.md desactualizado
+### GAP-15: Dockerfile — `python manage.py seed` en cada arranque
 
-| Linea | Error | Correccion |
-|---|---|---|
-| 13 | "Claude" | "Gemma 3 via OpenRouter" |
-| 43 | "Claude (Anthropic)" en AI Chat | "Gemma 3 (OpenRouter)" |
-| 113 | "Anthropic Claude Haiku 4.5" | "Google Gemma 3 via OpenRouter" |
-| 117 | "Leaflet.js" | "MapLibre GL JS" |
-| 122-123 | Describe mapas Leaflet | Describir MapLibre |
+**Archivo:** `Dockerfile:52`
 
-**Esfuerzo estimado:** 15 minutos
+El CMD ejecuta `seed` en cada inicio de contenedor. Si no es idempotente puede
+duplicar datos.
+
+**Esfuerzo:** Verificar idempotencia del comando `seed` (probablemente ya lo es
+porque usa `get_or_create`). Si no, condicionar.
+
+---
+
+### GAP-16: Hero — contador de mesas ficticio
+
+**Archivo:** `frontend/src/components/Hero.tsx:81`
+
+```typescript
+const [tonight, setTonight] = useState(284);
+```
+
+El numero "XX mesas disponibles" arranca en 284 y cambia aleatoriamente con un timer.
+
+**Esfuerzo:** 30 minutos (conectar a endpoint de stats si existe, o mostrar texto estatico)
+
+---
+
+### GAP-17: Hero — busqueda no usa dia/hora/personas
+
+**Archivo:** `frontend/src/components/Hero.tsx:131-137`
+
+El formulario de busqueda del Hero tiene selectores de dia, hora y personas, pero
+el submit solo envia el parametro `search`. Los demas campos son decorativos.
+
+**Esfuerzo:** 1 hora (pasar parametros a la URL o al SearchModal)
+
+---
+
+### GAP-18: Logo — props `color` y `variant` definidos pero no usados
+
+**Archivo:** `frontend/src/components/Logo.tsx:4,10`
+
+`LogoProps` define `color` y `variant` pero el componente solo usa `size` y `className`.
+
+**Esfuerzo:** 5 minutos (eliminar props no usados o implementarlos)
+
+---
+
+### GAP-19: backend/.env.example incompleto
+
+**Archivo:** `backend/.env.example`
+
+Faltan variables que la app realmente usa: `DEBUG`, `GOOGLE_CLIENT_ID`, `ALLOWED_HOSTS`,
+`CORS_ALLOWED_ORIGINS`, `EMAIL_BACKEND`, `EMAIL_HOST`, `FRONTEND_URL`,
+`STAFF_OWNER_EMAIL`, `REDIS_URL`. Contiene `PORT=3001` que Django no usa.
+
+**Esfuerzo:** 10 minutos
 
 ---
 
 ## 2.4 — P3: BAJO / NICE TO HAVE
 
-### PWA (Progressive Web App)
-
-Sin `vite-plugin-pwa`, sin service worker, sin `manifest.json`. La aplicacion no es
-instalable en movil/desktop. Tarea T5.2 del roadmap.
-
-**Esfuerzo estimado:** 4 horas
-
----
-
-### WebSockets para disponibilidad en tiempo real
-
-Sin Django Channels, Daphne, ni Channels-Redis. La disponibilidad de mesas requiere
-que el cliente recargue o haga polling. Tarea T5.1 del roadmap.
-
-**Esfuerzo estimado:** 1-2 semanas
-
----
-
-### SEO tecnico
-
-Sin `react-helmet-async`, sin meta tags dinamicos, sin OG tags, sin JSON-LD estructurado
-para RestaurantDetails. Tarea T6.4 del plan.
-
-**Esfuerzo estimado:** 2-3 horas
-
----
-
-### E2E tests con Playwright o Cypress
-
-Sin configuracion de E2E. El plan sugiere 3 flujos: busqueda anonima -> auth gate,
-registro -> reserva -> cancelar, staff login -> dashboard.
-
-**Esfuerzo estimado:** 1 semana
-
----
-
-### CONTRIBUTING.md no existe
-
-Tarea T8.3 del plan. Nuevos contribuidores no tienen guia de onboarding.
-
-**Esfuerzo estimado:** 30 minutos
-
----
-
-### Notificaciones Telegram documentadas pero no implementadas
-
-`docs/09-Notify/Telegram Notifications.md` describe un sistema completo de alertas por
-Telegram (errores 500, fallos de reserva, etc.) pero no hay codigo implementado.
-
-**Esfuerzo estimado:** 3-4 horas
-
----
-
-# 3. RESUMEN DE ESFUERZO PENDIENTE
-
-| Prioridad | Tarea | Esfuerzo |
+| Gap | Descripcion | Esfuerzo |
 |---|---|---|
-| **P0** | Corregir urls.py para usar modulos separados (eliminar duplicacion views.py) | 3-4 h |
-| **P0** | Conectar NotificationsMenu a API real | 2 h |
-| **P1** | Conectar OwnerDashboard floor plan a API | 2 h |
-| **P1** | Actualizar 19 referencias ANTHROPIC -> OPENROUTER | 1 h |
-| **P1** | Actualizar CLAUDE.md | 30 min |
-| **P1** | Eliminar recalculo de rating redundante en views.py | 10 min |
-| **P2** | Grafico de revenue en AdminDashboard | 2-3 h |
-| **P2** | Sub-ratings en modelo Review | 1-2 h |
-| **P2** | Tests frontend para componentes criticos | 4-6 h |
-| **P2** | Tests backend de favorites y notifications API | 2-3 h |
-| **P2** | Agregar logging a views_chat.py (excepciones silenciosas) | 5 min |
-| **P2** | Actualizar docs/Home.md | 15 min |
-| **P3** | PWA | 4 h |
-| **P3** | WebSockets | 1-2 sem |
-| **P3** | SEO | 2-3 h |
-| **P3** | E2E tests | 1 sem |
-| **P3** | CONTRIBUTING.md | 30 min |
-| **P3** | Telegram notifications | 3-4 h |
-| | **TOTAL P0-P2** | **~20 horas** |
-| | **TOTAL P3** | **~3-4 semanas** |
+| PWA | `vite-plugin-pwa`, service worker, manifest, instalable | 4 horas |
+| WebSockets | Django Channels + Daphne + Redis para disponibilidad en tiempo real | 1-2 semanas |
+| SEO | `react-helmet-async`, meta tags, OG tags, JSON-LD | 2-3 horas |
+| E2E tests | Playwright o Cypress, 3 flujos criticos | 1 semana |
+| CONTRIBUTING.md | Guia para nuevos contribuidores | 30 minutos |
+| Telegram notifications | Sistema de alertas documentado en `docs/09-Notify/` pero no implementado | 3-4 horas |
+| `docs/Home.md` | Actualizar Claude->Gemma, Leaflet->MapLibre | 15 minutos |
+| AdminDashboard "Sistemas OK" | Badge hardcodeado, no conectado a health check real | 30 minutos |
+
+---
+
+# 3. RESUMEN DE ESFUERZO
+
+| Prioridad | Gaps | Esfuerzo total |
+|---|---|---|
+| **P0** — Critico | GAP-01 (views.py), GAP-02 (NotificationsMenu) | **5-6 horas** |
+| **P1** — Alto | GAP-03 a GAP-06 | **~4 horas** |
+| **P2** — Medio | GAP-07 a GAP-19 | **~15 horas** |
+| **P3** — Bajo | PWA, WebSockets, SEO, E2E, Telegram, etc. | **~3-4 semanas** |
+| | **TOTAL P0-P2 (llevar a ~98%)** | **~24-25 horas** |
 
 ---
 
 # 4. ORDEN DE EJECUCION RECOMENDADO
 
-1. **Dia 1:** P0 — urls.py + NotificationsMenu (5-6 h)
-2. **Dia 2:** P1 — Floor plan, docs (ANTHROPIC, CLAUDE.md, Home.md), rating redundante (3-4 h)
-3. **Dia 3:** P2 — Revenue chart, sub-ratings, logging views_chat (3-5 h)
-4. **Dia 4-5:** P2 — Tests frontend + backend (6-9 h)
-5. **Semanas siguientes:** P3 a ritmo segun prioridad del negocio
+```
+Dia 1 (5-6h):
+  P0 — GAP-01: Refactorizar urls.py para usar modulos separados, eliminar duplicacion de views.py
+  P0 — GAP-02: Conectar NotificationsMenu a API real
+
+Dia 2 (4h):
+  P1 — GAP-03: Conectar OwnerDashboard floor plan a API
+  P1 — GAP-04: Eliminar recalculo de rating redundante
+  P1 — GAP-05: Reemplazo masivo ANTHROPIC -> OPENROUTER en 10 archivos de docs + docker-compose
+  P1 — GAP-06: Actualizar CLAUDE.md
+
+Dia 3 (5h):
+  P2 — GAP-07: Datos hardcodeados en RestaurantDetails Info
+  P2 — GAP-08: Fallback de menu hardcodeado
+  P2 — GAP-09: Grafico de revenue en AdminDashboard
+  P2 — GAP-10: Sub-ratings en Review
+  P2 — GAP-11: Logging en views_chat.py
+
+Dia 4-5 (8h):
+  P2 — GAP-12: Tests frontend para componentes criticos
+  P2 — GAP-13: Tests backend favorites + notifications API
+
+Dia 6 (3h):
+  P2 — GAP-14 a GAP-19: Limpieza final (Dockerfile, Hero, Logo, .env.example, docs/Home.md)
+
+Semanas siguientes:
+  P3 a ritmo segun necesidades del negocio
+```
 
 ---
 
-# 5. VERIFICACION FINAL (al completar P0-P2)
+# 5. VERIFICACION FINAL
 
 ```bash
 # Backend
 cd backend
 python manage.py test tests --verbosity 2
-# Todos los tests pasan
+# Esperado: 50+ tests, todos pasan
 
 # Frontend
 cd frontend
 npm run test:run
-# Mejor cobertura
+# Esperado: todos pasan (18+ tests)
 
 npm run build
-# Compila sin errores
+# Esperado: compila sin errores, chunks lazy visibles
 
-# Lint
 npm run lint
-# Sin errores
+# Esperado: sin errores
 
 # Docker
 docker compose up --build
-# Servicio saludable
+# Esperado: servicio saludable, GET /api/health/ -> 200
 ```

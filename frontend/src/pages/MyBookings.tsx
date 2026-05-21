@@ -13,10 +13,7 @@ const MyBookings: React.FC = () => {
   const [filter, setFilter] = useState<'upcoming' | 'past' | 'cancelled'>('upcoming');
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setLoading(false);
-      return;
-    }
+    if (!isAuthenticated) return;
     reservationsApi
       .myReservations()
       .then(setBookings)

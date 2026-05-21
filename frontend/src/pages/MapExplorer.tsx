@@ -35,7 +35,7 @@ const MapExplorer: React.FC = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisineFilter, setCuisineFilter] = useState('');
   const [cuisineOptions, setCuisineOptions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadedCuisine, setLoadedCuisine] = useState<string | undefined>(undefined);
 
   const [viewport, setViewport] = useState<MapViewport>({
     center: DEFAULT_CENTER,
@@ -44,14 +44,14 @@ const MapExplorer: React.FC = () => {
     pitch: 0,
   });
 
+  const loading = loadedCuisine !== cuisineFilter;
+
   useEffect(() => {
-    setLoading(true);
     restaurantsApi
       .list(cuisineFilter ? { cuisine: cuisineFilter } : undefined)
       .then((data) => {
         const list = data.items;
         setRestaurants(list);
-        setLoading(false);
 
         if (list.length > 0) {
           setCuisineOptions(
@@ -66,10 +66,11 @@ const MapExplorer: React.FC = () => {
             }));
           }
         }
+        setLoadedCuisine(cuisineFilter);
       })
       .catch((err) => {
         console.error('Failed to load restaurants:', err);
-        setLoading(false);
+        setLoadedCuisine(cuisineFilter);
       });
   }, [cuisineFilter]);
 

@@ -13,10 +13,7 @@ const FavoritesPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
     restaurantsApi
       .favorites()
       .then((data) => setRestaurants(data.favorites))

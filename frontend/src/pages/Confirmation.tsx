@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
@@ -14,15 +14,43 @@ interface State {
   code: string;
 }
 
+const PIECE_COUNT = 44;
+const COLORS = ['#f97415', '#10B981', '#0F172A', '#E11D48'];
+
+function seededRandom(seed: number): number {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
 const Confetti: React.FC = () => {
-  const pieces = Array.from({ length: 44 });
+  const pieces = Array.from({ length: PIECE_COUNT });
+
+  const confettiData = useMemo(() =>
+    pieces.map((_, i) => ({
+      vx: (seededRandom(i * 3 + 1) - 0.5) * 600,
+      vy: -(seededRandom(i * 3 + 2) * 400 + 200),
+      rotation: seededRandom(i * 3 + 3) * 360,
+      keyframeX: (seededRandom(i * 7 + 1) - 0.5) * 800,
+      keyframeY: seededRandom(i * 7 + 2) * 600 + 200,
+      keyframeRot: seededRandom(i * 7 + 3) * 720,
+    })),
+  [pieces]);
+
+  const styleContent = useMemo(() =>
+    confettiData
+      .map(
+        (d, i) => `
+        @keyframes confetti-${i} {
+          to { transform: translate(${d.keyframeX}px, ${d.keyframeY}px) rotate(${d.keyframeRot}deg); opacity: 0; }
+        }`,
+      )
+      .join('\n'),
+  [confettiData]);
+
   return (
     <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 50 }}>
-      {pieces.map((_, i) => {
-        const vx = (Math.random() - 0.5) * 600;
-        const vy = -(Math.random() * 400 + 200);
-        const colors = ['#f97415', '#10B981', '#0F172A', '#E11D48'];
-        const c = colors[i % colors.length];
+      {confettiData.map((d, i) => {
+        const c = COLORS[i % COLORS.length];
         return (
           <span
             key={i}
@@ -35,23 +63,16 @@ const Confetti: React.FC = () => {
                 height: 14,
                 background: c,
                 borderRadius: 2,
-                transform: `translate(0,0) rotate(${Math.random() * 360}deg)`,
+                transform: `translate(0,0) rotate(${d.rotation}deg)`,
                 animation: `confetti-${i} 1.6s cubic-bezier(0.2,0.8,0.2,1) forwards`,
-                ['--vx' as never]: `${vx}px`,
-                ['--vy' as never]: `${vy}px`,
+                ['--vx' as never]: `${d.vx}px`,
+                ['--vy' as never]: `${d.vy}px`,
               } as React.CSSProperties
             }
           />
         );
       })}
-      <style>{pieces
-        .map(
-          (_, i) => `
-        @keyframes confetti-${i} {
-          to { transform: translate(${(Math.random() - 0.5) * 800}px, ${Math.random() * 600 + 200}px) rotate(${Math.random() * 720}deg); opacity: 0; }
-        }`,
-        )
-        .join('\n')}</style>
+      <style>{styleContent}</style>
     </div>
   );
 };

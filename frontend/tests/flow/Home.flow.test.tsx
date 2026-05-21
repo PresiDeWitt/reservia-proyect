@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -11,6 +12,11 @@ vi.mock('../../src/api/restaurants', () => ({
   restaurantsApi: {
     list: vi.fn(),
   },
+}));
+
+vi.mock('../../src/context/AuthContext', () => ({
+  useAuth: () => ({ user: null, isAuthenticated: false, login: vi.fn(), logout: vi.fn(), register: vi.fn() }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 const mockedList = vi.mocked(restaurantsApi.list);

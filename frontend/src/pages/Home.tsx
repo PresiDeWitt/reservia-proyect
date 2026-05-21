@@ -63,7 +63,7 @@ const Home: React.FC = () => {
   }, [search, cuisine, queryKey]);
 
   useEffect(() => {
-    if (!user) { setFavoriteIds(new Set()); return; }
+    if (!user) return;
     restaurantsApi.favorites().then((data) => {
       setFavoriteIds(new Set(data.favorites.map((r) => r.id)));
     }).catch(() => {});

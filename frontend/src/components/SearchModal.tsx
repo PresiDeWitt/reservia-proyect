@@ -27,12 +27,16 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
     restaurantsApi.list().then((r) => setPopular(r.items.slice(0, 4))).catch(() => {});
   }, []);
 
+  const prevOpenRef = React.useRef(false);
   useEffect(() => {
-    if (open) {
-      setTimeout(() => inputRef.current?.focus(), 80);
+    const justOpened = open && !prevOpenRef.current;
+    prevOpenRef.current = open;
+    if (!justOpened) return;
+    setTimeout(() => inputRef.current?.focus(), 80);
+    queueMicrotask(() => {
       setQuery('');
       setResults([]);
-    }
+    });
   }, [open]);
 
   useEffect(() => {

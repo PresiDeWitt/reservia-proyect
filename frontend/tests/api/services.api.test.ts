@@ -29,7 +29,7 @@ describe('authApi wrapper', () => {
 
     await authApi.register(payload);
 
-    expect(mockedPost).toHaveBeenCalledWith('/auth/register/', payload);
+    expect(mockedPost).toHaveBeenCalledWith('/auth/register/', payload, true);
   });
 
   it('login llama endpoint correcto con payload', async () => {
@@ -38,7 +38,7 @@ describe('authApi wrapper', () => {
 
     await authApi.login(payload);
 
-    expect(mockedPost).toHaveBeenCalledWith('/auth/login/', payload);
+    expect(mockedPost).toHaveBeenCalledWith('/auth/login/', payload, true);
   });
 });
 

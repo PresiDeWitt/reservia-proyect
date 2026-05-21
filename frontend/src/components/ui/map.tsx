@@ -1854,6 +1854,7 @@ function MapClusterLayer<
   return null;
 }
 
+/* eslint-disable react-refresh/only-export-components */
 export {
   Map,
   useMap,
@@ -1868,5 +1869,6 @@ export {
   MapArc,
   MapClusterLayer,
 };
+/* eslint-enable react-refresh/only-export-components */
 
 export type { MapRef, MapViewport, MapArcDatum, MapArcEvent };
