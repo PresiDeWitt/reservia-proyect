@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Logo from './Logo';
+import { useAuth } from '../context/AuthContext';
 
 type FooterLink = { key: string; to?: string; href?: string; action?: string };
 
@@ -11,19 +12,14 @@ const COLUMN_KEYS: { titleKey: string; links: FooterLink[] }[] = [
     links: [
       { key: 'footer.links.explore', to: '/' },
       { key: 'footer.links.tableMap', to: '/map' },
-      { key: 'footer.links.experiences', to: '/search' },
-      { key: 'footer.links.mobileApp', href: '#' },
-      { key: 'footer.links.giftCards', href: '#' },
+      { key: 'footer.links.experiences', to: '/favorites' },
     ],
   },
   {
     titleKey: 'footer.restaurateurs',
     links: [
       { key: 'footer.links.joinReservia', action: '__open_auth_owner' },
-      { key: 'footer.links.managementPanel', to: '/owner' },
-      { key: 'footer.links.pos', href: '#' },
-      { key: 'footer.links.successCases', href: '#' },
-      { key: 'footer.links.pricing', href: '#' },
+      { key: 'footer.links.managementPanel', action: '__go_owner_panel' },
     ],
   },
   {
@@ -31,8 +27,6 @@ const COLUMN_KEYS: { titleKey: string; links: FooterLink[] }[] = [
     links: [
       { key: 'footer.links.about', to: '/' },
       { key: 'footer.links.editorial', to: '/' },
-      { key: 'footer.links.press', href: '#' },
-      { key: 'footer.links.careers', href: '#' },
       { key: 'footer.links.contact', href: 'mailto:hola@reservia.es' },
     ],
   },
@@ -64,10 +58,26 @@ const BOTTOM_LINKS: { key: string; to?: string; href?: string }[] = [
 
 const Footer: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const isOwnerOrAdmin = user?.role === 'owner' || user?.role === 'admin';
 
   const handleLinkClick = (link: FooterLink) => {
     if (link.action === '__open_auth_owner') {
-      window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }));
+      if (isOwnerOrAdmin) {
+        navigate('/owner');
+      } else {
+        window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }));
+      }
+    } else if (link.action === '__go_owner_panel') {
+      if (isOwnerOrAdmin) {
+        navigate('/owner');
+      } else if (user) {
+        navigate('/profile');
+      } else {
+        window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'login' } }));
+      }
     }
   };
 
