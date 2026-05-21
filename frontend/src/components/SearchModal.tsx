@@ -20,6 +20,7 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
   const [results, setResults] = useState<Restaurant[]>([]);
   const [popular, setPopular] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -61,6 +62,20 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
     onClose();
   };
 
+  const handleNearMe = () => {
+    if (!navigator.geolocation) return;
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        restaurantsApi.nearby(coords.latitude, coords.longitude)
+          .then((r) => { setResults(r.items.slice(0, 8)); setQuery(''); })
+          .catch(() => {})
+          .finally(() => setGeoLoading(false));
+      },
+      () => setGeoLoading(false),
+    );
+  };
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
@@ -69,8 +84,13 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
     }
   };
 
-  const list = query.trim() ? results : popular;
-  const sectionLabel = query.trim() ? t('search.results') : t('search.popular');
+  const hasGeoResults = !query.trim() && results.length > 0;
+  const list = query.trim() ? results : hasGeoResults ? results : popular;
+  const sectionLabel = query.trim()
+    ? t('search.results')
+    : hasGeoResults
+      ? t('search.nearMe')
+      : t('search.popular');
 
   return (
     <AnimatePresence>
@@ -115,9 +135,13 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
                 <button
                   type="button"
                   className="sm-geo-chip"
-                  onClick={() => { navigate('/map'); onClose(); }}
+                  onClick={handleNearMe}
+                  disabled={geoLoading}
                 >
-                  <span className="mat">near_me</span>
+                  {geoLoading
+                    ? <span className="w-4 h-4 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                    : <span className="mat">near_me</span>
+                  }
                   {t('search.nearMe')}
                 </button>
               </div>

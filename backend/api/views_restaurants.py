@@ -146,3 +146,42 @@ def restaurant_tables(request, pk):
         result.append(item)
 
     return Response({"tables": result})
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def nearby_restaurants(request):
+    try:
+        lat = float(request.query_params["lat"])
+        lng = float(request.query_params["lng"])
+    except (KeyError, ValueError):
+        return Response({"error": "lat and lng are required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        radius = float(request.query_params.get("radius", 5))
+    except ValueError:
+        return Response({"error": "radius must be a number"}, status=status.HTTP_400_BAD_REQUEST)
+
+    from math import asin, cos, radians, sin, sqrt
+
+    def haversine(lat1, lon1, lat2, lon2):
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        dlat, dlon = lat2 - lat1, lon2 - lon1
+        a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+        return 2 * 6371 * asin(sqrt(a))
+
+    nearby = []
+    for r in Restaurant.objects.all():
+        dist = haversine(lat, lng, r.lat, r.lng)
+        if dist <= radius:
+            nearby.append((dist, r))
+
+    nearby.sort(key=lambda x: x[0])
+
+    items = []
+    for dist, r in nearby:
+        data = RestaurantListSerializer(r).data
+        data["distance_km"] = round(dist, 2)
+        items.append(data)
+
+    return Response({"items": items, "total": len(items)})

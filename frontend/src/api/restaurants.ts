@@ -102,6 +102,9 @@ export const restaurantsApi = {
   createReview: (id: string, rating: number, comment: string) =>
     api.post<Review>(`/restaurants/${id}/reviews/`, { rating, comment }),
 
+  nearby: (lat: number, lng: number, radius = 5) =>
+    api.get<RestaurantsResponse>(`/restaurants/nearby/?lat=${lat}&lng=${lng}&radius=${radius}`),
+
   favorites: () => api.get<{ favorites: Restaurant[] }>('/favorites/'),
   addFavorite: (restaurantId: number) => api.post<{ status: string }>('/favorites/add/', { restaurantId }),
   removeFavorite: (restaurantId: number) => api.delete<{ status: string }>(`/favorites/${restaurantId}/remove/`),

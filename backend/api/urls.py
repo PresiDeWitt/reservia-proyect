@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .views_favorites import list_favorites, add_favorite, remove_favorite
 from .views_notifications import list_notifications, mark_read, mark_all_read, unread_count
+from .views_restaurants import nearby_restaurants
 
 urlpatterns = [
     # Auth
@@ -15,6 +16,7 @@ urlpatterns = [
     # Restaurants
     path("restaurants/", views.RestaurantListView.as_view(), name="restaurant-list"),
     path("restaurants/cuisines/", views.cuisines_view, name="cuisines"),
+    path("restaurants/nearby/", nearby_restaurants, name="restaurants-nearby"),
     path(
         "restaurants/<int:pk>/",
         views.RestaurantDetailView.as_view(),
