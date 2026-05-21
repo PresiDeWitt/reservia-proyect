@@ -106,7 +106,7 @@ async function request<T>(path: string, options: RequestInit = {}, noRetry = fal
         throw new Error('Server error');
       }
       if (!res.ok) {
-        throw new Error((retryData.error as string) || 'Request failed');
+        throw new Error((retryData.detail as string) || (retryData.error as string) || 'Request failed');
       }
       return retryData as T;
     }
@@ -118,7 +118,7 @@ async function request<T>(path: string, options: RequestInit = {}, noRetry = fal
     throw new Error('Session expired');
   }
   if (!res.ok) {
-    throw new Error((data.error as string) || 'Request failed');
+    throw new Error((data.detail as string) || (data.error as string) || 'Request failed');
   }
   return data as T;
 }
@@ -150,7 +150,7 @@ async function staffRequest<T>(path: string, options: RequestInit = {}): Promise
     throw new Error('Staff session expired');
   }
   if (!res.ok) {
-    throw new Error((data.error as string) || 'Request failed');
+    throw new Error((data.detail as string) || (data.error as string) || 'Request failed');
   }
   return data as T;
 }
