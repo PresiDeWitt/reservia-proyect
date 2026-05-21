@@ -1,21 +1,14 @@
 import type { UserRole } from './auth';
-
-const KEY = 'reservia_roles';
+import { STORAGE_KEYS, storage } from './storage';
 
 type RoleMap = Record<string, UserRole>;
 
-const read = (): RoleMap => {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || '{}');
-  } catch {
-    return {};
-  }
-};
+const read = (): RoleMap => storage.getJSON<RoleMap>(STORAGE_KEYS.ROLES) ?? {};
 
 export const setRole = (email: string, role: UserRole) => {
   const map = read();
   map[email.toLowerCase()] = role;
-  localStorage.setItem(KEY, JSON.stringify(map));
+  storage.setJSON(STORAGE_KEYS.ROLES, map);
 };
 
 // Hardcoded admin emails — sólo estas cuentas obtienen rol admin al loguear.

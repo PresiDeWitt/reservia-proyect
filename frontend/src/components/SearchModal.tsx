@@ -23,7 +23,7 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    restaurantsApi.list().then((r) => setPopular(r.restaurants.slice(0, 4))).catch(() => {});
+    restaurantsApi.list().then((r) => setPopular(r.items.slice(0, 4))).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -44,7 +44,7 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
     if (!q.trim()) { setResults([]); return; }
     setLoading(true);
     restaurantsApi.list({ search: q })
-      .then((r) => setResults(r.restaurants.slice(0, 5)))
+      .then((r) => setResults(r.items.slice(0, 5)))
       .catch(() => setResults([]))
       .finally(() => setLoading(false));
   }, []);
@@ -148,7 +148,7 @@ const SearchModal: React.FC<Props> = ({ open, onClose }) => {
                     </div>
                     <div className="sm-info">
                       <div className="sm-name">{r.name}</div>
-                      <div className="sm-meta">{r.cuisine} · {r.location} · {r.distance}</div>
+                      <div className="sm-meta">{r.cuisine} · {r.location} · {r.distance_km} km</div>
                     </div>
                     <div className="sm-rating">
                       <span className="mat">star</span>

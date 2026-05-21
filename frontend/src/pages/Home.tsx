@@ -45,7 +45,7 @@ const Home: React.FC = () => {
       .list({ search: search || undefined, cuisine: cuisine || undefined })
       .then((data) => {
         if (!isActive) return;
-        setRestaurants(data.restaurants);
+        setRestaurants(data.items);
         setTotal(data.total);
       })
       .catch(console.error)

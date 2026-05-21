@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { AuthUser } from '../api/auth';
+import { STORAGE_KEYS, storage } from '../api/storage';
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -17,8 +18,8 @@ interface AuthState {
 }
 
 const getInitialAuthState = (): AuthState => {
-  const storedToken = localStorage.getItem('reservia_token');
-  const storedUser = localStorage.getItem('reservia_user');
+  const storedToken = storage.get(STORAGE_KEYS.TOKEN);
+  const storedUser = storage.get(STORAGE_KEYS.USER);
 
   if (storedToken && storedUser && storedUser !== 'undefined' && storedToken !== 'undefined') {
     try {
@@ -27,16 +28,16 @@ const getInitialAuthState = (): AuthState => {
         user: JSON.parse(storedUser) as AuthUser,
       };
     } catch {
-      localStorage.removeItem('reservia_token');
-      localStorage.removeItem('reservia_refresh');
-      localStorage.removeItem('reservia_user');
+      storage.remove(STORAGE_KEYS.TOKEN);
+      storage.remove(STORAGE_KEYS.REFRESH);
+      storage.remove(STORAGE_KEYS.USER);
       return { token: null, user: null };
     }
   }
 
-  localStorage.removeItem('reservia_token');
-  localStorage.removeItem('reservia_refresh');
-  localStorage.removeItem('reservia_user');
+  storage.remove(STORAGE_KEYS.TOKEN);
+  storage.remove(STORAGE_KEYS.REFRESH);
+  storage.remove(STORAGE_KEYS.USER);
   return { token: null, user: null };
 };
 
@@ -44,16 +45,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authState, setAuthState] = useState<AuthState>(() => getInitialAuthState());
 
   const login = (newToken: string, newRefresh: string, newUser: AuthUser) => {
-    localStorage.setItem('reservia_token', newToken);
-    localStorage.setItem('reservia_refresh', newRefresh);
-    localStorage.setItem('reservia_user', JSON.stringify(newUser));
+    storage.set(STORAGE_KEYS.TOKEN, newToken);
+    storage.set(STORAGE_KEYS.REFRESH, newRefresh);
+    storage.setJSON(STORAGE_KEYS.USER, newUser);
     setAuthState({ token: newToken, user: newUser });
   };
 
   const logout = () => {
-    localStorage.removeItem('reservia_token');
-    localStorage.removeItem('reservia_refresh');
-    localStorage.removeItem('reservia_user');
+    storage.remove(STORAGE_KEYS.TOKEN);
+    storage.remove(STORAGE_KEYS.REFRESH);
+    storage.remove(STORAGE_KEYS.USER);
     setAuthState({ token: null, user: null });
   };
 

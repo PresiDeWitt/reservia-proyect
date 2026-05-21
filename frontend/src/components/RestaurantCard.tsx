@@ -8,7 +8,7 @@ interface RestaurantCardProps {
   image: string;
   cuisine: string;
   location: string;
-  distance: string;
+  distance_km: number;
   rating: number;
   priceRange: string;
   reviewsCount?: number;
@@ -24,7 +24,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   image,
   cuisine,
   location,
-  distance,
+  distance_km,
   rating,
   priceRange,
   reviewsCount,
@@ -194,7 +194,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
         >
           <div style={{ fontSize: 12, color: 'var(--ink-55)' }}>
             <span className="mono-num" style={{ fontWeight: 700, color: 'var(--ink)' }}>{priceRange}</span>
-            {' '}· {distance}
+            {' '}· {distance_km} km
           </div>
           <div className="btn btn-primary" style={{ height: 36, padding: '0 14px', fontSize: 12, pointerEvents: 'none' }}>
             <span>{t('restaurant.bookNow')}</span>

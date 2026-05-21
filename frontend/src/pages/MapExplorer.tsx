@@ -49,7 +49,7 @@ const MapExplorer: React.FC = () => {
     restaurantsApi
       .list(cuisineFilter ? { cuisine: cuisineFilter } : undefined)
       .then((data) => {
-        const list = data.restaurants;
+        const list = data.items;
         setRestaurants(list);
         setLoading(false);
 

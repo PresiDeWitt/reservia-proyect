@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { reservationsApi } from '../api/reservations';
+import { restaurantsApi } from '../api/restaurants';
+import type { AvailabilitySlot } from '../api/restaurants';
 import { useAuth } from '../context/AuthContext';
 import type { Restaurant } from '../api/restaurants';
-
-const TIME_SLOTS_LUNCH = ['13:00', '13:30', '14:00', '14:30', '15:00'];
-const TIME_SLOTS_DINNER = ['20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
-const UNAVAILABLE = new Set(['13:30', '21:30']);
 
 interface Props {
   restaurant: Restaurant;
@@ -29,8 +27,20 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState<{ code: string } | null>(null);
+  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
-  const slots = service === 'lunch' ? TIME_SLOTS_LUNCH : TIME_SLOTS_DINNER;
+  useEffect(() => {
+    if (!date) return;
+    setTime('');
+    setLoadingSlots(true);
+    restaurantsApi.availability(restaurant.id, date, guests)
+      .then((res) => setAvailabilitySlots(res.slots))
+      .catch(() => setAvailabilitySlots([]))
+      .finally(() => setLoadingSlots(false));
+  }, [restaurant.id, date, guests]);
+
+  const slots = availabilitySlots.filter((s) => s.service === service);
 
   const submit = async () => {
     if (!isAuthenticated) {
@@ -40,24 +50,17 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
     setLoading(true);
     setError('');
     try {
-      await reservationsApi.create({
+      const reservation = await reservationsApi.create({
         restaurantId: parseInt(restaurant.id, 10),
         date,
         time,
         guests,
+        occasion,
+        note,
       });
-      setDone({ code: 'RV-' + Math.floor(1000 + Math.random() * 9000) });
-      navigate('/confirmation', {
-        state: {
-          restaurant,
-          date,
-          time,
-          guests,
-          occasion,
-          note,
-          code: 'RV-' + Math.floor(1000 + Math.random() * 9000),
-        },
-      });
+      const code = 'RV-' + reservation.id.toString().padStart(4, '0');
+      setDone({ code });
+      navigate('/confirmation', { state: { restaurant, date, time, guests, occasion, note, code } });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error');
       navigate('/booking-error', { state: { reason: 'no_availability', restaurant } });
@@ -195,32 +198,54 @@ const ReservationWidget: React.FC<Props> = ({ restaurant, onAuthRequired }) => {
           </div>
 
           <div className="eyebrow" style={{ marginTop: 16, marginBottom: 8 }}>{t('reservation.time')}</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
-            {slots.map((s) => {
-              const unavail = UNAVAILABLE.has(s);
-              const active = time === s;
-              return (
-                <button
-                  key={s}
-                  disabled={unavail}
-                  onClick={() => setTime(s)}
+          {loadingSlots ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
                   style={{
                     height: 40,
                     borderRadius: 'var(--r-sm)',
-                    fontSize: 13,
-                    fontWeight: 700,
-                    background: active ? 'var(--primary)' : unavail ? 'var(--ink-5)' : 'var(--surface-3)',
-                    color: active ? '#fff' : unavail ? 'var(--ink-20)' : 'var(--ink)',
-                    border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
-                    textDecoration: unavail ? 'line-through' : 'none',
-                    cursor: unavail ? 'not-allowed' : 'pointer',
+                    background: 'var(--surface-3)',
+                    animation: 'pulse 1.5s infinite',
                   }}
-                >
-                  {s}
-                </button>
-              );
-            })}
-          </div>
+                />
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6 }}>
+              {slots.map((s) => {
+                const unavail = !s.available;
+                const active = time === s.time;
+                return (
+                  <button
+                    key={s.time}
+                    disabled={unavail}
+                    onClick={() => setTime(s.time)}
+                    title={unavail ? t('reservation.unavailable') : undefined}
+                    style={{
+                      height: 40,
+                      borderRadius: 'var(--r-sm)',
+                      fontSize: 13,
+                      fontWeight: 700,
+                      background: active ? 'var(--primary)' : unavail ? 'var(--ink-5)' : 'var(--surface-3)',
+                      color: active ? '#fff' : unavail ? 'var(--ink-20)' : 'var(--ink)',
+                      border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                      textDecoration: unavail ? 'line-through' : 'none',
+                      cursor: unavail ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {s.time}
+                  </button>
+                );
+              })}
+              {slots.length === 0 && (
+                <div style={{ gridColumn: '1/-1', fontSize: 12, color: 'var(--ink-55)', textAlign: 'center', padding: '8px 0' }}>
+                  {t('reservation.noSlots')}
+                </div>
+              )}
+            </div>
+          )}
 
           <button
             disabled={!time}

@@ -4,23 +4,25 @@ import { motion } from 'framer-motion';
 import RestaurantCard from '../components/RestaurantCard';
 import { restaurantsApi, type Restaurant } from '../api/restaurants';
 import { useTranslation } from 'react-i18next';
-
-const FAV_KEY = 'reservia_favorites';
+import { useAuth } from '../context/AuthContext';
 
 const FavoritesPage: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
-  const ids = JSON.parse(localStorage.getItem(FAV_KEY) || '[]') as string[];
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     restaurantsApi
-      .list()
-      .then((data) => setRestaurants(data.restaurants.filter((r) => ids.includes(r.id))))
+      .favorites()
+      .then((data) => setRestaurants(data.favorites))
       .catch(console.error)
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user]);
 
   return (
     <motion.div
@@ -37,7 +39,15 @@ const FavoritesPage: React.FC = () => {
         Tus <span className="italic-accent">favoritos</span>
       </h1>
 
-      {loading ? (
+      {!user ? (
+        <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--ink-40)' }}>
+          <span className="mat" style={{ fontSize: 48, marginBottom: 12, display: 'block' }}>lock</span>
+          <p style={{ fontSize: 16 }}>Inicia sesión para ver tus favoritos.</p>
+          <Link to="/" className="btn btn-primary" style={{ marginTop: 20 }}>
+            <span>Ir al inicio</span>
+          </Link>
+        </div>
+      ) : loading ? (
         <div
           style={{
             marginTop: 40,

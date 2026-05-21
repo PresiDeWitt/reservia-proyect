@@ -19,7 +19,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
   const [role, setRoleState] = useState<UserRole>('customer');
 
   useEffect(() => {
@@ -36,6 +36,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,14 +85,30 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
     }
   };
 
-  const switchMode = (next: 'login' | 'register') => {
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      await authApi.requestPasswordReset(email);
+      setResetSent(true);
+    } catch {
+      setError('Error al enviar el enlace. Inténtalo de nuevo.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const switchMode = (next: 'login' | 'register' | 'forgot') => {
     setMode(next);
     setError('');
+    setResetSent(false);
   };
 
   const isRegister = mode === 'register';
+  const isForgot = mode === 'forgot';
   const title = isRegister ? t('auth.createAccount') : t('auth.signIn');
-  const stepLabel = isRegister ? t('auth.stepRegister') : t('auth.stepLogin');
+  const stepLabel = isRegister ? t('auth.stepRegister') : isForgot ? 'Recuperar acceso' : t('auth.stepLogin');
 
   return (
     <AnimatePresence>
@@ -210,7 +227,85 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
 
             {/* ── Form panel (right) ──────────────────────────────── */}
             <section className="relative flex flex-col p-5 sm:p-8 lg:p-12 bg-background-light overflow-y-auto">
-              <div key={mode} className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
+              {isForgot && (
+                <div key="forgot" className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">Recuperar acceso</span>
+                    <h3 className="auth-editorial text-navy text-3xl" style={{ fontWeight: 400 }}>
+                      ¿Olvidaste tu <em className="italic text-primary">contraseña</em>?
+                    </h3>
+                    <p className="text-sm text-navy/55 leading-relaxed mt-1">
+                      Introduce tu email y te enviaremos un enlace para restablecerla.
+                    </p>
+                  </div>
+
+                  {resetSent ? (
+                    <div className="flex flex-col items-center gap-4 py-8 text-center">
+                      <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: 36 }}>mark_email_read</span>
+                      </div>
+                      <p className="text-sm text-navy/70 max-w-xs leading-relaxed">
+                        Si ese email está registrado recibirás un enlace en breve. En desarrollo el enlace aparece en la consola del servidor.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => switchMode('login')}
+                        className="text-sm font-bold text-primary hover:underline"
+                      >
+                        Volver al inicio de sesión
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleForgot} className="flex flex-col gap-5">
+                      <FloatField
+                        label={t('auth.emailPlaceholder')}
+                        icon="mail"
+                        type="email"
+                        value={email}
+                        onChange={setEmail}
+                        autoComplete="email"
+                        required
+                      />
+                      <AnimatePresence>
+                        {error && (
+                          <motion.div
+                            role="alert"
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3.5 py-2.5"
+                          >
+                            <span className="material-symbols-outlined mt-0.5" style={{ fontSize: 18 }}>error</span>
+                            <span className="font-medium">{error}</span>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="group relative w-full h-14 bg-navy text-background-light font-bold rounded-2xl overflow-hidden transition-all disabled:opacity-60 hover:shadow-[0_20px_50px_-12px_rgba(249,116,21,0.55)]"
+                      >
+                        <span className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]" aria-hidden="true" />
+                        <span className="relative z-10 flex items-center justify-center gap-3 tracking-wide">
+                          {loading ? (
+                            <span className="w-4 h-4 border-2 border-background-light/30 border-t-background-light rounded-full animate-spin" />
+                          ) : (
+                            <>
+                              <span>Enviar enlace</span>
+                              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>send</span>
+                            </>
+                          )}
+                        </span>
+                      </button>
+                      <button type="button" onClick={() => switchMode('login')} className="text-xs text-navy/50 hover:text-primary transition-colors text-center">
+                        ← Volver al inicio de sesión
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              <div key={mode} className={`auth-rise flex flex-col gap-6 mt-2 lg:mt-0 ${isForgot ? 'hidden' : ''}`}>
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">
                     {isRegister ? t('auth.createAccount') : t('auth.signIn')}
@@ -340,7 +435,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                     onChange={setPassword}
                     autoComplete={isRegister ? 'new-password' : 'current-password'}
                     required
-                    minLength={6}
+                    minLength={8}
                     trailing={
                       <button
                         type="button"
@@ -354,6 +449,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                       </button>
                     }
                   />
+                  {!isRegister && (
+                    <button
+                      type="button"
+                      onClick={() => switchMode('forgot')}
+                      className="text-xs text-navy/50 hover:text-primary transition-colors text-right self-end"
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  )}
 
                   <AnimatePresence>
                     {error && (

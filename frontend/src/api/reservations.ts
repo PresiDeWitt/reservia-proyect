@@ -10,12 +10,14 @@ export interface Reservation {
   date: string;
   time: string;
   guests: number;
+  occasion: string;
+  note: string;
   status: 'confirmed' | 'cancelled';
   created_at: string;
 }
 
 export const reservationsApi = {
-  create: (data: { restaurantId: number; date: string; time: string; guests: number }) =>
+  create: (data: { restaurantId: number; date: string; time: string; guests: number; occasion?: string; note?: string }) =>
     api.post<Reservation>('/reservations/', data),
 
   myReservations: () => api.get<Reservation[]>('/reservations/my/'),

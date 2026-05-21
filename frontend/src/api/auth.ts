@@ -14,6 +14,9 @@ export interface AuthResponse {
   refresh: string;
   user: AuthUser;
 }
+export interface AuthError {
+  detail: string;
+}
 
 export const authApi = {
   register: (data: {
@@ -29,4 +32,13 @@ export const authApi = {
 
   google: (credential: string) =>
     api.post<AuthResponse>('/auth/google/', { credential }),
+
+  requestPasswordReset: (email: string) =>
+    api.post<{ message: string }>('/auth/password/reset/', { email }),
+
+  confirmPasswordReset: (uid: string, token: string, new_password: string) =>
+    api.post<{ message: string }>('/auth/password/reset/confirm/', { uid, token, new_password }),
+
+  changePassword: (current_password: string, new_password: string) =>
+    api.post<{ message: string }>('/auth/password/change/', { current_password, new_password }),
 };

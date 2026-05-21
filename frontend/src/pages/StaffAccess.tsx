@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { staffApi } from '../api/staff';
+import { STORAGE_KEYS, storage } from '../api/storage';
 
 const StaffAccess: React.FC = () => {
   const navigate = useNavigate();
@@ -15,8 +16,8 @@ const StaffAccess: React.FC = () => {
     setLoading(true);
     try {
       const res = await staffApi.login(code.trim());
-      localStorage.setItem('reservia_staff_token', res.token);
-      localStorage.setItem('reservia_staff_role', res.role);
+      storage.set(STORAGE_KEYS.STAFF_TOKEN, res.token);
+      storage.set(STORAGE_KEYS.STAFF_ROLE, res.role);
       navigate(res.role === 'owner' ? '/owner' : '/admin');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Invalid access code');
