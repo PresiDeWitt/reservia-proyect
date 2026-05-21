@@ -75,6 +75,7 @@ class ReservationSerializer(serializers.ModelSerializer):
     restaurantAddress = serializers.CharField(source='restaurant.address', read_only=True)
     restaurantImage = serializers.URLField(source='restaurant.image_url', read_only=True)
     restaurantCuisine = serializers.CharField(source='restaurant.cuisine', read_only=True)
+    occasion = serializers.CharField(max_length=50, required=False, allow_blank=True, default='')
 
     class Meta:
         model = Reservation
