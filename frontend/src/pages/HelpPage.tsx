@@ -33,11 +33,11 @@ const FAQ_ES = [
 const FAQ_EN = [
   {
     q: 'How do I make a reservation?',
-    a: 'Search for a restaurant, choose date, time and number of guests, then press "Confirm booking". You'll get instant confirmation.',
+    a: "Search for a restaurant, choose date, time and number of guests, then press \"Confirm booking\". You'll get instant confirmation.",
   },
   {
     q: 'Can I cancel a reservation?',
-    a: 'Yes. Go to "My Bookings" and press cancel on the relevant reservation. Cancellations less than 4h before may carry a fee.',
+    a: "Yes. Go to \"My Bookings\" and press cancel on the relevant reservation. Cancellations less than 4h before may carry a fee.",
   },
   {
     q: 'How does the floor plan work?',
