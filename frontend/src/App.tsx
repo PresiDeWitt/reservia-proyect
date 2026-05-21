@@ -24,6 +24,7 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const StaffAccess = lazy(() => import('./pages/StaffAccess'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -80,6 +81,7 @@ const AppShell: React.FC = () => {
             <Route path="/owner" element={<RequireRole role="owner"><OwnerDashboard /></RequireRole>} />
             <Route path="/admin" element={<RequireRole role="admin"><AdminDashboard /></RequireRole>} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/help" element={<HelpPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AnimatePresence>
