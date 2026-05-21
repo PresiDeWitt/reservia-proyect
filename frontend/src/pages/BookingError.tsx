@@ -1,61 +1,36 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 type Reason = 'no_availability' | 'payment_failed' | 'not_authenticated' | 'cancelled';
 
-const STATES: Record<Reason, { icon: string; eyebrow: string; title: React.ReactNode; hint: string; cta: { label: string; to: string } }> = {
-  no_availability: {
-    icon: 'event_busy',
-    eyebrow: 'Sin disponibilidad',
-    title: (
-      <>
-        Esa mesa <span className="italic-accent">se nos escapó</span>.
-      </>
-    ),
-    hint: 'Otro comensal se adelantó. Pero hay 280+ mesas más esperándote esta noche.',
-    cta: { label: 'Buscar otra mesa', to: '/' },
-  },
-  payment_failed: {
-    icon: 'credit_card_off',
-    eyebrow: 'Pago no procesado',
-    title: (
-      <>
-        El pago <span className="italic-accent">no pasó</span>.
-      </>
-    ),
-    hint: 'Revisa los datos de tu tarjeta o prueba con otra forma de pago.',
-    cta: { label: 'Reintentar', to: '/' },
-  },
-  not_authenticated: {
-    icon: 'lock',
-    eyebrow: 'Acceso requerido',
-    title: (
-      <>
-        Identifícate para <span className="italic-accent">reservar</span>.
-      </>
-    ),
-    hint: 'Necesitamos saber quién eres para confirmar tu mesa.',
-    cta: { label: 'Iniciar sesión', to: '/' },
-  },
-  cancelled: {
-    icon: 'event_repeat',
-    eyebrow: 'Reserva cancelada',
-    title: (
-      <>
-        Hemos liberado <span className="italic-accent">tu mesa</span>.
-      </>
-    ),
-    hint: 'Esperamos verte pronto. Cuando quieras, prueba con otra fecha.',
-    cta: { label: 'Volver a explorar', to: '/' },
-  },
+const ICON_MAP: Record<Reason, string> = {
+  no_availability: 'event_busy',
+  payment_failed: 'credit_card_off',
+  not_authenticated: 'lock',
+  cancelled: 'event_repeat',
+};
+
+const KEY_MAP: Record<Reason, string> = {
+  no_availability: 'noAvailability',
+  payment_failed: 'paymentFailed',
+  not_authenticated: 'notAuthenticated',
+  cancelled: 'cancelled',
 };
 
 const BookingError: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const reason: Reason = (location.state as { reason?: Reason })?.reason || 'no_availability';
-  const s = STATES[reason];
+  const { t } = useTranslation();
+  const state = location.state as { reason?: Reason; restaurant?: { id: string | number } } | null;
+  const reason: Reason = state?.reason || 'no_availability';
+  const key = KEY_MAP[reason];
+  const icon = ICON_MAP[reason];
+
+  const ctaTo = reason === 'no_availability' && state?.restaurant?.id
+    ? `/restaurant/${state.restaurant.id}`
+    : '/';
 
   return (
     <motion.div
@@ -79,7 +54,7 @@ const BookingError: React.FC = () => {
             placeItems: 'center',
           }}
         >
-          <span className="mat" style={{ fontSize: 52 }}>{s.icon}</span>
+          <span className="mat" style={{ fontSize: 52 }}>{icon}</span>
         </motion.div>
         <span
           style={{
@@ -94,7 +69,7 @@ const BookingError: React.FC = () => {
       </div>
 
       <div className="eyebrow" style={{ color: 'var(--ruby)', marginTop: 28 }}>
-        {s.eyebrow}
+        {t(`bookingError.${key}.eyebrow`)}
       </div>
       <h1
         className="editorial"
@@ -106,20 +81,21 @@ const BookingError: React.FC = () => {
           marginTop: 12,
         }}
       >
-        {s.title}
+        {t(`bookingError.${key}.title`)}{' '}
+        <span className="italic-accent">{t(`bookingError.${key}.titleAccent`)}</span>.
       </h1>
       <p style={{ marginTop: 16, fontSize: 16, color: 'var(--ink-55)', maxWidth: 480, marginInline: 'auto' }}>
-        {s.hint}
+        {t(`bookingError.${key}.hint`)}
       </p>
 
       <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 32, flexWrap: 'wrap' }}>
-        <Link to={s.cta.to} className="btn btn-primary">
-          <span>{s.cta.label}</span>
+        <Link to={ctaTo} className="btn btn-primary">
+          <span>{t(`bookingError.${key}.cta`)}</span>
           <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
         </Link>
         <button onClick={() => navigate(-1)} className="btn btn-ghost">
           <span className="mat" style={{ fontSize: 16 }}>arrow_back</span>
-          <span>Atrás</span>
+          <span>{t('bookingError.back')}</span>
         </button>
       </div>
     </motion.div>
