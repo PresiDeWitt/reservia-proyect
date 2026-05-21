@@ -209,8 +209,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
             </aside>
 
             {/* ── Form panel (right) ──────────────────────────────── */}
-            <section className="relative flex flex-col p-5 sm:p-8 lg:p-12 bg-background-light overflow-y-auto">
-              <div key={mode} className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
+            <section className={`relative flex flex-col ${isRegister ? 'p-4 sm:p-6 lg:py-6 lg:px-8' : 'p-5 sm:p-8 lg:p-12'} bg-background-light overflow-y-auto`}>
+              <div key={mode} className={`auth-rise flex flex-col ${isRegister ? 'gap-4' : 'gap-6'} mt-2 lg:mt-0`}>
                 <div className="flex flex-col gap-1.5">
                   <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">
                     {isRegister ? t('auth.createAccount') : t('auth.signIn')}
@@ -260,10 +260,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                <form onSubmit={handleSubmit} className={`flex flex-col ${isRegister ? 'gap-3.5' : 'gap-5'}`}>
                   {isRegister && (
                     <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <FloatField
                           label={t('auth.namePlaceholder')}
                           icon="person"
@@ -272,6 +272,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                           onChange={setName}
                           autoComplete="given-name"
                           required
+                          compact={isRegister}
                         />
                         <FloatField
                           label={t('auth.lastNamePlaceholder')}
@@ -281,6 +282,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                           onChange={setLastName}
                           autoComplete="family-name"
                           required
+                          compact={isRegister}
                         />
                       </div>
                       <FloatField
@@ -291,8 +293,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                         onChange={setPhone}
                         autoComplete="tel"
                         required
+                        compact={isRegister}
                       />
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-1.5">
                         <span className="text-[10px] tracking-[0.3em] uppercase font-bold" style={{ color: 'var(--ink-55)' }}>
                           {t('auth.accountType')}
                         </span>
@@ -307,14 +310,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                                 key={opt.v}
                                 type="button"
                                 onClick={() => setRoleState(opt.v)}
-                                className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all"
+                                className="flex items-center justify-center gap-2 py-2.5 rounded-xl transition-all"
                                 style={{
                                   background: active ? 'var(--primary)' : 'var(--ink-5)',
                                   color: active ? '#fff' : 'var(--ink)',
                                   border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
                                 }}
                               >
-                                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{opt.icon}</span>
+                                <span className="material-symbols-outlined" style={{ fontSize: 18 }}>{opt.icon}</span>
                                 <span className="text-xs font-semibold">{opt.label}</span>
                               </button>
                             );
@@ -331,6 +334,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                     onChange={setEmail}
                     autoComplete="email"
                     required
+                    compact={isRegister}
                   />
                   <FloatField
                     label={t('auth.passwordPlaceholder')}
@@ -341,6 +345,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                     autoComplete={isRegister ? 'new-password' : 'current-password'}
                     required
                     minLength={6}
+                    compact={isRegister}
                     trailing={
                       <button
                         type="button"
@@ -376,7 +381,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                   <button
                     type="submit"
                     disabled={loading}
-                    className="group relative w-full h-14 bg-navy text-background-light font-bold rounded-2xl overflow-hidden transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-[0_20px_50px_-12px_rgba(249,116,21,0.55)] active:scale-[0.98]"
+                    className={`group relative w-full ${isRegister ? 'h-12 rounded-xl' : 'h-14 rounded-2xl'} bg-navy text-background-light font-bold overflow-hidden transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-[0_20px_50px_-12px_rgba(249,116,21,0.55)] active:scale-[0.98]`}
                   >
                     <span
                       className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
@@ -453,23 +458,24 @@ interface FloatFieldProps {
   minLength?: number;
   autoComplete?: string;
   trailing?: React.ReactNode;
+  compact?: boolean;
 }
 
 const FloatField: React.FC<FloatFieldProps> = ({
-  label, icon, type, value, onChange, required, minLength, autoComplete, trailing,
+  label, icon, type, value, onChange, required, minLength, autoComplete, trailing, compact,
 }) => {
   const [focused, setFocused] = useState(false);
   const floated = focused || value.length > 0;
 
   return (
     <label
-      className={`auth-input relative flex items-center gap-3 h-14 px-4 rounded-2xl bg-white/70 border transition-all ${
+      className={`auth-input relative flex items-center gap-3 ${compact ? 'h-12 px-3.5 rounded-xl' : 'h-14 px-4 rounded-2xl'} bg-white/70 border transition-all ${
         focused ? 'border-primary/60 bg-white shadow-[0_0_0_4px_rgba(249,116,21,0.10)]' : 'border-navy/10 hover:border-navy/20'
       }`}
     >
       <span
         className={`material-symbols-outlined transition-colors ${focused ? 'text-primary' : 'text-navy/35'}`}
-        style={{ fontSize: 22 }}
+        style={{ fontSize: compact ? 20 : 22 }}
         aria-hidden="true"
       >
         {icon}
@@ -478,7 +484,7 @@ const FloatField: React.FC<FloatFieldProps> = ({
         <span
           className={`absolute left-0 pointer-events-none transition-all duration-200 ${
             floated
-              ? 'top-0 text-[10px] tracking-[0.15em] uppercase font-bold text-navy/55'
+              ? 'top-0 text-[9px] tracking-[0.15em] uppercase font-bold text-navy/55'
               : 'top-1/2 -translate-y-1/2 text-sm text-navy/45'
           }`}
         >
@@ -493,7 +499,7 @@ const FloatField: React.FC<FloatFieldProps> = ({
           required={required}
           minLength={minLength}
           autoComplete={autoComplete}
-          className="w-full bg-transparent outline-none text-navy font-medium pt-4 pb-1 text-[15px]"
+          className={`w-full bg-transparent outline-none text-navy font-medium ${compact ? 'pt-3 pb-0.5 text-sm' : 'pt-4 pb-1 text-[15px]'}`}
         />
       </div>
       {trailing}
