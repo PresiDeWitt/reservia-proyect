@@ -24,6 +24,11 @@ const FavoritesPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [user]);
 
+  const handleToggleFavorite = (id: string) => {
+    restaurantsApi.removeFavorite(parseInt(id, 10)).catch(() => {});
+    setRestaurants((prev) => prev.filter((r) => r.id !== id));
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -83,6 +88,7 @@ const FavoritesPage: React.FC = () => {
               {...r}
               cuisine={t(`cuisines.${r.cuisine}`, { defaultValue: r.cuisine })}
               isFavorite
+              onToggleFavorite={handleToggleFavorite}
             />
           ))}
         </div>
