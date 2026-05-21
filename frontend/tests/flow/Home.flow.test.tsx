@@ -20,7 +20,7 @@ const sampleRestaurant: Restaurant = {
   name: 'Casa Luca',
   cuisine: 'Italian',
   location: 'Centro',
-  distance: '1.1 km',
+  distance_km: 1.1,
   rating: 4.8,
   priceRange: '$$',
   address: 'Calle A 1',
@@ -41,8 +41,11 @@ const renderHome = (entry = '/') =>
 describe('Home flow', () => {
   it('carga restaurantes y muestra resultados', async () => {
     mockedList.mockResolvedValueOnce({
-      restaurants: [sampleRestaurant],
+      items: [sampleRestaurant],
       total: 1,
+      page: 1,
+      page_size: 10,
+      total_pages: 1,
     });
 
     renderHome('/');
@@ -54,8 +57,11 @@ describe('Home flow', () => {
 
   it('muestra estado sin resultados cuando la busqueda no devuelve datos', async () => {
     mockedList.mockResolvedValueOnce({
-      restaurants: [],
+      items: [],
       total: 0,
+      page: 1,
+      page_size: 10,
+      total_pages: 0,
     });
 
     renderHome('/?search=sushi');
@@ -67,7 +73,7 @@ describe('Home flow', () => {
 
   it('aplica filtro por categoria al pulsar una categoria', async () => {
     const user = userEvent.setup();
-    mockedList.mockResolvedValue({ restaurants: [], total: 0 });
+    mockedList.mockResolvedValue({ items: [], total: 0, page: 1, page_size: 10, total_pages: 0 });
 
     renderHome('/');
 
