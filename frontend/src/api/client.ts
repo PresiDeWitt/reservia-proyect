@@ -1,7 +1,9 @@
+import { STORAGE_KEYS, storage } from './storage';
+
 const BASE = '/api';
 
-const MAX_RETRIES = 6;
-const INITIAL_RETRY_MS = 1000;
+const MAX_RETRIES = 2;
+const INITIAL_RETRY_MS = 500;
 
 const RETRYABLE_STATUSES = new Set([502, 503, 504]);
 
@@ -42,11 +44,11 @@ async function fetchWithRetry(url: string, options: RequestInit): Promise<Respon
 }
 
 function getToken(): string | null {
-  return localStorage.getItem('reservia_token');
+  return storage.get(STORAGE_KEYS.TOKEN);
 }
 
 function getRefreshToken(): string | null {
-  return localStorage.getItem('reservia_refresh');
+  return storage.get(STORAGE_KEYS.REFRESH);
 }
 
 let refreshPromise: Promise<string | null> | null = null;
@@ -65,7 +67,8 @@ async function refreshAccessToken(): Promise<string | null> {
     const data = await res.json();
     const newToken = data.access;
     if (newToken) {
-      localStorage.setItem('reservia_token', newToken);
+      storage.set(STORAGE_KEYS.TOKEN, newToken);
+      if (data.refresh) storage.set(STORAGE_KEYS.REFRESH, data.refresh as string);
       return newToken;
     }
     return null;
@@ -123,9 +126,9 @@ async function request<T>(path: string, options: RequestInit = {}, noRetry = fal
       return retryData as T;
     }
 
-    localStorage.removeItem('reservia_token');
-    localStorage.removeItem('reservia_user');
-    localStorage.removeItem('reservia_refresh');
+    storage.remove(STORAGE_KEYS.TOKEN);
+    storage.remove(STORAGE_KEYS.USER);
+    storage.remove(STORAGE_KEYS.REFRESH);
     window.location.reload();
     throw new Error('Session expired');
   }
@@ -134,6 +137,44 @@ async function request<T>(path: string, options: RequestInit = {}, noRetry = fal
   }
   return data as T;
 }
+
+function getStaffToken(): string | null {
+  return storage.get(STORAGE_KEYS.STAFF_TOKEN);
+}
+
+async function staffRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getStaffToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetchWithRetry(`${BASE}${path}`, { ...options, headers });
+  let data: Record<string, unknown>;
+  try {
+    data = await res.json() as Record<string, unknown>;
+  } catch {
+    throw new Error(res.status >= 500 ? 'Server error' : 'Invalid response');
+  }
+  if (res.status === 401) {
+    storage.remove(STORAGE_KEYS.STAFF_TOKEN);
+    storage.remove(STORAGE_KEYS.STAFF_ROLE);
+    throw new Error('Staff session expired');
+  }
+  if (!res.ok) {
+    throw new Error((data.detail as string) || (data.error as string) || 'Request failed');
+  }
+  return data as T;
+}
+
+export const staffApi = {
+  get: <T>(path: string) => staffRequest<T>(path),
+  post: <T>(path: string, body: unknown) =>
+    staffRequest<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+};
 
 export const api = {
   get: <T>(path: string) => request<T>(path),

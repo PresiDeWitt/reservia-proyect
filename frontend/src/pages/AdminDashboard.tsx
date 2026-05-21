@@ -2,64 +2,51 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-
-const PENDING = [
-  { id: 1, name: 'Taberna del Sol', city: 'Sevilla', cuisine: 'Spanish', submitted: 'hace 2h', rating: null },
-  { id: 2, name: 'Ramen Tokio', city: 'Barcelona', cuisine: 'Asian', submitted: 'hace 5h', rating: null },
-  { id: 3, name: 'La Brasserie', city: 'Granada', cuisine: 'French', submitted: 'ayer', rating: null },
-  { id: 4, name: 'Green Bowl', city: 'Valencia', cuisine: 'Healthy', submitted: 'hace 3 días', rating: null },
-];
-
-const TOP_RESTAURANTS = [
-  { name: 'Osteria del Borgo', city: 'Granada', bookings: 1240, revenue: '18.400€', rating: 4.9 },
-  { name: 'Le Petit Atelier', city: 'Barcelona', bookings: 980, revenue: '14.200€', rating: 4.8 },
-  { name: 'Sushi Omakase', city: 'Granada', bookings: 870, revenue: '21.600€', rating: 4.9 },
-  { name: 'La Fogata', city: 'Sevilla', bookings: 760, revenue: '9.800€', rating: 4.7 },
-  { name: 'Botín Clásico', city: 'Granada', bookings: 720, revenue: '11.200€', rating: 4.8 },
-];
-
-const CITIES = [
-  { name: 'Granada', restaurants: 512, bookings: 21400, pct: 44 },
-  { name: 'Barcelona', restaurants: 384, bookings: 15800, pct: 32 },
-  { name: 'Valencia', restaurants: 198, bookings: 6200, pct: 13 },
-  { name: 'Sevilla', restaurants: 112, bookings: 3400, pct: 7 },
-  { name: 'Otras', restaurants: 78, bookings: 2120, pct: 4 },
-];
-
-const REVENUE_CHART = [42, 58, 51, 67, 75, 62, 88, 91, 79, 95, 102, 114];
-const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+import { adminApi, type AdminStats, type TopRestaurant, type CityData } from '../api/admin';
+import { STORAGE_KEYS, storage } from '../api/storage';
 
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'restaurants' | 'pending'>('overview');
-  const [pendingItems, setPendingItems] = useState(PENDING);
+  const [activeTab, setActiveTab] = useState<'overview' | 'restaurants'>('overview');
+  const [apiStats, setApiStats] = useState<AdminStats | null>(null);
+  const [topRestaurants, setTopRestaurants] = useState<TopRestaurant[]>([]);
+  const [cities, setCities] = useState<CityData[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleLogout = () => {
-    localStorage.removeItem('reservia_staff_role');
-    localStorage.removeItem('reservia_staff_token');
+    storage.remove(STORAGE_KEYS.STAFF_ROLE);
+    storage.remove(STORAGE_KEYS.STAFF_TOKEN);
     navigate('/staff', { replace: true });
   };
 
   useEffect(() => {
-    const role = localStorage.getItem('reservia_staff_role');
-    const token = localStorage.getItem('reservia_staff_token');
+    const role = storage.get(STORAGE_KEYS.STAFF_ROLE);
+    const token = storage.get(STORAGE_KEYS.STAFF_TOKEN);
     if (role !== 'admin' || !token) {
       navigate('/staff', { replace: true });
+      return;
     }
+    Promise.all([
+      adminApi.stats(),
+      adminApi.topRestaurants(),
+      adminApi.cityDistribution(),
+    ])
+      .then(([stats, top, cityDist]) => {
+        setApiStats(stats);
+        setTopRestaurants(top.restaurants);
+        setCities(cityDist.cities);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [navigate]);
 
-  const PLATFORM_STATS = [
-    { label: t('admin.stats.activeRestaurants'), value: '1.284', delta: '+34', icon: 'storefront', up: true },
-    { label: t('admin.stats.totalBookings'), value: '48.920', delta: '+22%', icon: 'event', up: true },
-    { label: t('admin.stats.registeredUsers'), value: '210.450', delta: '+15%', icon: 'group', up: true },
-    { label: t('admin.stats.netRevenue'), value: '142.000€', delta: '+31%', icon: 'payments', up: true },
-  ];
-
-  const approve = (id: number) => setPendingItems(p => p.filter(r => r.id !== id));
-  const reject = (id: number) => setPendingItems(p => p.filter(r => r.id !== id));
-
-  const maxRevenue = Math.max(...REVENUE_CHART);
+  const platformStats = apiStats ? [
+    { label: t('admin.stats.activeRestaurants'), value: apiStats.totalRestaurants.toLocaleString('es-ES'), icon: 'storefront' },
+    { label: t('admin.stats.totalBookings'), value: apiStats.totalReservations.toLocaleString('es-ES'), icon: 'event' },
+    { label: t('admin.stats.registeredUsers'), value: apiStats.totalUsers.toLocaleString('es-ES'), icon: 'group' },
+    { label: t('admin.stats.netRevenue'), value: `${apiStats.estimatedRevenue.toLocaleString('es-ES')}€`, icon: 'payments' },
+  ] : [];
 
   return (
     <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
@@ -95,38 +82,34 @@ const AdminDashboard: React.FC = () => {
 
         {/* KPIs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }} className="admin-kpi">
-          {PLATFORM_STATS.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
-              style={{
-                padding: '22px 20px', borderRadius: 20,
-                background: i === 0 ? 'var(--navy)' : '#fff',
-                border: '1px solid var(--border)',
-                color: i === 0 ? '#fff' : 'var(--navy)',
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 20, color: i === 0 ? 'rgba(255,255,255,0.7)' : 'var(--primary)', marginBottom: 12, display: 'block' }}>{s.icon}</span>
-              <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', fontFamily: '"Fraunces", serif' }}>{s.value}</div>
-              <div style={{ fontSize: 12, opacity: i === 0 ? 0.7 : undefined, color: i === 0 ? '#fff' : 'var(--ink-55)', marginTop: 4 }}>{s.label}</div>
-              <div style={{
-                marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4,
-                fontSize: 11, fontWeight: 700,
-                color: i === 0 ? 'rgba(255,255,255,0.8)' : 'var(--emerald)',
-                background: i === 0 ? 'rgba(255,255,255,0.15)' : '#ecfdf5',
-                padding: '2px 8px', borderRadius: 999,
-              }}>
-                {s.delta}
-              </div>
-            </motion.div>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ height: 120, borderRadius: 20, background: 'var(--surface-3)', border: '1px solid var(--border)', animation: 'pulse 1.5s infinite' }} />
+              ))
+            : platformStats.map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                  style={{
+                    padding: '22px 20px', borderRadius: 20,
+                    background: i === 0 ? 'var(--navy)' : '#fff',
+                    border: '1px solid var(--border)',
+                    color: i === 0 ? '#fff' : 'var(--navy)',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 20, color: i === 0 ? 'rgba(255,255,255,0.7)' : 'var(--primary)', marginBottom: 12, display: 'block' }}>{s.icon}</span>
+                  <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', fontFamily: '"Fraunces", serif' }}>{s.value}</div>
+                  <div style={{ fontSize: 12, opacity: i === 0 ? 0.7 : undefined, color: i === 0 ? '#fff' : 'var(--ink-55)', marginTop: 4 }}>{s.label}</div>
+                </motion.div>
+              ))
+          }
         </div>
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
-          {([['overview', t('admin.tabs.overview'), 'analytics'], ['restaurants', t('admin.tabs.topRestaurants'), 'workspace_premium'], ['pending', `${t('admin.tabs.pending')} (${pendingItems.length})`, 'pending_actions']] as const).map(([id, label, icon]) => (
+          {([['overview', t('admin.tabs.overview'), 'analytics'], ['restaurants', t('admin.tabs.topRestaurants'), 'workspace_premium']] as const).map(([id, label, icon]) => (
             <button
               key={id}
               onClick={() => setActiveTab(id)}
@@ -148,25 +131,25 @@ const AdminDashboard: React.FC = () => {
         {activeTab === 'overview' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
-              {/* Revenue chart */}
+              {/* Revenue summary */}
               <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 28 }}>
                 <div className="eyebrow" style={{ marginBottom: 4 }}>{t('admin.monthlyRevenue')}</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28 }}>
-                  <div style={{ fontSize: 32, fontWeight: 700, fontFamily: '"Fraunces", serif', letterSpacing: '-0.03em', color: 'var(--ink)' }}>142.000€</div>
-                  <span style={{ padding: '4px 12px', borderRadius: 999, background: '#ecfdf5', color: '#10b981', fontSize: 12, fontWeight: 700 }}>{t('admin.vsLastYear')}</span>
+                  <div style={{ fontSize: 32, fontWeight: 700, fontFamily: '"Fraunces", serif', letterSpacing: '-0.03em', color: 'var(--ink)' }}>
+                    {apiStats ? `${apiStats.estimatedRevenue.toLocaleString('es-ES')}€` : '—'}
+                  </div>
+                  <span style={{ padding: '4px 12px', borderRadius: 999, background: '#ecfdf5', color: '#10b981', fontSize: 12, fontWeight: 700 }}>
+                    {apiStats ? `${apiStats.confirmedReservations} confirmadas` : ''}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 140 }}>
-                  {REVENUE_CHART.map((v, i) => (
-                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                      <div
-                        style={{
-                          width: '100%', borderRadius: '5px 5px 0 0',
-                          height: `${(v / maxRevenue) * 120}px`,
-                          background: i === 11 ? 'var(--primary)' : i >= 8 ? 'var(--navy)' : 'var(--ink-20)',
-                          transition: 'height 0.6s',
-                        }}
-                      />
-                      <span style={{ fontSize: 9, color: 'var(--ink-40)', marginTop: 4 }}>{MONTHS[i]}</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+                  {apiStats && [
+                    ['Cancelaciones', `${apiStats.cancellationRate}%`],
+                    ['Comensales totales', apiStats.totalGuests.toLocaleString('es-ES')],
+                  ].map(([l, v]) => (
+                    <div key={l as string} style={{ padding: '14px 16px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700 }}>{l}</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, marginTop: 4, fontFamily: '"Fraunces", serif' }}>{v}</div>
                     </div>
                   ))}
                 </div>
@@ -175,7 +158,7 @@ const AdminDashboard: React.FC = () => {
               {/* Cities */}
               <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 24 }}>
                 <div className="eyebrow" style={{ marginBottom: 16 }}>{t('admin.cityDistribution')}</div>
-                {CITIES.map(c => (
+                {cities.slice(0, 6).map(c => (
                   <div key={c.name} style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{c.name}</span>
@@ -184,7 +167,7 @@ const AdminDashboard: React.FC = () => {
                     <div style={{ height: 6, background: 'var(--ink-10)', borderRadius: 999, overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${c.pct}%`, background: 'var(--primary)', borderRadius: 999 }} />
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 3 }}>{c.bookings.toLocaleString()} {t('admin.bookingsLabel')} · {c.pct}%</div>
+                    <div style={{ fontSize: 11, color: 'var(--ink-40)', marginTop: 3 }}>{c.totalReservations.toLocaleString()} {t('admin.bookingsLabel')} · {c.pct}%</div>
                   </div>
                 ))}
               </div>
@@ -205,9 +188,11 @@ const AdminDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {TOP_RESTAURANTS.map((r, i) => (
-                    <tr key={r.name}
-                      style={{ borderBottom: i < TOP_RESTAURANTS.length - 1 ? '1px solid var(--border)' : 'none' }}
+                  {loading ? (
+                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)' }}>Cargando...</td></tr>
+                  ) : topRestaurants.map((r, i) => (
+                    <tr key={r.id}
+                      style={{ borderBottom: i < topRestaurants.length - 1 ? '1px solid var(--border)' : 'none' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--cream-2)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
@@ -221,9 +206,9 @@ const AdminDashboard: React.FC = () => {
                         }}>{i + 1}</span>
                       </td>
                       <td style={{ padding: '16px 20px', fontWeight: 700, fontSize: 14, color: 'var(--ink)' }}>{r.name}</td>
-                      <td style={{ padding: '16px 20px', fontSize: 13, color: 'var(--ink-55)' }}>{r.city}</td>
-                      <td style={{ padding: '16px 20px', fontSize: 13, fontWeight: 600 }}>{r.bookings.toLocaleString()}</td>
-                      <td style={{ padding: '16px 20px', fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>{r.revenue}</td>
+                      <td style={{ padding: '16px 20px', fontSize: 13, color: 'var(--ink-55)' }}>{r.location}</td>
+                      <td style={{ padding: '16px 20px', fontSize: 13, fontWeight: 600 }}>{r.totalReservations.toLocaleString()}</td>
+                      <td style={{ padding: '16px 20px', fontSize: 13, fontWeight: 700, color: 'var(--primary)' }}>{r.estimatedRevenue.toLocaleString('es-ES')}€</td>
                       <td style={{ padding: '16px 20px' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary)', fontWeight: 700, fontSize: 13 }}>
                           <span className="material-symbols-outlined" style={{ fontSize: 14, fontVariationSettings: "'FILL' 1" }}>star</span>
@@ -238,73 +223,6 @@ const AdminDashboard: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Pending approvals */}
-        {activeTab === 'pending' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            {pendingItems.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--ink-55)' }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 56, display: 'block', marginBottom: 16, color: 'var(--emerald)' }}>check_circle</span>
-                <p className="editorial" style={{ fontSize: 28, fontWeight: 300 }}>{t('admin.allClear')}</p>
-                <p style={{ fontSize: 14, marginTop: 8 }}>{t('admin.noPending')}</p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {pendingItems.map((r, i) => (
-                  <motion.div
-                    key={r.id}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 16 }}
-                    transition={{ delay: i * 0.05 }}
-                    style={{
-                      background: 'var(--surface-3)', borderRadius: 16,
-                      border: '1px solid var(--border)',
-                      padding: '20px 24px',
-                      display: 'flex', alignItems: 'center', gap: 20,
-                    }}
-                  >
-                    <div style={{
-                      width: 48, height: 48, borderRadius: 12,
-                      background: 'var(--ink-5)',
-                      display: 'grid', placeItems: 'center',
-                      flexShrink: 0,
-                    }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: 24, color: 'var(--primary)' }}>storefront</span>
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)' }}>{r.name}</div>
-                      <div style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 2 }}>
-                        {r.city} · {r.cuisine} · {t('admin.submitted')} {r.submitted}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => reject(r.id)}
-                        style={{
-                          height: 36, padding: '0 16px', borderRadius: 10,
-                          border: '1px solid #fecaca', background: '#fef2f2',
-                          color: '#ef4444', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                        }}
-                      >
-                        {t('admin.reject')}
-                      </button>
-                      <button
-                        onClick={() => approve(r.id)}
-                        style={{
-                          height: 36, padding: '0 16px', borderRadius: 10,
-                          border: 'none', background: 'var(--navy)',
-                          color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                        }}
-                      >
-                        {t('admin.approve')}
-                      </button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-        )}
       </div>
 
       <style>{`

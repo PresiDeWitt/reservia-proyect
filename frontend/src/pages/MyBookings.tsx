@@ -25,6 +25,7 @@ const MyBookings: React.FC = () => {
   }, [isAuthenticated]);
 
   const cancel = async (id: number) => {
+    if (!window.confirm('¿Cancelar esta reserva? Esta acción no se puede deshacer.')) return;
     await reservationsApi.cancel(id);
     setBookings((b) => b.map((r) => (r.id === id ? { ...r, status: 'cancelled' } : r)));
   };
@@ -119,7 +120,8 @@ const MyBookings: React.FC = () => {
                 </Link>
                 <div style={{ marginTop: 6, fontSize: 13, color: 'var(--ink-55)', display: 'flex', gap: 14, flexWrap: 'wrap' }}>
                   <span>
-                    <span className="mat" style={{ fontSize: 14, verticalAlign: 'middle' }}>event</span> {b.date}
+                    <span className="mat" style={{ fontSize: 14, verticalAlign: 'middle' }}>event</span>{' '}
+                    {new Date(b.date + 'T12:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                   <span>
                     <span className="mat" style={{ fontSize: 14, verticalAlign: 'middle' }}>schedule</span> {b.time}

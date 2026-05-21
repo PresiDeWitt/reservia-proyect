@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { restaurantsApi, type Restaurant } from '../api/restaurants';
+import { restaurantsApi, type Restaurant, type Review, type ReviewsResponse } from '../api/restaurants';
 import ReservationWidget from '../components/ReservationWidget';
 import AuthModal from '../components/AuthModal';
+import { useAuth } from '../context/AuthContext';
 
 type TabKey = 'about' | 'menu' | 'reviews' | 'info';
 
@@ -19,8 +20,34 @@ const FACT_KEYS = [
   { i: 'wifi', k: 'wifi' },
 ];
 
+const StarInput: React.FC<{ value: number; onChange: (n: number) => void }> = ({ value, onChange }) => {
+  const [hover, setHover] = useState(0);
+  return (
+    <div style={{ display: 'flex', gap: 4 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHover(n)}
+          onMouseLeave={() => setHover(0)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          <span
+            className="mat mat-fill"
+            style={{ fontSize: 28, color: n <= (hover || value) ? 'var(--primary)' : 'var(--ink-20)', transition: 'color 0.1s' }}
+          >
+            star
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
 const RestaurantDetails: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,10 +55,63 @@ const RestaurantDetails: React.FC = () => {
   const [authOpen, setAuthOpen] = useState(false);
   const [favorite, setFavorite] = useState(false);
 
+  const [reviewsData, setReviewsData] = useState<ReviewsResponse | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
   useEffect(() => {
     if (!id) return;
     restaurantsApi.get(id).then(setRestaurant).catch(console.error).finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!user || !id) return;
+    restaurantsApi.favorites().then((data) => {
+      setFavorite(data.favorites.some((r) => r.id === id));
+    }).catch(() => {});
+  }, [user, id]);
+
+  const handleToggleFavorite = () => {
+    if (!id) return;
+    const numId = parseInt(id, 10);
+    if (favorite) {
+      restaurantsApi.removeFavorite(numId).catch(() => {});
+      setFavorite(false);
+    } else {
+      restaurantsApi.addFavorite(numId).catch(() => {});
+      setFavorite(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!id || tab !== 'reviews') return;
+    restaurantsApi.reviews(id).then(setReviewsData).catch(console.error);
+  }, [id, tab, user]);
+
+  const handleSubmitReview = async () => {
+    if (!id || reviewRating === 0) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const review = await restaurantsApi.createReview(id, reviewRating, reviewComment);
+      setReviewsData((prev) =>
+        prev
+          ? { ...prev, reviews: [review, ...prev.reviews], can_review: false, has_reviewed: true }
+          : prev,
+      );
+      setReviewComment('');
+      setReviewRating(5);
+      // Refresh restaurant rating
+      restaurantsApi.get(id).then(setRestaurant).catch(() => {});
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      setSubmitError(msg || t('restaurantDetail.reviewForm.error'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -130,7 +210,7 @@ const RestaurantDetails: React.FC = () => {
               </span>
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 32, flexWrap: 'wrap' }}>
-              <button onClick={() => setFavorite((v) => !v)} className="btn btn-dark">
+              <button onClick={handleToggleFavorite} className="btn btn-dark">
                 <span className={`mat ${favorite ? 'mat-fill' : ''}`} style={{ fontSize: 16, color: favorite ? 'var(--primary)' : 'inherit' }}>
                   favorite
                 </span>
@@ -273,10 +353,11 @@ const RestaurantDetails: React.FC = () => {
 
           {tab === 'reviews' && (
             <div key="reviews" className="tab-content">
+              {/* Aggregate score */}
               <div
                 style={{
                   display: 'flex',
-                  gap: 48,
+                  gap: 32,
                   alignItems: 'center',
                   padding: 24,
                   background: 'var(--surface-3)',
@@ -286,10 +367,7 @@ const RestaurantDetails: React.FC = () => {
                 }}
               >
                 <div>
-                  <div
-                    className="editorial mono-num"
-                    style={{ fontSize: 72, fontWeight: 300, lineHeight: 1 }}
-                  >
+                  <div className="editorial mono-num" style={{ fontSize: 72, fontWeight: 300, lineHeight: 1 }}>
                     {restaurant.rating.toFixed(1)}
                   </div>
                   <div style={{ display: 'flex', gap: 2, marginTop: 6 }}>
@@ -297,10 +375,7 @@ const RestaurantDetails: React.FC = () => {
                       <span
                         key={n}
                         className="mat mat-fill"
-                        style={{
-                          fontSize: 16,
-                          color: n <= Math.round(restaurant.rating) ? 'var(--primary)' : 'var(--ink-20)',
-                        }}
+                        style={{ fontSize: 16, color: n <= Math.round(restaurant.rating) ? 'var(--primary)' : 'var(--ink-20)' }}
                       >
                         star
                       </span>
@@ -310,28 +385,137 @@ const RestaurantDetails: React.FC = () => {
                     {restaurant.reviewsCount} {t('restaurantDetail.reviews')}
                   </div>
                 </div>
-                <div style={{ flex: 1, minWidth: 240 }}>
-                  {([
-                    ['food', 4.9],
-                    ['service', 4.8],
-                    ['ambience', 4.7],
-                    ['value', 4.5],
-                  ] as [string, number][]).map(([k, v]) => (
-                    <div key={k} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                      <div style={{ fontSize: 12, width: 140, color: 'var(--ink-55)' }}>{t(`restaurantDetail.reviewCategories.${k}`)}</div>
-                      <div style={{ flex: 1, height: 6, background: 'var(--ink-5)', borderRadius: 999, overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${((v as number) / 5) * 100}%`, background: 'var(--primary)' }} />
+              </div>
+
+              {/* Write a review */}
+              {user && reviewsData?.can_review && (
+                <div
+                  style={{
+                    marginTop: 24,
+                    padding: 24,
+                    background: 'var(--surface-3)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--r-md)',
+                  }}
+                >
+                  <div className="eyebrow" style={{ marginBottom: 16 }}>{t('restaurantDetail.reviewForm.title')}</div>
+                  <StarInput value={reviewRating} onChange={setReviewRating} />
+                  <textarea
+                    value={reviewComment}
+                    onChange={(e) => setReviewComment(e.target.value)}
+                    placeholder={t('restaurantDetail.reviewForm.placeholder')}
+                    rows={3}
+                    style={{
+                      marginTop: 14,
+                      width: '100%',
+                      padding: '12px 14px',
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--r-md)',
+                      fontSize: 14,
+                      color: 'var(--ink)',
+                      resize: 'vertical',
+                      fontFamily: 'inherit',
+                    }}
+                  />
+                  {submitError && (
+                    <p style={{ color: 'var(--danger, #e53e3e)', fontSize: 13, marginTop: 8 }}>{submitError}</p>
+                  )}
+                  <button
+                    onClick={handleSubmitReview}
+                    disabled={submitting || reviewRating === 0}
+                    className="btn btn-primary"
+                    style={{ marginTop: 14 }}
+                  >
+                    {submitting ? t('restaurantDetail.reviewForm.publishing') : t('restaurantDetail.reviewForm.publish')}
+                  </button>
+                </div>
+              )}
+
+              {user && reviewsData?.has_reviewed && (
+                <p style={{ marginTop: 24, color: 'var(--ink-55)', fontSize: 14 }}>
+                  {t('restaurantDetail.reviewForm.alreadyReviewed')}
+                </p>
+              )}
+
+              {!user && (
+                <p style={{ marginTop: 24, color: 'var(--ink-55)', fontSize: 14 }}>
+                  <button
+                    onClick={() => setAuthOpen(true)}
+                    style={{ color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700 }}
+                  >
+                    {t('restaurantDetail.reviewForm.loginLink')}
+                  </button>{' '}
+                  {t('restaurantDetail.reviewForm.loginToReview')}
+                </p>
+              )}
+
+              {/* Review list */}
+              {reviewsData && reviewsData.reviews.length > 0 ? (
+                <div style={{ marginTop: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {reviewsData.reviews.map((review: Review) => (
+                    <div
+                      key={review.id}
+                      style={{
+                        padding: 20,
+                        background: 'var(--surface-3)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--r-md)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                        <div
+                          style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            background: 'var(--primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#fff',
+                            fontWeight: 700,
+                            fontSize: 14,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {review.userName.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: 14 }}>{review.userName}</div>
+                          <div style={{ fontSize: 12, color: 'var(--ink-55)' }}>
+                            {new Date(review.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                          </div>
+                        </div>
+                        <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <span
+                              key={n}
+                              className="mat mat-fill"
+                              style={{ fontSize: 14, color: n <= review.rating ? 'var(--primary)' : 'var(--ink-20)' }}
+                            >
+                              star
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                      <div className="mono-num" style={{ fontSize: 12, fontWeight: 700, width: 30, textAlign: 'right' }}>
-                        {v as number}
-                      </div>
+                      {review.comment && (
+                        <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--ink-80, var(--ink))' }}>{review.comment}</p>
+                      )}
                     </div>
                   ))}
                 </div>
-              </div>
-              <p style={{ marginTop: 24, color: 'var(--ink-55)', fontSize: 14 }}>
-                {t('restaurantDetail.reviewsVerified')}
-              </p>
+              ) : reviewsData ? (
+                <p style={{ marginTop: 24, color: 'var(--ink-55)', fontSize: 14 }}>
+                  {t('restaurantDetail.reviewsVerified')}
+                </p>
+              ) : (
+                <div style={{ marginTop: 24 }}>
+                  {[1, 2].map((n) => (
+                    <div key={n} className="shimmer" style={{ height: 90, borderRadius: 'var(--r-md)', marginBottom: 12 }} />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

@@ -2,42 +2,30 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-
-interface TableSeat {
-  id: string;
-  x: number;
-  z: number;
-  seats: number;
-  zone: 'main' | 'terrace' | 'private';
-  available: boolean;
-}
-
-const TABLES: TableSeat[] = [
-  { id: 'M1', x: -3, z: -3, seats: 2, zone: 'main', available: true },
-  { id: 'M2', x: 0, z: -3, seats: 4, zone: 'main', available: true },
-  { id: 'M3', x: 3, z: -3, seats: 2, zone: 'main', available: false },
-  { id: 'M4', x: -3, z: 0, seats: 4, zone: 'main', available: true },
-  { id: 'M5', x: 0, z: 0, seats: 6, zone: 'main', available: true },
-  { id: 'M6', x: 3, z: 0, seats: 2, zone: 'main', available: true },
-  { id: 'T1', x: -3, z: 4, seats: 2, zone: 'terrace', available: true },
-  { id: 'T2', x: 0, z: 4, seats: 4, zone: 'terrace', available: true },
-  { id: 'T3', x: 3, z: 4, seats: 2, zone: 'terrace', available: false },
-  { id: 'P1', x: 6, z: -1, seats: 8, zone: 'private', available: true },
-];
-
-const ZONE_SUPPLEMENT: Record<TableSeat['zone'], number> = {
-  main: 0,
-  terrace: 5,
-  private: 15,
-};
+import { useTranslation } from 'react-i18next';
+import { restaurantsApi } from '../api/restaurants';
+import type { TableData } from '../api/restaurants';
 
 const FloorPlan3D: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const mountRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
+  const selectedRef = useRef<string[]>([]);
+  const [tables, setTables] = useState<TableData[]>([]);
+  const [loadingTables, setLoadingTables] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
+    restaurantsApi.tables(id)
+      .then((res) => setTables(res.tables))
+      .catch(() => setTables([]))
+      .finally(() => setLoadingTables(false));
+  }, [id]);
+
+  useEffect(() => {
+    if (loadingTables || tables.length === 0) return;
     const mount = mountRef.current;
     if (!mount) return;
 
@@ -125,33 +113,35 @@ const FloorPlan3D: React.FC = () => {
     });
 
     // Tables
-    const tableMeshes: { mesh: THREE.Mesh; data: TableSeat }[] = [];
-    TABLES.forEach((tableData) => {
-      const isSquare = tableData.seats >= 4;
+    const tableMeshes: { mesh: THREE.Mesh; data: TableData }[] = [];
+    tables.forEach((tableData) => {
+      const tableId = String(tableData.id);
+      const isSquare = tableData.capacity >= 4;
       const tableGeom = isSquare
         ? new THREE.BoxGeometry(1.6, 0.1, 1.2)
         : new THREE.CylinderGeometry(0.6, 0.6, 0.1, 24);
       const baseColor = tableData.available ? 0x6b3a1f : 0x444444;
       const tableMat = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.6 });
       const mesh = new THREE.Mesh(tableGeom, tableMat);
-      mesh.position.set(tableData.x, 0.85, tableData.z);
+      mesh.position.set(tableData.posX, 0.85, tableData.posY);
+      mesh.rotation.y = tableData.rotation;
       mesh.castShadow = true;
-      mesh.userData = { id: tableData.id, available: tableData.available };
+      mesh.userData = { id: tableId, available: tableData.available };
       scene.add(mesh);
 
       // Leg
       const legGeom = new THREE.CylinderGeometry(0.08, 0.08, 0.85, 12);
       const leg = new THREE.Mesh(legGeom, tableMat);
-      leg.position.set(tableData.x, 0.4, tableData.z);
+      leg.position.set(tableData.posX, 0.4, tableData.posY);
       scene.add(leg);
 
       // Chairs
-      const chairCount = tableData.seats;
+      const chairCount = Math.min(tableData.capacity, 8);
       for (let i = 0; i < chairCount; i++) {
         const angle = (i / chairCount) * Math.PI * 2;
         const r = isSquare ? 1.0 : 0.95;
-        const cx = tableData.x + Math.cos(angle) * r;
-        const cz = tableData.z + Math.sin(angle) * r;
+        const cx = tableData.posX + Math.cos(angle) * r;
+        const cz = tableData.posY + Math.sin(angle) * r;
         const chair = new THREE.Mesh(
           new THREE.BoxGeometry(0.4, 0.5, 0.4),
           new THREE.MeshStandardMaterial({ color: 0x1a1108, roughness: 0.7 }),
@@ -214,10 +204,14 @@ const FloorPlan3D: React.FC = () => {
       const meshes = tableMeshes.map((t) => t.mesh);
       const hits = raycaster.intersectObjects(meshes);
       if (hits.length > 0) {
-        const id = hits[0].object.userData.id as string;
+        const tableId = hits[0].object.userData.id as string;
         const avail = hits[0].object.userData.available as boolean;
         if (avail) {
-          setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+          const next = selectedRef.current.includes(tableId)
+            ? selectedRef.current.filter((x) => x !== tableId)
+            : [...selectedRef.current, tableId];
+          selectedRef.current = next;
+          setSelected(next);
         }
       }
     };
@@ -243,7 +237,8 @@ const FloorPlan3D: React.FC = () => {
       const t = performance.now() * 0.002;
       tableMeshes.forEach(({ mesh, data }) => {
         const mat = mesh.material as THREE.MeshStandardMaterial;
-        if (selected.includes(data.id)) {
+        const tableId = String(data.id);
+        if (selectedRef.current.includes(tableId)) {
           mat.emissive = new THREE.Color(0xf97415);
           mat.emissiveIntensity = 0.5 + Math.sin(t * 3) * 0.2;
         } else if (data.available) {
@@ -273,13 +268,24 @@ const FloorPlan3D: React.FC = () => {
         }
       });
     };
-  }, [selected]);
+  }, [tables, loadingTables]);
 
-  const selectedTables = TABLES.filter((t) => selected.includes(t.id));
-  const totalSupplement = selectedTables.reduce((sum, t) => sum + ZONE_SUPPLEMENT[t.zone], 0);
+  const selectedTables = tables.filter((t) => selected.includes(String(t.id)));
+  const totalSupplement = selectedTables.reduce((sum, t) => sum + t.supplement, 0);
 
   return (
     <div style={{ position: 'relative', minHeight: '100vh', background: 'var(--espresso)', marginTop: -88, paddingTop: 88 }}>
+      {loadingTables && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 30,
+          display: 'grid', placeItems: 'center', background: 'var(--espresso)',
+        }}>
+          <div style={{ color: 'var(--cream)', textAlign: 'center' }}>
+            <div className="spin" style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: 'var(--primary)', display: 'inline-block' }} />
+            <div style={{ marginTop: 16, fontSize: 14 }}>{t('floorPlan.loading')}</div>
+          </div>
+        </div>
+      )}
       <div ref={mountRef} style={{ width: '100%', height: 'calc(100vh - 88px)', cursor: 'grab' }} />
 
       {/* Top bar */}
@@ -301,12 +307,12 @@ const FloorPlan3D: React.FC = () => {
           className="btn btn-dark"
         >
           <span className="mat" style={{ fontSize: 16 }}>arrow_back</span>
-          <span>Volver</span>
+          <span>{t('floorPlan.back')}</span>
         </Link>
         <div style={{ textAlign: 'center' }}>
-          <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>Plano en vivo</div>
+          <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>{t('floorPlan.eyebrow')}</div>
           <div className="editorial" style={{ fontSize: 22, fontWeight: 400 }}>
-            Elige tu <span className="italic-accent">mesa</span>
+            {t('floorPlan.title')} <span className="italic-accent">{t('floorPlan.titleAccent')}</span>
           </div>
         </div>
         <div style={{ width: 100 }} />
@@ -328,11 +334,11 @@ const FloorPlan3D: React.FC = () => {
         }}
         className="hide-sm"
       >
-        <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>Leyenda</div>
+        <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>{t('floorPlan.legend')}</div>
         <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#6b3a1f', borderRadius: 2, marginRight: 6 }} /> Disponible</span>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#f97415', borderRadius: 2, marginRight: 6 }} /> Seleccionada</span>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#444', borderRadius: 2, marginRight: 6 }} /> Ocupada</span>
+          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#6b3a1f', borderRadius: 2, marginRight: 6 }} /> {t('floorPlan.available')}</span>
+          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#f97415', borderRadius: 2, marginRight: 6 }} /> {t('floorPlan.selected')}</span>
+          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#444', borderRadius: 2, marginRight: 6 }} /> {t('floorPlan.taken')}</span>
         </div>
       </div>
 
@@ -358,7 +364,7 @@ const FloorPlan3D: React.FC = () => {
           >
             <div className="container" style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
               <div style={{ flex: 1 }}>
-                <div className="eyebrow">Mesas seleccionadas</div>
+                <div className="eyebrow">{t('floorPlan.selectedTables')}</div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
                   {selectedTables.map((t) => (
                     <span
@@ -366,14 +372,14 @@ const FloorPlan3D: React.FC = () => {
                       className="chip active"
                       style={{ background: 'var(--primary)', color: '#fff', borderColor: 'var(--primary)' }}
                     >
-                      {t.id} · {t.seats}p · {t.zone}
+                      {t.label} · {t.capacity}p · {t.zone}
                     </span>
                   ))}
                 </div>
               </div>
               {totalSupplement > 0 && (
                 <div style={{ textAlign: 'right' }}>
-                  <div className="eyebrow">Suplemento</div>
+                  <div className="eyebrow">{t('floorPlan.supplement')}</div>
                   <div className="mono-num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--primary)' }}>
                     +€{totalSupplement}
                   </div>
@@ -384,7 +390,7 @@ const FloorPlan3D: React.FC = () => {
                 className="btn btn-primary"
                 style={{ height: 52, padding: '0 28px' }}
               >
-                <span>Confirmar selección</span>
+                <span>{t('floorPlan.confirmSelection')}</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
               </button>
             </div>

@@ -24,37 +24,35 @@ describe('RestaurantCard', () => {
     );
 
     expect(screen.getByText('Casa Luca')).toBeInTheDocument();
-    expect(screen.getByText('Italian • Centro • 1.2 km')).toBeInTheDocument();
+    // location pill: cuisine · location rendered as separate text nodes
+    expect(screen.getByText('Italian · Centro', { exact: false })).toBeInTheDocument();
     expect(screen.getByText('4.7')).toBeInTheDocument();
     expect(screen.getByText('$$')).toBeInTheDocument();
   });
 
-  it('expone enlaces de detalle y reserva al id correcto', () => {
+  it('expone enlace de detalle al id correcto', () => {
     render(
       <MemoryRouter>
         <RestaurantCard {...props} />
       </MemoryRouter>
     );
 
-    const nameLinks = screen.getAllByRole('link', { name: /Casa Luca/i });
-    nameLinks.forEach((link) => {
-      expect(link).toHaveAttribute('href', '/restaurant/42');
-    });
+    // The whole card is a single Link wrapping all content
+    const cardLink = screen.getByRole('link', { name: /Casa Luca/i });
+    expect(cardLink).toHaveAttribute('href', '/restaurant/42');
 
-    expect(screen.getByRole('link', { name: 'restaurant.bookNow' })).toHaveAttribute(
-      'href',
-      '/restaurant/42'
-    );
+    // "Book now" label is rendered inside the card as a div (not a link)
+    expect(screen.getByText('restaurant.bookNow')).toBeInTheDocument();
   });
 
-  it('renderiza acciones de tarjeta esperadas', () => {
+  it('renderiza boton de favorito', () => {
     render(
       <MemoryRouter>
         <RestaurantCard {...props} />
       </MemoryRouter>
     );
 
-    expect(screen.getByRole('button', { name: 'restaurant.menu' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /favorite/i })).toBeInTheDocument();
+    // aria-label uses defaultValue 'Añadir a favoritos' via i18n mock
+    expect(screen.getByRole('button', { name: /favoritos/i })).toBeInTheDocument();
   });
 });

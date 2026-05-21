@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { reservationsApi } from '../../src/api/reservations';
 import { AuthProvider } from '../../src/context/AuthContext';
@@ -44,11 +44,14 @@ const sampleReservation = {
 };
 
 describe('MyBookings flow', () => {
+  beforeEach(() => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+  });
   it('muestra mensaje de login cuando no hay sesion', async () => {
     mockedMyReservations.mockResolvedValue([]);
     renderMyBookings();
 
-    expect(await screen.findByText('Sign in to see your bookings.')).toBeInTheDocument();
+    expect(await screen.findByText('bookings.loginMessage')).toBeInTheDocument();
     expect(mockedMyReservations).not.toHaveBeenCalled();
   });
 
@@ -86,7 +89,10 @@ describe('MyBookings flow', () => {
       expect(mockedCancel).toHaveBeenCalledWith(10);
     });
 
-    expect(screen.getByText('bookings.cancelled')).toBeInTheDocument();
+    // cancelled bookings move out of 'upcoming' filter — switch to see them
+    await user.click(screen.getByRole('button', { name: 'bookings.filterCancelled' }));
+
+    expect(await screen.findByText('bookings.cancelled')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'bookings.cancel' })).not.toBeInTheDocument();
   });
 });

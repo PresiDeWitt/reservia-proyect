@@ -33,7 +33,7 @@ class RestaurantsApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['total'], 3)
-        names = [item['name'] for item in response.data['restaurants']]
+        names = [item['name'] for item in response.data['items']]
         self.assertEqual(names, ['Sushi House', 'La Brasa', 'Pasta Roma'])
 
     def test_list_search_matches_name_cuisine_or_location(self):
@@ -42,19 +42,19 @@ class RestaurantsApiTests(APITestCase):
         by_location = self.client.get('/api/restaurants/?search=salamanca')
 
         self.assertEqual(by_name.data['total'], 1)
-        self.assertEqual(by_name.data['restaurants'][0]['name'], 'Sushi House')
+        self.assertEqual(by_name.data['items'][0]['name'], 'Sushi House')
 
         self.assertEqual(by_cuisine.data['total'], 1)
-        self.assertEqual(by_cuisine.data['restaurants'][0]['name'], 'Pasta Roma')
+        self.assertEqual(by_cuisine.data['items'][0]['name'], 'Pasta Roma')
 
         self.assertEqual(by_location.data['total'], 1)
-        self.assertEqual(by_location.data['restaurants'][0]['name'], 'La Brasa')
+        self.assertEqual(by_location.data['items'][0]['name'], 'La Brasa')
 
     def test_list_cuisine_filter_is_case_insensitive(self):
         response = self.client.get('/api/restaurants/?cuisine=jApAnEsE')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['total'], 1)
-        self.assertEqual(response.data['restaurants'][0]['name'], 'Sushi House')
+        self.assertEqual(response.data['items'][0]['name'], 'Sushi House')
 
     def test_cuisines_endpoint_returns_unique_sorted_values(self):
         response = self.client.get('/api/restaurants/cuisines/')
@@ -74,14 +74,14 @@ class RestaurantsApiTests(APITestCase):
 
     def test_list_schema_contains_expected_keys(self):
         response = self.client.get('/api/restaurants/')
-        restaurant = response.data['restaurants'][0]
+        restaurant = response.data['items'][0]
 
         expected = {
             'id',
             'name',
             'cuisine',
             'location',
-            'distance',
+            'distance_km',
             'rating',
             'priceRange',
             'address',

@@ -22,3 +22,7 @@ class LoginRateThrottle(IPBasedRateThrottle):
 
 class ChatRateThrottle(IPBasedRateThrottle):
     scope = 'chat'
+
+
+class PasswordResetRateThrottle(IPBasedRateThrottle):
+    scope = 'password_reset'

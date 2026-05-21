@@ -1,12 +1,16 @@
+from datetime import date, time
+
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from tests.factories import create_restaurant, create_user
+from tests.factories import create_restaurant, create_slot, create_table, create_user
 
 
 class SmokeSystemTests(APITestCase):
     def setUp(self):
         self.restaurant = create_restaurant()
+        table = create_table(self.restaurant, capacity=4)
+        create_slot(table, slot_date=date(2026, 10, 21), slot_time=time(21, 0))
 
     def test_public_endpoints_are_reachable(self):
         list_response = self.client.get('/api/restaurants/')
@@ -54,6 +58,13 @@ class SmokeSystemTests(APITestCase):
 
         self.assertEqual(login.status_code, status.HTTP_200_OK)
         self.assertIn('token', login.data)
+
+    def test_health_endpoint_returns_ok(self):
+        response = self.client.get('/api/health/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'ok')
+        self.assertEqual(response.data['database'], 'connected')
+        self.assertIn('timestamp', response.data)
 
     def test_authenticated_user_can_create_and_read_own_reservation_smoke(self):
         user = create_user(email='smoke-reservation@example.com')

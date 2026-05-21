@@ -34,7 +34,21 @@
     "noResults": "No se encontraron restaurantes. Prueba con otra búsqueda.",
     "platformLabel": "En la plataforma",
     "restaurantsLabel": "restaurantes",
-    "platformSub": "Disponibles ahora mismo"
+    "platformSub": "Disponibles ahora mismo",
+    "steps": {
+      "discover": {
+        "title": "Descubre",
+        "desc": "Pregunta a la IA por un ambiente, no por un nombre. Te proponemos mesas con criterio editorial."
+      },
+      "book": {
+        "title": "Reserva",
+        "desc": "Dos toques y confirmado. Sin formularios, sin llamadas, sin fricción."
+      },
+      "enjoy": {
+        "title": "Disfruta",
+        "desc": "Llegas, te sientas, comes. Si hay cambios, te avisamos. Si no, silencio, como debe ser."
+      }
+    }
   },
   "restaurant": {
     "realTime": "Tiempo real",
@@ -106,6 +120,16 @@
       "accessible": "Accesible",
       "pets": "Pet friendly",
       "wifi": "Wi-Fi"
+    },
+    "reviewForm": {
+      "title": "Tu reseña",
+      "placeholder": "Comparte tu experiencia…",
+      "publishing": "Publicando…",
+      "publish": "Publicar reseña",
+      "error": "Error al publicar la reseña",
+      "alreadyReviewed": "Ya has publicado una reseña para este restaurante.",
+      "loginLink": "Inicia sesión",
+      "loginToReview": "para dejar una reseña tras tu visita."
     }
   },
   "reservation": {
@@ -133,6 +157,7 @@
     "confirm": "Confirmar reserva",
     "cancelPolicy": "Sin cargo por ahora. Solo un depósito de €10/pers si cancelas con menos de 4h.",
     "loginRequired": "Entra para finalizar la reserva",
+    "pastTimeError": "No puedes reservar una hora que ya ha pasado.",
     "tableConfirmed": "Mesa confirmada",
     "seeYou": "Te esperamos",
     "occasionOptions": {
@@ -167,11 +192,11 @@
     "links": {
       "explore": "Explorar restaurantes",
       "tableMap": "Mapa de mesas",
-      "experiences": "Experiencias",
+      "experiences": "Mis favoritos",
       "mobileApp": "App móvil",
       "giftCards": "Tarjetas regalo",
       "joinReservia": "Únete a ReserVia",
-      "managementPanel": "Panel de gestión",
+      "managementPanel": "Panel de propietario",
       "pos": "POS integrado",
       "successCases": "Casos de éxito",
       "pricing": "Precios",
@@ -355,11 +380,74 @@
     "welcome": "¡Hola! Pregúntame y te ayudo a encontrar el restaurante ideal según tu cocina favorita, el ambiente, el presupuesto o tu ubicación.",
     "placeholder": "Ej: italiano romántico para esta noche",
     "error": "Lo siento, algo salió mal. Inténtalo de nuevo.",
+    "notConfigured": "El asistente de IA no está disponible en este momento. Configura OPENROUTER_API_KEY para activarlo.",
     "locationOn": "Ubicación activada",
     "locationOff": "Activar ubicación para sugerencias cercanas",
     "suggestions": {
       "romantic": "Cena romántica con buen vino",
       "group": "Mesa para grupo con ambiente animado"
     }
+  },
+  "floorPlan": {
+    "loading": "Cargando plano...",
+    "back": "Volver",
+    "eyebrow": "Plano en vivo",
+    "title": "Elige tu",
+    "titleAccent": "mesa",
+    "legend": "Leyenda",
+    "available": "Disponible",
+    "selected": "Seleccionada",
+    "taken": "Ocupada",
+    "selectedTables": "Mesas seleccionadas",
+    "supplement": "Suplemento",
+    "confirmSelection": "Confirmar selección"
+  },
+  "bookingError": {
+    "back": "Atrás",
+    "noAvailability": {
+      "eyebrow": "Sin disponibilidad",
+      "title": "Esa mesa",
+      "titleAccent": "se nos escapó",
+      "hint": "Otro comensal se adelantó. Pero hay 280+ mesas más esperándote esta noche.",
+      "cta": "Buscar otra mesa"
+    },
+    "paymentFailed": {
+      "eyebrow": "Pago no procesado",
+      "title": "El pago",
+      "titleAccent": "no pasó",
+      "hint": "Revisa los datos de tu tarjeta o prueba con otra forma de pago.",
+      "cta": "Reintentar"
+    },
+    "notAuthenticated": {
+      "eyebrow": "Acceso requerido",
+      "title": "Identifícate para",
+      "titleAccent": "reservar",
+      "hint": "Necesitamos saber quién eres para confirmar tu mesa.",
+      "cta": "Iniciar sesión"
+    },
+    "cancelled": {
+      "eyebrow": "Reserva cancelada",
+      "title": "Hemos liberado",
+      "titleAccent": "tu mesa",
+      "hint": "Esperamos verte pronto. Cuando quieras, prueba con otra fecha.",
+      "cta": "Volver a explorar"
+    }
+  },
+  "resetPassword": {
+    "title": "Nueva",
+    "titleAccent": "contraseña",
+    "invalidLink": "Enlace inválido o incompleto.",
+    "backHome": "Volver al inicio",
+    "passwordUpdated": "Contraseña actualizada",
+    "redirecting": "Redirigiendo al inicio…",
+    "newPasswordLabel": "Nueva contraseña",
+    "newPasswordPlaceholder": "Mínimo 8 caracteres",
+    "confirmPasswordLabel": "Confirmar contraseña",
+    "confirmPasswordPlaceholder": "Repite la contraseña",
+    "saving": "Guardando…",
+    "setPassword": "Establecer contraseña",
+    "errorMinLength": "La contraseña debe tener al menos 8 caracteres.",
+    "errorMismatch": "Las contraseñas no coinciden.",
+    "errorInvalid": "Enlace inválido o expirado. Solicita uno nuevo."
   }
 }

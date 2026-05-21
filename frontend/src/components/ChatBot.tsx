@@ -45,11 +45,11 @@ const ChatBot: React.FC = () => {
     try {
       const reply = await chatApi.send(text, newMessages.slice(-10), location ?? undefined);
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: 'assistant', content: t('chat.error') },
-      ]);
+    } catch (err) {
+      const msg = err instanceof Error && err.message.toLowerCase().includes('not configured')
+        ? t('chat.notConfigured')
+        : t('chat.error');
+      setMessages((prev) => [...prev, { role: 'assistant', content: msg }]);
     } finally {
       setLoading(false);
     }

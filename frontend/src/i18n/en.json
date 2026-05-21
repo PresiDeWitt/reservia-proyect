@@ -34,7 +34,21 @@
     "noResults": "No restaurants found. Try a different search.",
     "platformLabel": "On the platform",
     "restaurantsLabel": "restaurants",
-    "platformSub": "Available right now"
+    "platformSub": "Available right now",
+    "steps": {
+      "discover": {
+        "title": "Discover",
+        "desc": "Ask the AI about a vibe, not a name. We suggest tables with editorial criteria."
+      },
+      "book": {
+        "title": "Book",
+        "desc": "Two taps and confirmed. No forms, no calls, no friction."
+      },
+      "enjoy": {
+        "title": "Enjoy",
+        "desc": "You arrive, you sit, you eat. If there are changes, we'll tell you. If not, silence — as it should be."
+      }
+    }
   },
   "restaurant": {
     "realTime": "Real-time",
@@ -106,6 +120,16 @@
       "accessible": "Accessible",
       "pets": "Pet friendly",
       "wifi": "Wi-Fi"
+    },
+    "reviewForm": {
+      "title": "Your review",
+      "placeholder": "Share your experience…",
+      "publishing": "Publishing…",
+      "publish": "Publish review",
+      "error": "Error publishing the review",
+      "alreadyReviewed": "You've already published a review for this restaurant.",
+      "loginLink": "Log in",
+      "loginToReview": "to leave a review after your visit."
     }
   },
   "reservation": {
@@ -133,6 +157,7 @@
     "confirm": "Confirm booking",
     "cancelPolicy": "No charge now. Only a €10/person deposit if cancelled less than 4h before.",
     "loginRequired": "Log in to complete the booking",
+    "pastTimeError": "You can't book a time that has already passed.",
     "tableConfirmed": "Table confirmed",
     "seeYou": "We'll see you there",
     "occasionOptions": {
@@ -167,11 +192,11 @@
     "links": {
       "explore": "Explore restaurants",
       "tableMap": "Table map",
-      "experiences": "Experiences",
+      "experiences": "My favourites",
       "mobileApp": "Mobile app",
       "giftCards": "Gift cards",
       "joinReservia": "Join ReserVia",
-      "managementPanel": "Management panel",
+      "managementPanel": "Owner dashboard",
       "pos": "Integrated POS",
       "successCases": "Success stories",
       "pricing": "Pricing",
@@ -355,11 +380,74 @@
     "welcome": "Hi! Ask me to find a restaurant for you. I can help based on cuisine, mood, budget or your location.",
     "placeholder": "e.g. Romantic Italian for tonight...",
     "error": "Sorry, something went wrong. Please try again.",
+    "notConfigured": "The AI assistant is not available right now. Set OPENROUTER_API_KEY to enable it.",
     "locationOn": "Location enabled",
     "locationOff": "Enable location for nearby suggestions",
     "suggestions": {
       "romantic": "Romantic dinner with good wine",
       "group": "Table for a group with lively vibe"
     }
+  },
+  "floorPlan": {
+    "loading": "Loading floor plan...",
+    "back": "Back",
+    "eyebrow": "Live floor plan",
+    "title": "Choose your",
+    "titleAccent": "table",
+    "legend": "Legend",
+    "available": "Available",
+    "selected": "Selected",
+    "taken": "Taken",
+    "selectedTables": "Selected tables",
+    "supplement": "Supplement",
+    "confirmSelection": "Confirm selection"
+  },
+  "bookingError": {
+    "back": "Back",
+    "noAvailability": {
+      "eyebrow": "No availability",
+      "title": "That table",
+      "titleAccent": "slipped away",
+      "hint": "Another diner got there first. But there are 280+ more tables waiting for you tonight.",
+      "cta": "Find another table"
+    },
+    "paymentFailed": {
+      "eyebrow": "Payment not processed",
+      "title": "The payment",
+      "titleAccent": "didn't go through",
+      "hint": "Check your card details or try another payment method.",
+      "cta": "Try again"
+    },
+    "notAuthenticated": {
+      "eyebrow": "Access required",
+      "title": "Log in to",
+      "titleAccent": "book",
+      "hint": "We need to know who you are to confirm your table.",
+      "cta": "Log in"
+    },
+    "cancelled": {
+      "eyebrow": "Booking cancelled",
+      "title": "We've released",
+      "titleAccent": "your table",
+      "hint": "Hope to see you soon. Whenever you're ready, try another date.",
+      "cta": "Explore again"
+    }
+  },
+  "resetPassword": {
+    "title": "New",
+    "titleAccent": "password",
+    "invalidLink": "Invalid or incomplete link.",
+    "backHome": "Back to home",
+    "passwordUpdated": "Password updated",
+    "redirecting": "Redirecting to home…",
+    "newPasswordLabel": "New password",
+    "newPasswordPlaceholder": "Minimum 8 characters",
+    "confirmPasswordLabel": "Confirm password",
+    "confirmPasswordPlaceholder": "Repeat your password",
+    "saving": "Saving…",
+    "setPassword": "Set password",
+    "errorMinLength": "Password must be at least 8 characters.",
+    "errorMismatch": "Passwords don't match.",
+    "errorInvalid": "Invalid or expired link. Request a new one."
   }
 }

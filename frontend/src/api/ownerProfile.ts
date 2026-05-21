@@ -7,17 +7,11 @@ export interface OwnerProfile {
   description?: string;
 }
 
-const KEY = 'reservia_owner_profiles';
+import { STORAGE_KEYS, storage } from './storage';
 
 type Map = Record<string, OwnerProfile>;
 
-const read = (): Map => {
-  try {
-    return JSON.parse(localStorage.getItem(KEY) || '{}');
-  } catch {
-    return {};
-  }
-};
+const read = (): Map => storage.getJSON<Map>(STORAGE_KEYS.OWNER_PROFILES) ?? {};
 
 export const getOwnerProfile = (email: string): OwnerProfile | null =>
   read()[email.toLowerCase()] ?? null;
@@ -25,5 +19,5 @@ export const getOwnerProfile = (email: string): OwnerProfile | null =>
 export const setOwnerProfile = (email: string, profile: OwnerProfile) => {
   const map = read();
   map[email.toLowerCase()] = profile;
-  localStorage.setItem(KEY, JSON.stringify(map));
+  storage.setJSON(STORAGE_KEYS.OWNER_PROFILES, map);
 };

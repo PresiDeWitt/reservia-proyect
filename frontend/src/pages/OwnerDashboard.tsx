@@ -5,15 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { getOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
 import OwnerOnboarding from '../components/OwnerOnboarding';
-
-const RESERVATIONS = [
-  { id: 1, name: 'Elena Martínez', guests: 4, time: '13:00', date: 'Hoy', status: 'confirmed', table: 'A2' },
-  { id: 2, name: 'Javier Ruiz', guests: 2, time: '14:00', date: 'Hoy', status: 'pending', table: 'B1' },
-  { id: 3, name: 'Sara López', guests: 6, time: '20:30', date: 'Hoy', status: 'confirmed', table: 'C3' },
-  { id: 4, name: 'Marco Ferreira', guests: 3, time: '21:00', date: 'Hoy', status: 'confirmed', table: 'A4' },
-  { id: 5, name: 'Ana García', guests: 2, time: '21:30', date: 'Hoy', status: 'cancelled', table: 'B2' },
-  { id: 6, name: 'Luis Moreno', guests: 5, time: '22:00', date: 'Hoy', status: 'pending', table: 'D1' },
-];
+import { ownerApi, type OwnerStats, type OwnerReservation } from '../api/owner';
+import { STORAGE_KEYS, storage } from '../api/storage';
 
 const FLOOR = [
   { id: 'A1', x: 8, y: 10, w: 14, h: 14, status: 'free', cap: 2 },
@@ -29,32 +22,7 @@ const FLOOR = [
   { id: 'D1', x: 82, y: 20, w: 14, h: 60, status: 'free', cap: 10 },
 ];
 
-const HEATMAP = [55, 70, 85, 60, 45, 90, 75, 80, 65, 50, 40, 35];
-const HOURS = ['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
-
-// Daily-deterministic pseudo-random based on date+capacity, so stats refresh each day.
-const dailySeed = (capacity: number) => {
-  const today = new Date().toISOString().slice(0, 10);
-  let h = 0;
-  for (const c of today + capacity) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return () => { h = (h * 1664525 + 1013904223) >>> 0; return (h % 1000) / 1000; };
-};
-
-const buildStats = (capacity: number, labels: { reservations: string; guests: string; cancellations: string; revenue: string }) => {
-  const r = dailySeed(capacity);
-  const occupancy = 0.6 + r() * 0.35;
-  const reservas = Math.round(capacity * occupancy * 0.6);
-  const comensales = Math.round(capacity * occupancy);
-  const cancelaciones = Math.max(0, Math.round(reservas * (0.02 + r() * 0.08)));
-  const ingresos = Math.round(comensales * (32 + r() * 18));
-  const dPct = (n: number) => `${n >= 0 ? '+' : ''}${n}%`;
-  return [
-    { label: labels.reservations, value: String(reservas), delta: dPct(Math.round(r() * 20 - 5)), icon: 'event', up: true },
-    { label: labels.guests, value: String(comensales), delta: dPct(Math.round(r() * 15 - 3)), icon: 'group', up: true },
-    { label: labels.cancellations, value: String(cancelaciones), delta: `-${Math.round(r() * 3)}`, icon: 'event_busy', up: false },
-    { label: labels.revenue, value: `${ingresos.toLocaleString('es-ES')}€`, delta: dPct(Math.round(r() * 25 - 5)), icon: 'payments', up: true },
-  ];
-};
+const ALL_HOURS = ['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
 
 const statusColor: Record<string, string> = {
   confirmed: 'var(--emerald)',
@@ -82,22 +50,37 @@ const OwnerDashboard: React.FC = () => {
   );
   const [activeTab, setActiveTab] = useState<'reservations' | 'floor' | 'heatmap'>('reservations');
   const [filter, setFilter] = useState('all');
-
   const [editing, setEditing] = useState(false);
+  const [apiStats, setApiStats] = useState<OwnerStats | null>(null);
+  const [reservations, setReservations] = useState<OwnerReservation[]>([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [loadingRes, setLoadingRes] = useState(true);
 
   const handleLogout = () => {
-    localStorage.removeItem('reservia_staff_role');
-    localStorage.removeItem('reservia_staff_token');
+    storage.remove(STORAGE_KEYS.STAFF_ROLE);
+    storage.remove(STORAGE_KEYS.STAFF_TOKEN);
     navigate('/staff', { replace: true });
   };
 
   useEffect(() => {
-    const role = localStorage.getItem('reservia_staff_role');
-    const token = localStorage.getItem('reservia_staff_token');
+    const role = storage.get(STORAGE_KEYS.STAFF_ROLE);
+    const token = storage.get(STORAGE_KEYS.STAFF_TOKEN);
     if (role !== 'owner' || !token) {
       navigate('/staff', { replace: true });
+      return;
     }
+    ownerApi.stats()
+      .then(setApiStats)
+      .catch(() => {})
+      .finally(() => setLoadingStats(false));
   }, [navigate]);
+
+  useEffect(() => {
+    ownerApi.reservations({ status: filter })
+      .then((r) => setReservations(r.reservations))
+      .catch(() => setReservations([]))
+      .finally(() => setLoadingRes(false));
+  }, [filter]);
 
   if (!profile && user?.email) {
     return <OwnerOnboarding email={user.email} initialName={user.name} onDone={setProfile} />;
@@ -113,24 +96,29 @@ const OwnerDashboard: React.FC = () => {
     );
   }
 
-  const stats = buildStats(profile?.capacity ?? 40, {
-    reservations: t('owner.stats.reservations'),
-    guests: t('owner.stats.guests'),
-    cancellations: t('owner.stats.cancellations'),
-    revenue: t('owner.stats.revenue'),
-  });
+  const restName = apiStats?.restaurantName ?? profile?.name ?? t('owner.yourRestaurant');
+  const restCuisine = apiStats?.restaurantCuisine ?? profile?.cuisine ?? '';
+  const [firstWord, ...restWords] = restName.split(' ');
+  const restRest = restWords.join(' ');
+
+  const stats = loadingStats || !apiStats ? [] : [
+    { label: t('owner.stats.reservations'), value: String(apiStats.totalReservations), icon: 'event', up: true },
+    { label: t('owner.stats.guests'), value: String(apiStats.totalGuests), icon: 'group', up: true },
+    { label: t('owner.stats.cancellations'), value: String(apiStats.cancelledReservations), icon: 'event_busy', up: false },
+    { label: t('owner.stats.avgGuests'), value: String(apiStats.avgGuests), icon: 'person', up: true },
+  ];
+
   const statusLabel: Record<string, string> = {
     confirmed: t('owner.status.confirmed'),
     pending: t('owner.status.pending'),
     cancelled: t('owner.status.cancelled'),
   };
 
-  const restName = profile?.name ?? t('owner.yourRestaurant');
-  const restCuisine = profile?.cuisine ?? '';
-  const [firstWord, ...restWords] = restName.split(' ');
-  const restRest = restWords.join(' ');
-
-  const filtered = filter === 'all' ? RESERVATIONS : RESERVATIONS.filter(r => r.status === filter);
+  const heatmapData = ALL_HOURS.map((h) => {
+    const entry = apiStats?.hourDistribution?.find((d) => String(d.hour) === h);
+    return entry?.count ?? 0;
+  });
+  const maxCount = Math.max(...heatmapData, 1);
 
   return (
     <div style={{ background: 'var(--surface)', minHeight: '100vh', padding: '48px 24px 96px' }}>
@@ -178,33 +166,28 @@ const OwnerDashboard: React.FC = () => {
 
         {/* KPIs */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }} className="kpi-grid">
-          {stats.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.07 }}
-              style={{
-                padding: '22px 20px', borderRadius: 20,
-                background: 'var(--surface-3)', border: '1px solid var(--border)',
-                position: 'relative', overflow: 'hidden',
-              }}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--primary)', marginBottom: 12, display: 'block' }}>{s.icon}</span>
-              <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--ink)', fontFamily: '"Fraunces", serif' }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: 'var(--ink-55)', marginTop: 4 }}>{s.label}</div>
-              <div style={{
-                marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4,
-                fontSize: 11, fontWeight: 700,
-                color: s.up ? 'var(--emerald)' : 'var(--ruby)',
-                background: s.up ? '#ecfdf5' : '#fef2f2',
-                padding: '2px 8px', borderRadius: 999,
-              }}>
-                <span className="material-symbols-outlined" style={{ fontSize: 12 }}>{s.up ? 'trending_up' : 'trending_down'}</span>
-                {s.delta}
-              </div>
-            </motion.div>
-          ))}
+          {loadingStats
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ height: 120, borderRadius: 20, background: 'var(--surface-3)', border: '1px solid var(--border)', animation: 'pulse 1.5s infinite' }} />
+              ))
+            : stats.map((s, i) => (
+                <motion.div
+                  key={s.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.07 }}
+                  style={{
+                    padding: '22px 20px', borderRadius: 20,
+                    background: 'var(--surface-3)', border: '1px solid var(--border)',
+                    position: 'relative', overflow: 'hidden',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 20, color: 'var(--primary)', marginBottom: 12, display: 'block' }}>{s.icon}</span>
+                  <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em', color: 'var(--ink)', fontFamily: '"Fraunces", serif' }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-55)', marginTop: 4 }}>{s.label}</div>
+                </motion.div>
+              ))
+          }
         </div>
 
         {/* Tabs */}
@@ -261,8 +244,12 @@ const OwnerDashboard: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((r, i) => (
-                    <tr key={r.id} style={{ borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.15s' }}
+                  {loadingRes ? (
+                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>Cargando...</td></tr>
+                  ) : reservations.length === 0 ? (
+                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>Sin reservas</td></tr>
+                  ) : reservations.map((r, i) => (
+                    <tr key={r.id} style={{ borderBottom: i < reservations.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.15s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--cream-2)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                     >
@@ -276,26 +263,21 @@ const OwnerDashboard: React.FC = () => {
                           {r.guests}
                         </span>
                       </td>
-                      <td style={{ padding: '14px 16px', fontWeight: 700, fontSize: 13, color: 'var(--ink)' }}>{r.time}</td>
+                      <td style={{ padding: '14px 16px', fontWeight: 700, fontSize: 13, color: 'var(--ink)' }}>{r.time} · {r.date}</td>
                       <td style={{ padding: '14px 16px' }}>
                         <span style={{
                           padding: '3px 10px', borderRadius: 999,
-                          background: `${statusColor[r.status]}22`,
-                          color: statusColor[r.status],
+                          background: `${statusColor[r.status] ?? 'var(--ink-20)'}22`,
+                          color: statusColor[r.status] ?? 'var(--ink-55)',
                           fontSize: 11, fontWeight: 700,
                         }}>
-                          {statusLabel[r.status]}
+                          {statusLabel[r.status] ?? r.status}
                         </span>
                       </td>
                       <td style={{ padding: '14px 16px' }}>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {r.status === 'pending' && (
-                            <button style={{ height: 30, padding: '0 12px', borderRadius: 8, border: 'none', background: '#ecfdf5', color: '#10b981', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>{t('owner.table.confirm')}</button>
-                          )}
-                          <button style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--ink-55)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: 14 }}>more_horiz</span>
-                          </button>
-                        </div>
+                        <button style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--ink-55)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>more_horiz</span>
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -363,30 +345,42 @@ const OwnerDashboard: React.FC = () => {
               <div className="eyebrow" style={{ marginBottom: 6 }}>{t('owner.heatmap.title')}</div>
               <p style={{ fontSize: 14, color: 'var(--ink-55)', marginBottom: 28 }}>{t('owner.heatmap.subtitle')}</p>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 200 }}>
-                {HEATMAP.map((v, i) => (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: v > 75 ? 'var(--primary)' : 'var(--ink-55)' }}>{v}%</span>
-                    <div
-                      style={{
-                        width: '100%', borderRadius: '6px 6px 0 0',
-                        height: `${v * 1.6}px`,
-                        background: v > 75 ? 'var(--primary)' : v > 50 ? 'var(--navy)' : 'var(--ink-20)',
-                        transition: 'height 0.5s',
-                        opacity: v > 75 ? 1 : 0.7,
-                      }}
-                    />
-                    <span style={{ fontSize: 10, color: 'var(--ink-40)', marginTop: 4 }}>{HOURS[i]}h</span>
-                  </div>
-                ))}
+                {heatmapData.map((v, i) => {
+                  const pct = maxCount > 0 ? Math.round(v / maxCount * 100) : 0;
+                  return (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: pct > 75 ? 'var(--primary)' : 'var(--ink-55)' }}>{v > 0 ? v : ''}</span>
+                      <div
+                        style={{
+                          width: '100%', borderRadius: '6px 6px 0 0',
+                          height: `${Math.max(4, pct * 1.6)}px`,
+                          background: pct > 75 ? 'var(--primary)' : pct > 40 ? 'var(--navy)' : 'var(--ink-20)',
+                          transition: 'height 0.5s',
+                          opacity: pct > 0 ? 1 : 0.3,
+                        }}
+                      />
+                      <span style={{ fontSize: 10, color: 'var(--ink-40)', marginTop: 4 }}>{ALL_HOURS[i]}h</span>
+                    </div>
+                  );
+                })}
               </div>
-              <div style={{ marginTop: 24, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {[[t('owner.heatmap.peak'), '20h — 90%'], [t('owner.heatmap.quiet'), '16h — 35%'], [t('owner.heatmap.average'), '65%']].map(([l, v]) => (
-                  <div key={l} style={{ padding: '12px 18px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--surface-2)' }}>
-                    <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700, marginBottom: 4 }}>{l}</div>
-                    <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Fraunces", serif' }}>{v}</div>
-                  </div>
-                ))}
-              </div>
+              {apiStats && (
+                <div style={{ marginTop: 24, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                  {(() => {
+                    const peakEntry = apiStats.hourDistribution.reduce((a, b) => (a.count > b.count ? a : b), { hour: 0, count: 0 });
+                    return [
+                      [t('owner.heatmap.peak'), peakEntry.count > 0 ? `${peakEntry.hour}h — ${peakEntry.count} res.` : '—'],
+                      [t('owner.heatmap.average'), apiStats.avgGuests + ' ' + t('owner.heatmap.guestsAvg')],
+                      [t('owner.heatmap.cancellationRate'), apiStats.cancellationRate + '%'],
+                    ].map(([l, v]) => (
+                      <div key={l as string} style={{ padding: '12px 18px', borderRadius: 12, border: '1px solid var(--border)', background: 'var(--surface-2)' }}>
+                        <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700, marginBottom: 4 }}>{l}</div>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)', fontFamily: '"Fraunces", serif' }}>{v}</div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              )}
             </div>
           </motion.div>
         )}

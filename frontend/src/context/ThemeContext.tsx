@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { STORAGE_KEYS, storage } from '../api/storage';
 
 type Theme = 'light' | 'dark';
 
@@ -10,11 +11,9 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
-const KEY = 'reservia_theme';
-
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const stored = localStorage.getItem(KEY) as Theme | null;
+    const stored = storage.get(STORAGE_KEYS.THEME) as Theme | null;
     if (stored === 'light' || stored === 'dark') return stored;
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
@@ -22,7 +21,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
-    localStorage.setItem(KEY, theme);
+    storage.set(STORAGE_KEYS.THEME, theme);
   }, [theme]);
 
   const toggle = () => setThemeState((t) => (t === 'dark' ? 'light' : 'dark'));

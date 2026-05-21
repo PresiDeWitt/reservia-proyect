@@ -25,10 +25,10 @@ Reservia requiere variables de entorno tanto para el ==backend (Django)== como p
 > | Variable | Requerida | Descripción |
 > |----------|:---------:|-------------|
 > | SECRET_KEY | ✅ | Clave secreta de Django para firmas criptográficas |
-> | ANTHROPIC_API_KEY | ✅ | Clave API de Anthropic para el chatbot IA |
+> | OPENROUTER_API_KEY | ✅ | Clave API de OpenRouter para el chatbot IA |
 >
 > **Ejemplo SECRET_KEY:** django-insecure-... (==cambiar en producción==)
-> **Ejemplo ANTHROPIC_API_KEY:** sk-ant-api03-...
+> **Ejemplo OPENROUTER_API_KEY:** sk-or-...
 
 > [!info] 🌐 Red y Hosts
 >
@@ -92,7 +92,7 @@ Reservia requiere variables de entorno tanto para el ==backend (Django)== como p
 >
 > **Para generar una clave segura:** ejecutar el utilitario get_random_secret_key de Django desde la consola de Python.
 
-> [!warning] ⚠️ ANTHROPIC_API_KEY
+> [!warning] ⚠️ OPENROUTER_API_KEY
 > Esta clave tiene ==costo asociado por uso==. No compartirla públicamente ni incluirla en commits. Rotarla si se expone accidentalmente.
 
 ---
@@ -107,7 +107,7 @@ Reservia requiere variables de entorno tanto para el ==backend (Django)== como p
 > - 🐛 **DEBUG** → ==False== (siempre en producción)
 > - 🌐 **ALLOWED_HOSTS** → *.railway.app,reservia.up.railway.app
 > - 🗄️ **DATABASE_URL** → ==autogenerado por Railway== si usas su plugin PostgreSQL
-> - 🤖 **ANTHROPIC_API_KEY** → tu clave de API
+> - 🤖 **OPENROUTER_API_KEY** → tu clave de API
 > - 🔗 **CORS_ALLOWED_ORIGINS** → https://tu-dominio.railway.app
 >
 > Ver [[Railway Deployment]] para más detalles del despliegue.

@@ -218,18 +218,26 @@ const Confirmation: React.FC = () => {
               <div className="mono-num" style={{ marginTop: 6, fontFamily: 'monospace', fontSize: 24, letterSpacing: '0.4em' }}>
                 {code}
               </div>
-              <div style={{ marginTop: 12, display: 'flex', gap: 1, justifyContent: 'center', height: 36 }}>
-                {Array.from({ length: 60 }).map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: i % 3 === 0 ? 3 : 1,
-                      height: '100%',
-                      background: 'var(--surface)',
-                      opacity: ((i * 13) % 7) > 1 ? 1 : 0.3,
-                    }}
-                  />
-                ))}
+              {/* Barcode encoding: quiet zone + each char as 7-bit ASCII + quiet zone */}
+              <div style={{ marginTop: 12, display: 'flex', gap: 0, justifyContent: 'center', height: 40, padding: '0 8px' }}>
+                {/* quiet zone start */}
+                <div style={{ width: 6, height: '100%' }} />
+                {code.split('').flatMap((ch, ci) =>
+                  ch.charCodeAt(0).toString(2).padStart(7, '0').split('').map((bit, bi) => (
+                    <div
+                      key={`${ci}-${bi}`}
+                      style={{
+                        width: 2,
+                        height: bit === '1' ? '100%' : '70%',
+                        alignSelf: 'flex-end',
+                        background: bit === '1' ? '#fff' : 'rgba(255,255,255,0.18)',
+                        borderRadius: '1px 1px 0 0',
+                      }}
+                    />
+                  ))
+                )}
+                {/* quiet zone end */}
+                <div style={{ width: 6, height: '100%' }} />
               </div>
             </div>
 

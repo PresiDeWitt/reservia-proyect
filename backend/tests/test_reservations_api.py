@@ -1,10 +1,13 @@
-from datetime import date, timedelta
+from datetime import date, time, timedelta
 
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from api.models import Reservation
-from tests.factories import create_reservation, create_restaurant, create_user
+from tests.factories import create_reservation, create_restaurant, create_slot, create_table, create_user
+
+TOMORROW = date.today() + timedelta(days=1)
+RES_TIME = time(20, 30)
 
 
 class ReservationApiTests(APITestCase):
@@ -12,11 +15,13 @@ class ReservationApiTests(APITestCase):
         self.user = create_user(email='cliente@example.com', first_name='Cliente')
         self.other_user = create_user(email='otro@example.com', first_name='Otro')
         self.restaurant = create_restaurant()
+        self.table = create_table(self.restaurant, capacity=4)
+        self.slot = create_slot(self.table, slot_date=TOMORROW, slot_time=RES_TIME)
 
     def _payload(self, guests=2):
         return {
             'restaurantId': self.restaurant.id,
-            'date': (date.today() + timedelta(days=1)).isoformat(),
+            'date': TOMORROW.isoformat(),
             'time': '20:30:00',
             'guests': guests,
         }

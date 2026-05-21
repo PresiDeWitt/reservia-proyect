@@ -21,33 +21,15 @@ def env_bool(name: str, default: bool) -> bool:
     )
 
 
-_raw_secret = os.environ.get("SECRET_KEY", "")
-_default_secret = (
-    "reservia-dev-local-key-change-this-before-production-2026-safe-fallback"
-)
-SECRET_KEY = _raw_secret if _raw_secret else _default_secret
-
 # DEBUG should be False in production
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-_is_mgmt = any(
-    cmd in sys.argv
-    for cmd in [
-        "migrate",
-        "collectstatic",
-        "makemigrations",
-        "shell",
-        "dbshell",
-        "createsuperuser",
-        "seed",
-        "runserver",
-    ]
-)
-if not DEBUG and not IS_TEST and not _is_mgmt and SECRET_KEY == _default_secret:
-    raise RuntimeError(
-        "SECRET_KEY must be set via environment variable in production. "
-        "The default key is not allowed when DEBUG=False."
-    )
+SECRET_KEY = os.environ.get("SECRET_KEY", "")
+if not SECRET_KEY:
+    if DEBUG or IS_TEST:
+        SECRET_KEY = "reservia-dev-local-key-2026-not-for-production"
+    else:
+        raise RuntimeError("SECRET_KEY environment variable is required.")
 
 # ALLOWED_HOSTS for Railway and local development
 _allowed = os.environ.get(
@@ -191,6 +173,7 @@ REST_FRAMEWORK = {
         "register": os.environ.get("DRF_THROTTLE_REGISTER", "20/hour"),
         "login": os.environ.get("DRF_THROTTLE_LOGIN", "30/hour"),
         "chat": os.environ.get("DRF_THROTTLE_CHAT", "60/hour"),
+        "password_reset": os.environ.get("DRF_THROTTLE_PASSWORD_RESET", "5/hour"),
     },
 }
 
@@ -206,10 +189,7 @@ SIMPLE_JWT = {
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 
 # Google OAuth
-GOOGLE_CLIENT_ID = os.environ.get(
-    "GOOGLE_CLIENT_ID",
-    "352082109619-btd5099um4joj644ig10rhg7nk03nibi.apps.googleusercontent.com",
-)
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 # CORS — allow the Vite dev server, Docker, and Railway
 _cors = os.environ.get(
@@ -218,3 +198,28 @@ _cors = os.environ.get(
 )
 CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors.split(",")]
 CORS_ALLOW_CREDENTIALS = True
+
+# Email — console in dev, SMTP in production via env vars
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "ReserVia <noreply@reservia.app>")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+
+REDIS_URL = os.environ.get("REDIS_URL", "")
+
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            },
+        }
+    }
