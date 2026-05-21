@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
@@ -6,6 +6,7 @@ import Hero from '../components/Hero';
 import CategoryCard from '../components/CategoryCard';
 import RestaurantCard from '../components/RestaurantCard';
 import { restaurantsApi, type Restaurant } from '../api/restaurants';
+import { useAuth } from '../context/AuthContext';
 
 import italianImg from '../assets/images/cuisine_italian_pasta_1769099701383.png';
 import sushiImg from '../assets/images/cuisine_sushi_platter_1769099717268.png';
@@ -25,12 +26,14 @@ const CATEGORIES = [
 
 const Home: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [total, setTotal] = useState(0);
   const [loadedQueryKey, setLoadedQueryKey] = useState<string | null>(null);
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
 
   const search = searchParams.get('search') || '';
   const cuisine = searchParams.get('cuisine') || '';
@@ -58,6 +61,24 @@ const Home: React.FC = () => {
       if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, [search, cuisine, queryKey]);
+
+  useEffect(() => {
+    if (!user) { setFavoriteIds(new Set()); return; }
+    restaurantsApi.favorites().then((data) => {
+      setFavoriteIds(new Set(data.favorites.map((r) => r.id)));
+    }).catch(() => {});
+  }, [user]);
+
+  const handleToggleFavorite = useCallback((id: string) => {
+    const numId = parseInt(id, 10);
+    if (favoriteIds.has(id)) {
+      restaurantsApi.removeFavorite(numId).catch(() => {});
+      setFavoriteIds((prev) => { const next = new Set(prev); next.delete(id); return next; });
+    } else {
+      restaurantsApi.addFavorite(numId).catch(() => {});
+      setFavoriteIds((prev) => new Set(prev).add(id));
+    }
+  }, [favoriteIds]);
 
   const handleCategoryClick = (key: string) => {
     const params = new URLSearchParams();
@@ -263,6 +284,8 @@ const Home: React.FC = () => {
                       cuisine={t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })}
                       featured={isFeatured}
                       tonight={3 + (parseInt(rest.id, 10) % 5)}
+                      isFavorite={favoriteIds.has(rest.id)}
+                      onToggleFavorite={user ? handleToggleFavorite : undefined}
                     />
                   </div>
                 );
@@ -272,6 +295,8 @@ const Home: React.FC = () => {
                   key={rest.id}
                   {...rest}
                   cuisine={t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })}
+                  isFavorite={favoriteIds.has(rest.id)}
+                  onToggleFavorite={user ? handleToggleFavorite : undefined}
                 />
               ))}
             </div>
@@ -404,24 +429,9 @@ const Home: React.FC = () => {
             }}
           >
             {[
-              {
-                n: '01',
-                t: 'Descubre',
-                d: 'Pregunta a la IA por un ambiente, no por un nombre. Te proponemos mesas con criterio editorial.',
-                i: 'auto_awesome',
-              },
-              {
-                n: '02',
-                t: 'Reserva',
-                d: 'Dos toques y confirmado. Sin formularios, sin llamadas, sin fricción.',
-                i: 'touch_app',
-              },
-              {
-                n: '03',
-                t: 'Disfruta',
-                d: 'Llegas, te sientas, comes. Si hay cambios, te avisamos. Si no, silencio, como debe ser.',
-                i: 'restaurant',
-              },
+              { n: '01', key: 'discover', i: 'auto_awesome' },
+              { n: '02', key: 'book', i: 'touch_app' },
+              { n: '03', key: 'enjoy', i: 'restaurant' },
             ].map((step) => (
               <div
                 key={step.n}
@@ -446,10 +456,10 @@ const Home: React.FC = () => {
                     letterSpacing: '-0.02em',
                   }}
                 >
-                  {step.t}
+                  {t(`home.steps.${step.key}.title`)}
                 </h3>
                 <p style={{ fontSize: 14, color: 'var(--ink-55)', lineHeight: 1.6, marginTop: 10 }}>
-                  {step.d}
+                  {t(`home.steps.${step.key}.desc`)}
                 </p>
               </div>
             ))}
