@@ -355,6 +355,7 @@
     "welcome": "Hi! Ask me to find a restaurant for you. I can help based on cuisine, mood, budget or your location.",
     "placeholder": "e.g. Romantic Italian for tonight...",
     "error": "Sorry, something went wrong. Please try again.",
+    "notConfigured": "The AI assistant is not available right now. Set OPENROUTER_API_KEY to enable it.",
     "locationOn": "Location enabled",
     "locationOff": "Enable location for nearby suggestions",
     "suggestions": {

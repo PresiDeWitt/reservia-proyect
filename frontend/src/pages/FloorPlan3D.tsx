@@ -10,6 +10,7 @@ const FloorPlan3D: React.FC = () => {
   const navigate = useNavigate();
   const mountRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
+  const selectedRef = useRef<string[]>([]);
   const [tables, setTables] = useState<TableData[]>([]);
   const [loadingTables, setLoadingTables] = useState(true);
 
@@ -201,10 +202,14 @@ const FloorPlan3D: React.FC = () => {
       const meshes = tableMeshes.map((t) => t.mesh);
       const hits = raycaster.intersectObjects(meshes);
       if (hits.length > 0) {
-        const id = hits[0].object.userData.id as string;
+        const tableId = hits[0].object.userData.id as string;
         const avail = hits[0].object.userData.available as boolean;
         if (avail) {
-          setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+          const next = selectedRef.current.includes(tableId)
+            ? selectedRef.current.filter((x) => x !== tableId)
+            : [...selectedRef.current, tableId];
+          selectedRef.current = next;
+          setSelected(next);
         }
       }
     };
@@ -231,7 +236,7 @@ const FloorPlan3D: React.FC = () => {
       tableMeshes.forEach(({ mesh, data }) => {
         const mat = mesh.material as THREE.MeshStandardMaterial;
         const tableId = String(data.id);
-        if (selected.includes(tableId)) {
+        if (selectedRef.current.includes(tableId)) {
           mat.emissive = new THREE.Color(0xf97415);
           mat.emissiveIntensity = 0.5 + Math.sin(t * 3) * 0.2;
         } else if (data.available) {
@@ -261,7 +266,7 @@ const FloorPlan3D: React.FC = () => {
         }
       });
     };
-  }, [selected, tables, loadingTables]);
+  }, [tables, loadingTables]);
 
   const selectedTables = tables.filter((t) => selected.includes(String(t.id)));
   const totalSupplement = selectedTables.reduce((sum, t) => sum + t.supplement, 0);
