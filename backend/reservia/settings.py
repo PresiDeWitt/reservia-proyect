@@ -9,6 +9,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Cargar variables de entorno del directorio raíz si existe
+env_root = BASE_DIR.parent / ".env"
+if env_root.exists():
+    load_dotenv(env_root)
+
 IS_TEST = any(arg.startswith("test") for arg in sys.argv)
 
 

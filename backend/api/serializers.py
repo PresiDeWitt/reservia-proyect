@@ -1,6 +1,15 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import Restaurant, MenuItem, Reservation
+from .models import (
+    Restaurant,
+    MenuItem,
+    Reservation,
+    RestaurantTable,
+    AvailabilitySlot,
+    Favorite,
+    Review,
+    Notification,
+)
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -67,6 +76,27 @@ class RestaurantDetailSerializer(RestaurantListSerializer):
         fields = RestaurantListSerializer.Meta.fields + ['description', 'menuItems']
 
 
+class RestaurantTableSerializer(serializers.ModelSerializer):
+    posX = serializers.FloatField(source='pos_x')
+    posY = serializers.FloatField(source='pos_y')
+    available = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RestaurantTable
+        fields = ['id', 'label', 'zone', 'capacity', 'supplement', 'posX', 'posY', 'rotation', 'available']
+
+    def get_available(self, obj):
+        return self.context.get('table_availability', {}).get(obj.id, True)
+
+
+class AvailabilitySlotSerializer(serializers.ModelSerializer):
+    tableId = serializers.IntegerField(source='table.id', read_only=True)
+
+    class Meta:
+        model = AvailabilitySlot
+        fields = ['id', 'tableId', 'date', 'time', 'is_available']
+
+
 class ReservationSerializer(serializers.ModelSerializer):
     restaurantId = serializers.PrimaryKeyRelatedField(
         source='restaurant', queryset=Restaurant.objects.all()
@@ -75,13 +105,14 @@ class ReservationSerializer(serializers.ModelSerializer):
     restaurantAddress = serializers.CharField(source='restaurant.address', read_only=True)
     restaurantImage = serializers.URLField(source='restaurant.image_url', read_only=True)
     restaurantCuisine = serializers.CharField(source='restaurant.cuisine', read_only=True)
+    assignedTable = RestaurantTableSerializer(source='assigned_table', read_only=True)
 
     class Meta:
         model = Reservation
         fields = [
             'id', 'restaurantId', 'restaurantName', 'restaurantAddress',
             'restaurantImage', 'restaurantCuisine', 'date', 'time',
-            'guests', 'status', 'created_at',
+            'guests', 'status', 'created_at', 'assignedTable',
         ]
         read_only_fields = ['id', 'status', 'created_at']
 
@@ -89,3 +120,46 @@ class ReservationSerializer(serializers.ModelSerializer):
         if value < 1 or value > 20:
             raise serializers.ValidationError('Guests must be between 1 and 20.')
         return value
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    restaurant = RestaurantListSerializer(read_only=True)
+    restaurantId = serializers.PrimaryKeyRelatedField(
+        source='restaurant', write_only=True, queryset=Restaurant.objects.all()
+    )
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'restaurant', 'restaurantId', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    restaurantId = serializers.PrimaryKeyRelatedField(
+        source='restaurant', write_only=True, queryset=Restaurant.objects.all()
+    )
+    userName = serializers.CharField(source='user.first_name', read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    foodRating = serializers.IntegerField(source='food_rating')
+    serviceRating = serializers.IntegerField(source='service_rating')
+    ambianceRating = serializers.IntegerField(source='ambiance_rating')
+
+    class Meta:
+        model = Review
+        fields = [
+            'id', 'user', 'userName', 'restaurantId', 'rating', 'foodRating',
+            'serviceRating', 'ambianceRating', 'comment', 'createdAt'
+        ]
+        read_only_fields = ['id', 'createdAt']
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    isRead = serializers.BooleanField(source='is_read')
+
+    class Meta:
+        model = Notification
+        fields = ['id', 'type', 'title', 'message', 'isRead', 'createdAt']
+        read_only_fields = ['id', 'type', 'title', 'message', 'createdAt']
+

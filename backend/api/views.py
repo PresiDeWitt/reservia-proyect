@@ -311,7 +311,7 @@ def chat_view(request):
                 "Content-Type": "application/json",
             },
             json={
-                "model": "google/gemma-3-4b-it:free",
+                "model": "openrouter/free",
                 "messages": safe_history,
                 "max_tokens": 400,
             },
