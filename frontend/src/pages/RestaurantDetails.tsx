@@ -67,6 +67,25 @@ const RestaurantDetails: React.FC = () => {
   }, [id]);
 
   useEffect(() => {
+    if (!user || !id) return;
+    restaurantsApi.favorites().then((data) => {
+      setFavorite(data.favorites.some((r) => r.id === id));
+    }).catch(() => {});
+  }, [user, id]);
+
+  const handleToggleFavorite = () => {
+    if (!id) return;
+    const numId = parseInt(id, 10);
+    if (favorite) {
+      restaurantsApi.removeFavorite(numId).catch(() => {});
+      setFavorite(false);
+    } else {
+      restaurantsApi.addFavorite(numId).catch(() => {});
+      setFavorite(true);
+    }
+  };
+
+  useEffect(() => {
     if (!id || tab !== 'reviews') return;
     restaurantsApi.reviews(id).then(setReviewsData).catch(console.error);
   }, [id, tab, user]);
@@ -88,7 +107,7 @@ const RestaurantDetails: React.FC = () => {
       restaurantsApi.get(id).then(setRestaurant).catch(() => {});
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
-      setSubmitError(msg || 'Error al publicar la reseña');
+      setSubmitError(msg || t('restaurantDetail.reviewForm.error'));
     } finally {
       setSubmitting(false);
     }
@@ -191,7 +210,7 @@ const RestaurantDetails: React.FC = () => {
               </span>
             </div>
             <div style={{ display: 'flex', gap: 10, marginTop: 32, flexWrap: 'wrap' }}>
-              <button onClick={() => setFavorite((v) => !v)} className="btn btn-dark">
+              <button onClick={handleToggleFavorite} className="btn btn-dark">
                 <span className={`mat ${favorite ? 'mat-fill' : ''}`} style={{ fontSize: 16, color: favorite ? 'var(--primary)' : 'inherit' }}>
                   favorite
                 </span>
@@ -379,12 +398,12 @@ const RestaurantDetails: React.FC = () => {
                     borderRadius: 'var(--r-md)',
                   }}
                 >
-                  <div className="eyebrow" style={{ marginBottom: 16 }}>Tu reseña</div>
+                  <div className="eyebrow" style={{ marginBottom: 16 }}>{t('restaurantDetail.reviewForm.title')}</div>
                   <StarInput value={reviewRating} onChange={setReviewRating} />
                   <textarea
                     value={reviewComment}
                     onChange={(e) => setReviewComment(e.target.value)}
-                    placeholder="Comparte tu experiencia…"
+                    placeholder={t('restaurantDetail.reviewForm.placeholder')}
                     rows={3}
                     style={{
                       marginTop: 14,
@@ -408,14 +427,14 @@ const RestaurantDetails: React.FC = () => {
                     className="btn btn-primary"
                     style={{ marginTop: 14 }}
                   >
-                    {submitting ? 'Publicando…' : 'Publicar reseña'}
+                    {submitting ? t('restaurantDetail.reviewForm.publishing') : t('restaurantDetail.reviewForm.publish')}
                   </button>
                 </div>
               )}
 
               {user && reviewsData?.has_reviewed && (
                 <p style={{ marginTop: 24, color: 'var(--ink-55)', fontSize: 14 }}>
-                  Ya has publicado una reseña para este restaurante.
+                  {t('restaurantDetail.reviewForm.alreadyReviewed')}
                 </p>
               )}
 
@@ -425,9 +444,9 @@ const RestaurantDetails: React.FC = () => {
                     onClick={() => setAuthOpen(true)}
                     style={{ color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700 }}
                   >
-                    Inicia sesión
+                    {t('restaurantDetail.reviewForm.loginLink')}
                   </button>{' '}
-                  para dejar una reseña tras tu visita.
+                  {t('restaurantDetail.reviewForm.loginToReview')}
                 </p>
               )}
 
