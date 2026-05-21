@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { restaurantsApi } from '../api/restaurants';
 import type { TableData } from '../api/restaurants';
 
 const FloorPlan3D: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const mountRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const selectedRef = useRef<string[]>([]);
@@ -280,7 +282,7 @@ const FloorPlan3D: React.FC = () => {
         }}>
           <div style={{ color: 'var(--cream)', textAlign: 'center' }}>
             <div className="spin" style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: 'var(--primary)', display: 'inline-block' }} />
-            <div style={{ marginTop: 16, fontSize: 14 }}>Cargando plano...</div>
+            <div style={{ marginTop: 16, fontSize: 14 }}>{t('floorPlan.loading')}</div>
           </div>
         </div>
       )}
@@ -305,12 +307,12 @@ const FloorPlan3D: React.FC = () => {
           className="btn btn-dark"
         >
           <span className="mat" style={{ fontSize: 16 }}>arrow_back</span>
-          <span>Volver</span>
+          <span>{t('floorPlan.back')}</span>
         </Link>
         <div style={{ textAlign: 'center' }}>
-          <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>Plano en vivo</div>
+          <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>{t('floorPlan.eyebrow')}</div>
           <div className="editorial" style={{ fontSize: 22, fontWeight: 400 }}>
-            Elige tu <span className="italic-accent">mesa</span>
+            {t('floorPlan.title')} <span className="italic-accent">{t('floorPlan.titleAccent')}</span>
           </div>
         </div>
         <div style={{ width: 100 }} />
@@ -332,11 +334,11 @@ const FloorPlan3D: React.FC = () => {
         }}
         className="hide-sm"
       >
-        <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>Leyenda</div>
+        <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)' }}>{t('floorPlan.legend')}</div>
         <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#6b3a1f', borderRadius: 2, marginRight: 6 }} /> Disponible</span>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#f97415', borderRadius: 2, marginRight: 6 }} /> Seleccionada</span>
-          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#444', borderRadius: 2, marginRight: 6 }} /> Ocupada</span>
+          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#6b3a1f', borderRadius: 2, marginRight: 6 }} /> {t('floorPlan.available')}</span>
+          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#f97415', borderRadius: 2, marginRight: 6 }} /> {t('floorPlan.selected')}</span>
+          <span><span style={{ display: 'inline-block', width: 10, height: 10, background: '#444', borderRadius: 2, marginRight: 6 }} /> {t('floorPlan.taken')}</span>
         </div>
       </div>
 
@@ -362,7 +364,7 @@ const FloorPlan3D: React.FC = () => {
           >
             <div className="container" style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
               <div style={{ flex: 1 }}>
-                <div className="eyebrow">Mesas seleccionadas</div>
+                <div className="eyebrow">{t('floorPlan.selectedTables')}</div>
                 <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
                   {selectedTables.map((t) => (
                     <span
@@ -377,7 +379,7 @@ const FloorPlan3D: React.FC = () => {
               </div>
               {totalSupplement > 0 && (
                 <div style={{ textAlign: 'right' }}>
-                  <div className="eyebrow">Suplemento</div>
+                  <div className="eyebrow">{t('floorPlan.supplement')}</div>
                   <div className="mono-num" style={{ fontSize: 22, fontWeight: 700, color: 'var(--primary)' }}>
                     +€{totalSupplement}
                   </div>
@@ -388,7 +390,7 @@ const FloorPlan3D: React.FC = () => {
                 className="btn btn-primary"
                 style={{ height: 52, padding: '0 28px' }}
               >
-                <span>Confirmar selección</span>
+                <span>{t('floorPlan.confirmSelection')}</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
               </button>
             </div>
