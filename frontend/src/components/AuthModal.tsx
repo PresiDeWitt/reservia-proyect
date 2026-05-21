@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { authApi, type UserRole } from '../api/auth';
+
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 import { setRole, getRole } from '../api/roles';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
@@ -210,217 +212,224 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
 
             {/* ── Form panel (right) ──────────────────────────────── */}
             <section className="relative flex flex-col p-5 sm:p-8 lg:p-12 bg-background-light overflow-y-auto">
-              <div key={mode} className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">
-                    {isRegister ? t('auth.createAccount') : t('auth.signIn')}
-                  </span>
-                  <h3 className="auth-editorial text-navy text-3xl" style={{ fontWeight: 400 }}>
-                    {isRegister ? (
-                      <>Empieza con <em className="italic text-primary">nosotros</em></>
-                    ) : (
-                      <>Hola, <em className="italic text-primary">otra vez</em></>
-                    )}
-                  </h3>
-                </div>
-
-                {/* Segmented tabs */}
-                <div
-                  role="tablist"
-                  className="relative flex bg-navy/5 rounded-full p-1 self-start w-full max-w-sm"
-                >
-                  <motion.div
-                    layout
-                    transition={{ type: 'spring', stiffness: 400, damping: 34 }}
-                    className="absolute inset-y-1 w-[calc(50%-4px)] bg-background-light rounded-full shadow-[0_6px_20px_-6px_rgba(15,23,42,0.2)] ring-1 ring-navy/5"
-                    style={{ left: isRegister ? 'calc(50% + 0px)' : '4px' }}
-                  />
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={!isRegister}
-                    onClick={() => switchMode('login')}
-                    className={`relative z-10 flex-1 h-10 rounded-full text-sm font-semibold tracking-wide transition-colors ${
-                      !isRegister ? 'text-navy' : 'text-navy/50 hover:text-navy/80'
-                    }`}
-                  >
-                    {t('auth.signIn')}
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={isRegister}
-                    onClick={() => switchMode('register')}
-                    className={`relative z-10 flex-1 h-10 rounded-full text-sm font-semibold tracking-wide transition-colors ${
-                      isRegister ? 'text-navy' : 'text-navy/50 hover:text-navy/80'
-                    }`}
-                  >
-                    {t('auth.register')}
-                  </button>
-                </div>
-
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                  {isRegister && (
-                    <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <FloatField
-                          label={t('auth.namePlaceholder')}
-                          icon="person"
-                          type="text"
-                          value={name}
-                          onChange={setName}
-                          autoComplete="given-name"
-                          required
-                        />
-                        <FloatField
-                          label={t('auth.lastNamePlaceholder')}
-                          icon="badge"
-                          type="text"
-                          value={lastName}
-                          onChange={setLastName}
-                          autoComplete="family-name"
-                          required
-                        />
-                      </div>
-                      <FloatField
-                        label={t('auth.phonePlaceholder')}
-                        icon="call"
-                        type="tel"
-                        value={phone}
-                        onChange={setPhone}
-                        autoComplete="tel"
-                        required
-                      />
-                      <div className="flex flex-col gap-2">
-                        <span className="text-[10px] tracking-[0.3em] uppercase font-bold" style={{ color: 'var(--ink-55)' }}>
-                          {t('auth.accountType')}
-                        </span>
-                        <div className="grid grid-cols-2 gap-2">
-                          {([
-                            { v: 'customer', label: t('auth.customer'), icon: 'person' },
-                            { v: 'owner', label: t('auth.restaurant'), icon: 'storefront' },
-                          ] as { v: UserRole; label: string; icon: string }[]).map((opt) => {
-                            const active = role === opt.v;
-                            return (
-                              <button
-                                key={opt.v}
-                                type="button"
-                                onClick={() => setRoleState(opt.v)}
-                                className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all"
-                                style={{
-                                  background: active ? 'var(--primary)' : 'var(--ink-5)',
-                                  color: active ? '#fff' : 'var(--ink)',
-                                  border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
-                                }}
-                              >
-                                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{opt.icon}</span>
-                                <span className="text-xs font-semibold">{opt.label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  <FloatField
-                    label={t('auth.emailPlaceholder')}
-                    icon="mail"
-                    type="email"
-                    value={email}
-                    onChange={setEmail}
-                    autoComplete="email"
-                    required
-                  />
-                  <FloatField
-                    label={t('auth.passwordPlaceholder')}
-                    icon="lock"
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={setPassword}
-                    autoComplete={isRegister ? 'new-password' : 'current-password'}
-                    required
-                    minLength={6}
-                    trailing={
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword((v) => !v)}
-                        aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
-                        className="text-navy/40 hover:text-navy transition-colors"
-                      >
-                        <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
-                          {showPassword ? 'visibility_off' : 'visibility'}
-                        </span>
-                      </button>
-                    }
-                  />
-
-                  <AnimatePresence>
-                    {error && (
-                      <motion.div
-                        role="alert"
-                        aria-live="polite"
-                        initial={{ opacity: 0, y: -6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3.5 py-2.5"
-                      >
-                        <span className="material-symbols-outlined mt-0.5" style={{ fontSize: 18 }}>
-                          error
-                        </span>
-                        <span className="font-medium">{error}</span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="group relative w-full h-14 bg-navy text-background-light font-bold rounded-2xl overflow-hidden transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-[0_20px_50px_-12px_rgba(249,116,21,0.55)] active:scale-[0.98]"
-                  >
-                    <span
-                      className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
-                      aria-hidden="true"
-                    />
-                    <span className="relative z-10 flex items-center justify-center gap-3 tracking-wide">
-                      {loading ? (
-                        <>
-                          <span className="w-4 h-4 border-2 border-background-light/30 border-t-background-light rounded-full animate-spin" />
-                          <span>{isRegister ? t('auth.creating') : t('auth.entering')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>{title}</span>
-                          <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: 20 }}>
-                            arrow_forward
-                          </span>
-                        </>
-                      )}
+              <div className="flex flex-col gap-6 mt-2 lg:mt-0">
+                {/* keyed block: remounts on mode switch to play auth-rise animation */}
+                <div key={mode} className="auth-rise flex flex-col gap-6">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">
+                      {isRegister ? t('auth.createAccount') : t('auth.signIn')}
                     </span>
-                  </button>
+                    <h3 className="auth-editorial text-navy text-3xl" style={{ fontWeight: 400 }}>
+                      {isRegister ? (
+                        <>Empieza con <em className="italic text-primary">nosotros</em></>
+                      ) : (
+                        <>Hola, <em className="italic text-primary">otra vez</em></>
+                      )}
+                    </h3>
+                  </div>
 
-                </form>
+                  {/* Segmented tabs */}
+                  <div
+                    role="tablist"
+                    className="relative flex bg-navy/5 rounded-full p-1 self-start w-full max-w-sm"
+                  >
+                    <motion.div
+                      layout
+                      transition={{ type: 'spring', stiffness: 400, damping: 34 }}
+                      className="absolute inset-y-1 w-[calc(50%-4px)] bg-background-light rounded-full shadow-[0_6px_20px_-6px_rgba(15,23,42,0.2)] ring-1 ring-navy/5"
+                      style={{ left: isRegister ? 'calc(50% + 0px)' : '4px' }}
+                    />
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={!isRegister}
+                      onClick={() => switchMode('login')}
+                      className={`relative z-10 flex-1 h-10 rounded-full text-sm font-semibold tracking-wide transition-colors ${
+                        !isRegister ? 'text-navy' : 'text-navy/50 hover:text-navy/80'
+                      }`}
+                    >
+                      {t('auth.signIn')}
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={isRegister}
+                      onClick={() => switchMode('register')}
+                      className={`relative z-10 flex-1 h-10 rounded-full text-sm font-semibold tracking-wide transition-colors ${
+                        isRegister ? 'text-navy' : 'text-navy/50 hover:text-navy/80'
+                      }`}
+                    >
+                      {t('auth.register')}
+                    </button>
+                  </div>
 
-                <div className="flex items-center gap-3 my-1">
-                  <span className="flex-1 h-px bg-navy/10" />
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-navy/45 font-bold">
-                    {t('auth.or')}
-                  </span>
-                  <span className="flex-1 h-px bg-navy/10" />
+                  {/* Form */}
+                  <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                    {isRegister && (
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <FloatField
+                            label={t('auth.namePlaceholder')}
+                            icon="person"
+                            type="text"
+                            value={name}
+                            onChange={setName}
+                            autoComplete="given-name"
+                            required
+                          />
+                          <FloatField
+                            label={t('auth.lastNamePlaceholder')}
+                            icon="badge"
+                            type="text"
+                            value={lastName}
+                            onChange={setLastName}
+                            autoComplete="family-name"
+                            required
+                          />
+                        </div>
+                        <FloatField
+                          label={t('auth.phonePlaceholder')}
+                          icon="call"
+                          type="tel"
+                          value={phone}
+                          onChange={setPhone}
+                          autoComplete="tel"
+                          required
+                        />
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[10px] tracking-[0.3em] uppercase font-bold" style={{ color: 'var(--ink-55)' }}>
+                            {t('auth.accountType')}
+                          </span>
+                          <div className="grid grid-cols-2 gap-2">
+                            {([
+                              { v: 'customer', label: t('auth.customer'), icon: 'person' },
+                              { v: 'owner', label: t('auth.restaurant'), icon: 'storefront' },
+                            ] as { v: UserRole; label: string; icon: string }[]).map((opt) => {
+                              const active = role === opt.v;
+                              return (
+                                <button
+                                  key={opt.v}
+                                  type="button"
+                                  onClick={() => setRoleState(opt.v)}
+                                  className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all"
+                                  style={{
+                                    background: active ? 'var(--primary)' : 'var(--ink-5)',
+                                    color: active ? '#fff' : 'var(--ink)',
+                                    border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
+                                  }}
+                                >
+                                  <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{opt.icon}</span>
+                                  <span className="text-xs font-semibold">{opt.label}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <FloatField
+                      label={t('auth.emailPlaceholder')}
+                      icon="mail"
+                      type="email"
+                      value={email}
+                      onChange={setEmail}
+                      autoComplete="email"
+                      required
+                    />
+                    <FloatField
+                      label={t('auth.passwordPlaceholder')}
+                      icon="lock"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={setPassword}
+                      autoComplete={isRegister ? 'new-password' : 'current-password'}
+                      required
+                      minLength={6}
+                      trailing={
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
+                          className="text-navy/40 hover:text-navy transition-colors"
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>
+                            {showPassword ? 'visibility_off' : 'visibility'}
+                          </span>
+                        </button>
+                      }
+                    />
+
+                    <AnimatePresence>
+                      {error && (
+                        <motion.div
+                          role="alert"
+                          aria-live="polite"
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-3.5 py-2.5"
+                        >
+                          <span className="material-symbols-outlined mt-0.5" style={{ fontSize: 18 }}>
+                            error
+                          </span>
+                          <span className="font-medium">{error}</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="group relative w-full h-14 bg-navy text-background-light font-bold rounded-2xl overflow-hidden transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:shadow-[0_20px_50px_-12px_rgba(249,116,21,0.55)] active:scale-[0.98]"
+                    >
+                      <span
+                        className="absolute inset-0 bg-primary translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+                        aria-hidden="true"
+                      />
+                      <span className="relative z-10 flex items-center justify-center gap-3 tracking-wide">
+                        {loading ? (
+                          <>
+                            <span className="w-4 h-4 border-2 border-background-light/30 border-t-background-light rounded-full animate-spin" />
+                            <span>{isRegister ? t('auth.creating') : t('auth.entering')}</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{title}</span>
+                            <span className="material-symbols-outlined transition-transform group-hover:translate-x-1" style={{ fontSize: 20 }}>
+                              arrow_forward
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    </button>
+                  </form>
                 </div>
 
-                <div className="flex justify-center">
-                  <GoogleLogin
-                    onSuccess={(cred) => {
-                      if (cred.credential) handleGoogle(cred.credential);
-                    }}
-                    onError={() => setError('Google sign-in failed')}
-                    text={isRegister ? 'signup_with' : 'signin_with'}
-                    shape="pill"
-                    size="large"
-                    width="320"
-                  />
-                </div>
+                {/* Google section: outside the keyed div so never remounts */}
+                {googleClientId && (
+                  <>
+                    <div className="flex items-center gap-3 my-1">
+                      <span className="flex-1 h-px bg-navy/10" />
+                      <span className="text-[10px] tracking-[0.3em] uppercase text-navy/45 font-bold">
+                        {t('auth.or')}
+                      </span>
+                      <span className="flex-1 h-px bg-navy/10" />
+                    </div>
+
+                    <div className="flex justify-center">
+                      <GoogleLogin
+                        onSuccess={(cred) => {
+                          if (cred.credential) handleGoogle(cred.credential);
+                        }}
+                        onError={() => setError('Google sign-in failed')}
+                        text={isRegister ? 'signup_with' : 'signin_with'}
+                        shape="pill"
+                        size="large"
+                        width="320"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <p className="text-xs text-navy/55 text-center">
                   {isRegister ? t('auth.haveAccount') : t('auth.newHere')}

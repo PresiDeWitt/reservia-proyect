@@ -22,10 +22,10 @@ export const authApi = {
     phone: string;
     email: string;
     password: string;
-  }) => api.post<AuthResponse>('/auth/register/', data),
+  }) => api.post<AuthResponse>('/auth/register/', data, true),
 
   login: (data: { email: string; password: string }) =>
-    api.post<AuthResponse>('/auth/login/', data),
+    api.post<AuthResponse>('/auth/login/', data, true),
 
   google: (credential: string) =>
     api.post<AuthResponse>('/auth/google/', { credential }),

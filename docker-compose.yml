@@ -9,6 +9,7 @@ services:
       DB_PATH: "/data/db.sqlite3"
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       STAFF_OWNER_CODE: ${STAFF_OWNER_CODE:-}
       STAFF_ADMIN_CODE: ${STAFF_ADMIN_CODE:-}
       SECURE_SSL_REDIRECT: "False"
@@ -18,7 +19,10 @@ services:
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     ports:
       - "80:80"
       - "8443:443"

@@ -5,13 +5,17 @@ import './index.css'
 import './i18n/config'
 import App from './App.tsx'
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <GoogleOAuthProvider clientId={googleClientId}>
+    {googleClientId ? (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <App />
+      </GoogleOAuthProvider>
+    ) : (
       <App />
-    </GoogleOAuthProvider>
+    )}
   </StrictMode>,
 )
 

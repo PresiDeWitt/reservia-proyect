@@ -5,6 +5,17 @@ const INITIAL_RETRY_MS = 1000;
 
 const RETRYABLE_STATUSES = new Set([502, 503, 504]);
 
+function extractErrorMessage(data: Record<string, unknown>): string {
+  if (typeof data.error === 'string' && data.error) return data.error;
+  if (typeof data.detail === 'string' && data.detail) return data.detail;
+  for (const key of Object.keys(data)) {
+    const val = data[key];
+    if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'string') return val[0];
+    if (typeof val === 'string' && val) return val;
+  }
+  return 'Request failed';
+}
+
 async function fetchWithRetry(url: string, options: RequestInit): Promise<Response> {
   let lastError: unknown;
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -23,6 +34,9 @@ async function fetchWithRetry(url: string, options: RequestInit): Promise<Respon
         await new Promise((r) => setTimeout(r, delay));
       }
     }
+  }
+  if (lastError instanceof TypeError) {
+    throw new Error('No se puede conectar al servidor. Comprueba tu conexión.');
   }
   throw lastError ?? new Error('Request failed after retries');
 }
@@ -104,7 +118,7 @@ async function request<T>(path: string, options: RequestInit = {}, noRetry = fal
         throw new Error('Server error');
       }
       if (!res.ok) {
-        throw new Error((retryData.error as string) || 'Request failed');
+        throw new Error(extractErrorMessage(retryData));
       }
       return retryData as T;
     }
@@ -116,7 +130,7 @@ async function request<T>(path: string, options: RequestInit = {}, noRetry = fal
     throw new Error('Session expired');
   }
   if (!res.ok) {
-    throw new Error((data.error as string) || 'Request failed');
+    throw new Error(extractErrorMessage(data));
   }
   return data as T;
 }
