@@ -21,4 +21,4 @@ COPY . .
 EXPOSE 8000
 
 # Ejecutar migraciones, seed data y arrancar con gunicorn
-CMD python manage.py migrate --noinput && python manage.py seed --reset && gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:8000
+CMD python manage.py migrate --noinput && gunicorn -w 3 reservia.wsgi:application --bind 0.0.0.0:8000
