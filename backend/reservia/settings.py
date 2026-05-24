@@ -97,11 +97,12 @@ if os.environ.get("DATABASE_URL"):
         )
     }
 else:
-    # Development: use SQLite
+    # Development/Docker: use SQLite with optional DB_PATH
+    db_path = os.environ.get("DB_PATH")
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": str(BASE_DIR / "db.sqlite3"),
+            "NAME": db_path if db_path else str(BASE_DIR / "db.sqlite3"),
         }
     }
 
