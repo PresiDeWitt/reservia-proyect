@@ -11,10 +11,16 @@ class ReservationCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
+        from datetime import datetime
+        from rest_framework.exceptions import ValidationError as DRFValidationError
         restaurant = serializer.validated_data['restaurant']
         res_date = serializer.validated_data['date']
         res_time = serializer.validated_data['time']
         guests = serializer.validated_data['guests']
+
+        reservation_dt = datetime.combine(res_date, res_time)
+        if reservation_dt <= datetime.now():
+            raise DRFValidationError({'detail': 'No puedes reservar una hora que ya ha pasado.'})
 
         slot = (
             AvailabilitySlot.objects
@@ -38,6 +44,7 @@ class ReservationCreateView(generics.CreateAPIView):
         slot.is_available = False
         slot.save(update_fields=['is_available'])
         serializer.save(user=self.request.user, assigned_table=slot.table)
+
 
 
 @api_view(["GET"])

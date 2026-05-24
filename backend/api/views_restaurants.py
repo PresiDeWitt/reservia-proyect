@@ -85,14 +85,17 @@ def restaurant_availability(request, pk):
         ).values_list('time', flat=True)
     )
 
+    now_time = datetime.now().time() if req_date == date_type.today() else None
+
     slots = []
     for service, hours in SERVICE_HOURS.items():
         for h in hours:
             t = time_type.fromisoformat(h)
+            is_past = now_time is not None and t <= now_time
             slots.append({
                 "time": h,
                 "service": service,
-                "available": t in available_times,
+                "available": (t in available_times) and not is_past,
             })
 
     return Response({"date": raw_date, "guests": guests, "slots": slots})
