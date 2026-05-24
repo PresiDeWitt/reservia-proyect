@@ -5,3 +5,12 @@ reservia.website, www.reservia.website {
 
     header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
 }
+
+# gen3d API — accesible vía IP del servidor (coexistencia)
+:80 {
+    handle /api/* {
+        uri strip_prefix /api
+        reverse_proxy host.docker.internal:8000
+    }
+    respond * "Not found" 404
+}
