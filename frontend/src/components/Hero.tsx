@@ -170,6 +170,7 @@ const Hero: React.FC = () => {
         <img
           src={heroImg}
           alt=""
+          fetchPriority="high"
           style={{
             width: '100%',
             height: '100%',
