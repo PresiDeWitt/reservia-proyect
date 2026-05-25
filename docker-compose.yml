@@ -43,7 +43,6 @@ services:
         VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
     ports:
       - "80:80"
-      - "8443:443"
     depends_on:
       - backend
     restart: unless-stopped
