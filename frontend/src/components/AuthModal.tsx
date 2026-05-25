@@ -505,26 +505,30 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
 
                 </form>
 
-                <div className="flex items-center gap-3 my-1">
-                  <span className="flex-1 h-px bg-navy/10" />
-                  <span className="text-[10px] tracking-[0.3em] uppercase text-navy/45 font-bold">
-                    {t('auth.or')}
-                  </span>
-                  <span className="flex-1 h-px bg-navy/10" />
-                </div>
+                {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+                  <>
+                    <div className="flex items-center gap-3 my-1">
+                      <span className="flex-1 h-px bg-navy/10" />
+                      <span className="text-[10px] tracking-[0.3em] uppercase text-navy/45 font-bold">
+                        {t('auth.or')}
+                      </span>
+                      <span className="flex-1 h-px bg-navy/10" />
+                    </div>
 
-                <div className="flex justify-center">
-                  <GoogleLogin
-                    onSuccess={(cred) => {
-                      if (cred.credential) handleGoogle(cred.credential);
-                    }}
-                    onError={() => setError('Google sign-in failed')}
-                    text={isRegister ? 'signup_with' : 'signin_with'}
-                    shape="pill"
-                    size="large"
-                    width="320"
-                  />
-                </div>
+                    <div className="flex justify-center">
+                      <GoogleLogin
+                        onSuccess={(cred) => {
+                          if (cred.credential) handleGoogle(cred.credential);
+                        }}
+                        onError={() => setError('Google sign-in failed')}
+                        text={isRegister ? 'signup_with' : 'signin_with'}
+                        shape="pill"
+                        size="large"
+                        width="320"
+                      />
+                    </div>
+                  </>
+                )}
 
                 <p className="text-xs text-navy/55 text-center">
                   {isRegister ? t('auth.haveAccount') : t('auth.newHere')}
