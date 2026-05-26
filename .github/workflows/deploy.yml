@@ -91,6 +91,22 @@ jobs:
     environment: production
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Upload config files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: "docker-compose.prod.yml,Caddyfile"
+          target: "~/reservia"
+          mkdir: true
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
@@ -100,9 +116,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -euo pipefail
-            sudo mkdir -p /opt/reservia
-            sudo chown -R "$(whoami)":"$(whoami)" /opt/reservia
-            cd /opt/reservia
+            cd ~/reservia
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             docker image prune -f
