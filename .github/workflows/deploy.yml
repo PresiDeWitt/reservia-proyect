@@ -100,6 +100,8 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             set -euo pipefail
+            sudo mkdir -p /opt/reservia
+            sudo chown -R "$(whoami)":"$(whoami)" /opt/reservia
             cd /opt/reservia
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
