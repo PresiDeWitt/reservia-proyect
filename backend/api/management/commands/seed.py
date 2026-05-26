@@ -238,19 +238,28 @@ class Command(BaseCommand):
                 restaurant.reviews_count = agg['cnt']
                 restaurant.save(update_fields=['rating', 'reviews_count'])
 
-        # Seed staff codes from env vars (backward compatible)
+        # Seed staff codes only if env vars are explicitly configured
         from api.models import StaffCode
-        owner_code = os.environ.get('STAFF_OWNER_CODE', 'owner2026')
-        admin_code = os.environ.get('STAFF_ADMIN_CODE', 'admin2026')
+        from django.contrib.auth.hashers import make_password
+
+        owner_code = os.environ.get('STAFF_OWNER_CODE')
+        admin_code = os.environ.get('STAFF_ADMIN_CODE')
         owner_email = os.environ.get('STAFF_OWNER_EMAIL', '')
 
-        StaffCode.objects.get_or_create(
-            code=owner_code,
-            defaults={'role': 'owner', 'email': owner_email}
-        )
-        StaffCode.objects.get_or_create(
-            code=admin_code,
-            defaults={'role': 'admin', 'email': ''}
-        )
+        if owner_code:
+            if not StaffCode.objects.filter(role='owner', is_active=True).exists():
+                StaffCode.objects.create(
+                    code=make_password(owner_code), role='owner', email=owner_email
+                )
+        else:
+            self.stdout.write(self.style.WARNING('STAFF_OWNER_CODE no configurado — se omite el código de propietario.'))
+
+        if admin_code:
+            if not StaffCode.objects.filter(role='admin', is_active=True).exists():
+                StaffCode.objects.create(
+                    code=make_password(admin_code), role='admin', email=''
+                )
+        else:
+            self.stdout.write(self.style.WARNING('STAFF_ADMIN_CODE no configurado — se omite el código de administrador.'))
 
         self.stdout.write(self.style.SUCCESS(f'Seeded {len(RESTAURANTS)} restaurants + {reviews_created} reviews.'))

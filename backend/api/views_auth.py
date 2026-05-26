@@ -63,7 +63,13 @@ def staff_login_view(request):
     if not code:
         return Response({"error": "Access code required"}, status=400)
 
-    staff_code = StaffCode.objects.filter(code=code, is_active=True).first()
+    from django.contrib.auth.hashers import check_password as check_hashed_password
+
+    staff_code = None
+    for sc in StaffCode.objects.filter(is_active=True):
+        if check_hashed_password(code, sc.code):
+            staff_code = sc
+            break
 
     # Fallback to env vars for backward compatibility
     if not staff_code:
@@ -81,12 +87,15 @@ def staff_login_view(request):
         role = staff_code.role
         email = staff_code.email
 
-    staff_user, _ = User.objects.get_or_create(
+    staff_user, created = User.objects.get_or_create(
         username=f"staff_{role}_{code[:8]}",
         defaults={
             'email': email or f'{role}@reservia.internal',
         }
     )
+    if created:
+        staff_user.set_unusable_password()
+        staff_user.save()
 
     refresh = RefreshToken.for_user(staff_user)
     refresh['staff_role'] = role
