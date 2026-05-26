@@ -217,6 +217,16 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "ReserVia <noreply@reservia.app>")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 
+# Field-level encryption key (Fernet: 32 bytes en base64 URL-safe, 44 chars)
+# Genera una clave con: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+FIELD_ENCRYPTION_KEY = os.environ.get("FIELD_ENCRYPTION_KEY", "")
+if not FIELD_ENCRYPTION_KEY:
+    if IS_TEST or DEBUG:
+        # Clave fija solo para desarrollo/tests — nunca en producción
+        FIELD_ENCRYPTION_KEY = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="
+    else:
+        raise RuntimeError("FIELD_ENCRYPTION_KEY environment variable is required in production.")
+
 REDIS_URL = os.environ.get("REDIS_URL", "")
 
 if REDIS_URL:
