@@ -211,7 +211,10 @@ def update_restaurant_rating(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Reservation)
 def create_reservation_notification(sender, instance, created, **kwargs):
+    from .emails import send_booking_confirmation_email, send_booking_cancellation_email
+
     if created:
+        # 1. Crear notificación en base de datos para panel web
         Notification.objects.create(
             user=instance.user,
             type=Notification.Type.BOOKING_CONFIRMED,
@@ -219,3 +222,32 @@ def create_reservation_notification(sender, instance, created, **kwargs):
             message=f'Tu reserva en {instance.restaurant.name} para el {instance.date} a las {instance.time} ha sido confirmada.',
             reservation=instance,
         )
+        # 2. Despachar email asíncrono con useSend
+        send_booking_confirmation_email(instance)
+    else:
+        # En caso de actualización, si pasa a cancelada
+        if instance.status == 'cancelled':
+            # 1. Crear notificación en DB de cancelación si no existe ya
+            already_exists = Notification.objects.filter(
+                user=instance.user,
+                reservation=instance,
+                type=Notification.Type.BOOKING_CANCELLED
+            ).exists()
+            
+            if not already_exists:
+                Notification.objects.create(
+                    user=instance.user,
+                    type=Notification.Type.BOOKING_CANCELLED,
+                    title='Reserva cancelada',
+                    message=f'Tu reserva en {instance.restaurant.name} para el {instance.date} ha sido cancelada.',
+                    reservation=instance,
+                )
+            # 2. Despachar email de cancelación con useSend
+            send_booking_cancellation_email(instance)
+
+
+@receiver(post_save, sender=User)
+def create_user_welcome_email(sender, instance, created, **kwargs):
+    if created:
+        from .emails import send_welcome_email
+        send_welcome_email(instance)
