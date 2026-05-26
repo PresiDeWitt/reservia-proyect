@@ -613,10 +613,12 @@ a { color: inherit; text-decoration: none; }
 @media (max-width: 640px) {
   .footer-grid { grid-template-columns: 1fr !important; }
   :root {
-    --d-section: 60px;
-    --r-xl: 20px;
+    --d-section: 48px;
+    --r-xl: 18px;
   }
   h1.editorial { font-size: clamp(40px, 10vw, 72px) !important; }
+  /* Reduce section heading size on mobile */
+  h2.editorial { font-size: clamp(28px, 7vw, 48px) !important; }
 }
 
 /* Typography refinements */
