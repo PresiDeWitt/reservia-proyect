@@ -34,6 +34,7 @@ urlpatterns = [
     # Owner Dashboard
     path("owner/stats/", views_owner.owner_stats, name="owner-stats"),
     path("owner/reservations/", views_owner.owner_reservations, name="owner-reservations"),
+    path("owner/reservations/<int:pk>/status/", views_owner.owner_update_reservation_status, name="owner-reservation-status"),
     # Admin Dashboard
     path("admin/stats/", views_admin.admin_stats, name="admin-stats"),
     path("admin/top-restaurants/", views_admin.admin_top_restaurants, name="admin-top-restaurants"),

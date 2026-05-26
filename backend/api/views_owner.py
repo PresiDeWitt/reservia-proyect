@@ -7,6 +7,13 @@ from rest_framework.response import Response
 from .models import Restaurant, Reservation
 from .permissions import IsStaffOwner, get_staff_email
 
+OCCASION_LABELS = {
+    'birthday': 'Cumpleaños',
+    'anniversary': 'Aniversario',
+    'business': 'Negocios',
+    'other': 'Otro',
+}
+
 
 def _owner_restaurant(request):
     email = get_staff_email(request)
@@ -98,6 +105,8 @@ def owner_reservations(request):
             "time": r.time.strftime('%H:%M'),
             "status": r.status,
             "table": r.assigned_table.label if r.assigned_table else "—",
+            "note": r.note or "",
+            "occasion": r.occasion or "",
         })
 
     return Response({
@@ -107,3 +116,29 @@ def owner_reservations(request):
         "page_size": page_size,
         "total_pages": max(1, (total + page_size - 1) // page_size),
     })
+
+
+@api_view(["PATCH"])
+@permission_classes([IsStaffOwner])
+def owner_update_reservation_status(request, pk):
+    restaurant = _owner_restaurant(request)
+    if restaurant is None:
+        return Response({"error": "No tienes ningún restaurante asociado"},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    try:
+        reservation = Reservation.objects.get(pk=pk, restaurant=restaurant)
+    except Reservation.DoesNotExist:
+        return Response({"error": "Reserva no encontrada"}, status=status.HTTP_404_NOT_FOUND)
+
+    new_status = request.data.get("status", "").strip()
+    allowed = {"no_show", "confirmed"}
+    if new_status not in allowed:
+        return Response(
+            {"error": f"Estado no válido. Valores permitidos: {sorted(allowed)}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    reservation.status = new_status
+    reservation.save(update_fields=["status"])
+    return Response({"id": reservation.id, "status": reservation.status})
