@@ -217,6 +217,11 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "ReserVia <noreply@reservia.app>")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
 
+# useSend Configuration
+USESEND_API_KEY = os.environ.get("USESEND_API_KEY", "")
+USESEND_API_URL = os.environ.get("USESEND_API_URL", "https://app.usesend.com/api").rstrip("/")
+USESEND_FROM_EMAIL = os.environ.get("USESEND_FROM_EMAIL", "ReserVia <no-reply@reservia.website>")
+
 # Field-level encryption key (Fernet: 32 bytes en base64 URL-safe, 44 chars)
 # Genera una clave con: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
 FIELD_ENCRYPTION_KEY = os.environ.get("FIELD_ENCRYPTION_KEY", "")

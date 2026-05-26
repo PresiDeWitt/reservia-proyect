@@ -3,17 +3,20 @@ FROM node:22-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
-# Copiar package.json y package-lock.json
-COPY frontend/package*.json ./
+# Instalar pnpm
+RUN npm install -g pnpm
 
-# Instalar dependencias
-RUN npm ci
+# Copiar package.json y pnpm-lock.yaml
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+
+# Instalar dependencias con pnpm
+RUN pnpm install --frozen-lockfile
 
 # Copiar código del frontend
 COPY frontend/ .
 
 # Compilar el frontend
-RUN npm run build
+RUN pnpm build
 
 # Stage final con Python
 FROM python:3.11-slim
