@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+from .encrypted_fields import EncryptedCharField, EncryptedTextField
 
 
 class Restaurant(models.Model):
@@ -96,7 +97,7 @@ class Reservation(models.Model):
     time = models.TimeField()
     guests = models.IntegerField()
     occasion = models.CharField(max_length=20, choices=Occasion.choices, blank=True)
-    note = models.TextField(blank=True)
+    note = EncryptedTextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='confirmed')
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -157,7 +158,7 @@ class Notification(models.Model):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, related_name='profile', on_delete=models.CASCADE)
-    phone = models.CharField(max_length=30, blank=True)
+    phone = EncryptedCharField(max_length=500, blank=True)
 
     def __str__(self):
         return f"Profile<{self.user.email}>"
@@ -170,7 +171,7 @@ class StaffCode(models.Model):
 
     code = models.CharField(max_length=100, unique=True)
     role = models.CharField(max_length=20, choices=Role.choices)
-    email = models.EmailField(blank=True)
+    email = EncryptedCharField(max_length=500, blank=True)
     restaurant = models.ForeignKey(
         'Restaurant', on_delete=models.SET_NULL, null=True, blank=True,
         related_name='staff_codes'
