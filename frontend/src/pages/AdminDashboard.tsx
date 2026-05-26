@@ -139,13 +139,13 @@ const AdminDashboard: React.FC = () => {
                     {apiStats ? `${apiStats.estimatedRevenue.toLocaleString('es-ES')}€` : '—'}
                   </div>
                   <span style={{ padding: '4px 12px', borderRadius: 999, background: '#ecfdf5', color: '#10b981', fontSize: 12, fontWeight: 700 }}>
-                    {apiStats ? `${apiStats.confirmedReservations} confirmadas` : ''}
+                    {apiStats ? t('admin.confirmedBadge', { count: apiStats.confirmedReservations }) : ''}
                   </span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
                   {apiStats && [
-                    ['Cancelaciones', `${apiStats.cancellationRate}%`],
-                    ['Comensales totales', apiStats.totalGuests.toLocaleString('es-ES')],
+                    [t('admin.overview.cancellations'), `${apiStats.cancellationRate}%`],
+                    [t('admin.overview.totalGuests'), apiStats.totalGuests.toLocaleString()],
                   ].map(([l, v]) => (
                     <div key={l as string} style={{ padding: '14px 16px', borderRadius: 12, background: 'var(--surface-2)', border: '1px solid var(--border)' }}>
                       <div style={{ fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink-40)', fontWeight: 700 }}>{l}</div>
@@ -189,7 +189,7 @@ const AdminDashboard: React.FC = () => {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)' }}>Cargando...</td></tr>
+                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)' }}>{t('admin.loading')}</td></tr>
                   ) : topRestaurants.map((r, i) => (
                     <tr key={r.id}
                       style={{ borderBottom: i < topRestaurants.length - 1 ? '1px solid var(--border)' : 'none' }}

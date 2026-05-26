@@ -125,7 +125,7 @@ const MapExplorer: React.FC = () => {
           className="editorial"
           style={{ fontSize: 16, fontWeight: 400, letterSpacing: '-0.02em', marginRight: 8 }}
         >
-          Mapa <span className="italic-accent">de mesas</span>
+          {t('map.title')} <span className="italic-accent">{t('map.titleAccent')}</span>
         </span>
         <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 4px' }} />
         {currentOptions.map((c) => (
@@ -149,11 +149,11 @@ const MapExplorer: React.FC = () => {
             {t(`cuisines.${c}`, { defaultValue: c })}
           </button>
         ))}
-        {loading && (
-          <span style={{ fontSize: 12, color: 'var(--ink-40)', marginLeft: 8 }}>
-            Cargando...
-          </span>
-        )}
+          {loading && (
+            <span style={{ fontSize: 12, color: 'var(--ink-40)', marginLeft: 8 }}>
+              {t('map.loading')}
+            </span>
+          )}
       </div>
 
       {/* Main layout */}
@@ -171,7 +171,7 @@ const MapExplorer: React.FC = () => {
         >
           <div style={{ padding: '16px 16px 10px' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>
-              {restaurants.length} restaurantes
+              {t('map.restaurantCount', { count: restaurants.length })}
             </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -267,10 +267,7 @@ const MapExplorer: React.FC = () => {
                         gap: 4,
                       }}
                     >
-                      Ver
-                      <span className="material-symbols-outlined" style={{ fontSize: 12 }}>
-                        arrow_forward
-                      </span>
+                      {t('map.view')}
                     </button>
                   )}
                 </button>
@@ -374,7 +371,7 @@ const MapExplorer: React.FC = () => {
                               cursor: 'pointer',
                             }}
                           >
-                            Reservar
+                            {t('map.book')}
                           </button>
                         </div>
                       </div>

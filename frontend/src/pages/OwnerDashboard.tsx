@@ -245,9 +245,9 @@ const OwnerDashboard: React.FC = () => {
                 </thead>
                 <tbody>
                   {loadingRes ? (
-                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>Cargando...</td></tr>
+                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>{t('owner.loading')}</td></tr>
                   ) : reservations.length === 0 ? (
-                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>Sin reservas</td></tr>
+                    <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>{t('owner.noReservations')}</td></tr>
                   ) : reservations.map((r, i) => (
                     <tr key={r.id} style={{ borderBottom: i < reservations.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.15s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--cream-2)')}
@@ -296,7 +296,7 @@ const OwnerDashboard: React.FC = () => {
                 <svg viewBox="0 0 100 90" style={{ width: '100%', fontFamily: 'inherit' }}>
                   <rect x="0" y="0" width="100" height="90" fill="#f8f7f5" rx="2" />
                   <rect x="0" y="0" width="100" height="6" fill="#e2e0db" />
-                  <text x="50" y="4.5" textAnchor="middle" fontSize="2.5" fill="#94928e" fontWeight="600">ENTRADA</text>
+                  <text x="50" y="4.5" textAnchor="middle" fontSize="2.5" fill="#94928e" fontWeight="600">{t('owner.floor.entrance')}</text>
 
                   {FLOOR.map(t => (
                     <g key={t.id}>

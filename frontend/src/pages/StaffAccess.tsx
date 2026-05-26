@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { staffApi } from '../api/staff';
 import { STORAGE_KEYS, storage } from '../api/storage';
 
 const StaffAccess: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -20,7 +22,7 @@ const StaffAccess: React.FC = () => {
       storage.set(STORAGE_KEYS.STAFF_ROLE, res.role);
       navigate(res.role === 'owner' ? '/owner' : '/admin');
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Invalid access code');
+      setError(err instanceof Error ? err.message : t('staff.errorInvalid'));
     } finally {
       setLoading(false);
     }
@@ -56,16 +58,16 @@ const StaffAccess: React.FC = () => {
       >
         <span className="mat" style={{ fontSize: 48, color: 'var(--primary)' }}>shield_person</span>
         <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.6)', marginTop: 18 }}>
-          Acceso restringido
+          {t('staff.eyebrow')}
         </div>
         <h1 className="editorial" style={{ fontSize: 40, fontWeight: 300, marginTop: 8 }}>
-          Equipo <span className="italic-accent">ReserVia</span>
+          {t('staff.title')} <span className="italic-accent">ReserVia</span>
         </h1>
         <form onSubmit={submit} style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 14 }}>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            placeholder="Código de acceso"
+            placeholder={t('staff.codePlaceholder')}
             className="input"
             style={{
               background: 'rgba(255,255,255,0.06)',
@@ -83,7 +85,7 @@ const StaffAccess: React.FC = () => {
               <span className="spin" style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid currentColor', borderTopColor: 'transparent', display: 'inline-block' }} />
             ) : (
               <>
-                <span>Entrar</span>
+                <span>{t('staff.submit')}</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
               </>
             )}

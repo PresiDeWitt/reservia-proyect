@@ -33,20 +33,20 @@ const FavoritesPage: React.FC = () => {
       className="container"
       style={{ padding: '120px 24px 80px' }}
     >
-      <div className="eyebrow">Tu colección</div>
+      <div className="eyebrow">{t('favorites.eyebrow')}</div>
       <h1
         className="editorial"
         style={{ fontSize: 'clamp(48px,6vw,88px)', fontWeight: 300, letterSpacing: '-0.03em', marginTop: 8 }}
       >
-        Tus <span className="italic-accent">favoritos</span>
+        {t('favorites.title')} <span className="italic-accent">{t('favorites.titleAccent')}</span>
       </h1>
 
       {!user ? (
         <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--ink-40)' }}>
           <span className="mat" style={{ fontSize: 48, marginBottom: 12, display: 'block' }}>lock</span>
-          <p style={{ fontSize: 16 }}>Inicia sesión para ver tus favoritos.</p>
+          <p style={{ fontSize: 16 }}>{t('favorites.loginPrompt')}</p>
           <Link to="/" className="btn btn-primary" style={{ marginTop: 20 }}>
-            <span>Ir al inicio</span>
+            <span>{t('favorites.goHome')}</span>
           </Link>
         </div>
       ) : loading ? (
@@ -65,9 +65,9 @@ const FavoritesPage: React.FC = () => {
       ) : restaurants.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--ink-40)' }}>
           <span className="mat" style={{ fontSize: 48, marginBottom: 12, display: 'block' }}>favorite_border</span>
-          <p style={{ fontSize: 16 }}>Aún no has guardado ningún restaurante.</p>
+          <p style={{ fontSize: 16 }}>{t('favorites.empty')}</p>
           <Link to="/" className="btn btn-primary" style={{ marginTop: 20 }}>
-            <span>Explorar</span>
+            <span>{t('favorites.explore')}</span>
           </Link>
         </div>
       ) : (

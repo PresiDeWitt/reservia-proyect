@@ -121,11 +121,11 @@ const Home: React.FC = () => {
                   marginTop: 10,
                 }}
               >
-                ¿Qué te <span className="italic-accent">apetece</span> esta noche?
+                {t('home.cravingPre')} <span className="italic-accent">{t('home.cravingAccent')}</span>{t('home.cravingPost')}
               </h2>
             </div>
             <Link to="/map" className="btn btn-ghost">
-              <span>Ver todas las cocinas</span>
+              <span>{t('home.viewAllCuisines')}</span>
               <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
             </Link>
           </div>
@@ -150,7 +150,7 @@ const Home: React.FC = () => {
       >
         <div className="container-narrow" style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
           <div className="eyebrow" style={{ color: 'var(--primary)' }}>
-            Manifiesto
+            {t('home.manifesto.eyebrow')}
           </div>
           <blockquote
             className="editorial"
@@ -162,12 +162,12 @@ const Home: React.FC = () => {
               margin: '24px 0',
             }}
           >
-            Creemos que una buena cena empieza <em className="italic-accent">antes</em> de pisar el restaurante,
-            con la expectativa, con la promesa, con la <em className="italic-accent">sobremesa</em> que ya te
-            estás imaginando.
+            {t('home.manifesto.quotePre')} <em className="italic-accent">{t('home.manifesto.quoteAccent1')}</em>{' '}
+            {t('home.manifesto.quoteMid')} <em className="italic-accent">{t('home.manifesto.quoteAccent2')}</em>{' '}
+            {t('home.manifesto.quotePost')}
           </blockquote>
           <div style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 24 }}>
-            El equipo editorial de <span style={{ fontWeight: 700 }}>ReserVia</span>
+            {t('home.manifesto.author')} <span style={{ fontWeight: 700 }}>ReserVia</span>
           </div>
         </div>
       </section>
@@ -189,7 +189,7 @@ const Home: React.FC = () => {
             }}
           >
             <div>
-              <div className="eyebrow">02 · Curado esta semana</div>
+              <div className="eyebrow">{t('home.curationEyebrow')}</div>
               <h2
                 className="editorial"
                 style={{
@@ -206,7 +206,7 @@ const Home: React.FC = () => {
                     ? `"${search}"`
                     : (
                       <>
-                        Mesas con <span className="italic-accent">alma</span>.
+                        {t('home.mesasConAlmaPre')} <span className="italic-accent">{t('home.mesasConAlmaAccent')}</span>{t('home.mesasConAlmaPost')}
                       </>
                     )}
               </h2>
@@ -322,7 +322,7 @@ const Home: React.FC = () => {
         >
           <div>
             <div className="eyebrow" style={{ color: 'var(--primary)' }}>
-              Para restauradores
+              {t('home.business.eyebrow')}
             </div>
             <h2
               className="editorial"
@@ -334,25 +334,24 @@ const Home: React.FC = () => {
                 marginTop: 14,
               }}
             >
-              Que tu cocina se <span className="italic-accent">llene</span>, sin complicarte.
+              {t('home.business.headlinePre')} <span className="italic-accent">{t('home.business.headlineAccent')}</span>{t('home.business.headlinePost')}
             </h2>
             <p style={{ fontSize: 17, opacity: 0.8, marginTop: 24, lineHeight: 1.6, maxWidth: 520 }}>
-              Plan de mesas en tiempo real, lista de espera, recordatorios automáticos, pre-pago opcional, análisis
-              de cobertura. Todo en un panel que aprende de tu servicio.
+              {t('home.business.desc')}
             </p>
             <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
               <button
                 className="btn btn-ember"
                 onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }))}
               >
-                <span>Registra tu restaurante</span>
+                <span>{t('home.business.ctaRegister')}</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
               </button>
               <button
                 className="btn btn-dark"
                 onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'login', role: 'owner' } }))}
               >
-                <span>Ya tengo cuenta</span>
+                <span>{t('home.business.ctaLogin')}</span>
               </button>
             </div>
           </div>
@@ -408,7 +407,7 @@ const Home: React.FC = () => {
       <section style={{ padding: 'var(--d-section) 0', background: 'var(--surface)' }}>
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div className="eyebrow">Así funciona</div>
+            <div className="eyebrow">{t('home.howItWorks.eyebrow')}</div>
             <h2
               className="editorial"
               style={{
@@ -418,7 +417,7 @@ const Home: React.FC = () => {
                 marginTop: 10,
               }}
             >
-              Tres pasos. <span className="italic-accent">Cero esperas.</span>
+              {t('home.howItWorks.titlePre')} <span className="italic-accent">{t('home.howItWorks.titleAccent')}</span>
             </h2>
           </div>
           <div

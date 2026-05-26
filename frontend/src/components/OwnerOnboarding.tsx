@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { setOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
 
 interface Props {
@@ -10,10 +11,14 @@ interface Props {
   onCancel?: () => void;
 }
 
-const CUISINES = ['Italiana', 'Japonesa', 'Mediterránea', 'Mexicana', 'Asiática', 'Tradicional', 'Fusión', 'Otra'];
-
 const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, onDone, onCancel }) => {
+  const { t } = useTranslation();
   const isEdit = !!initialProfile;
+
+  const CUISINES = [
+    'Italiana', 'Japonesa', 'Mediterránea', 'Mexicana', 'Asiática', 'Tradicional', 'Fusión', 'Otra',
+  ];
+
   const [name, setName] = useState(initialProfile?.name ?? initialName ?? '');
   const [cuisine, setCuisine] = useState(initialProfile?.cuisine ?? 'Italiana');
   const [address, setAddress] = useState(initialProfile?.address ?? '');
@@ -49,56 +54,64 @@ const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, 
         style={{ maxWidth: 720, margin: '0 auto' }}
       >
         <div className="eyebrow" style={{ marginBottom: 12, color: 'var(--primary)' }}>
-          {isEdit ? 'Editar restaurante' : 'Configura tu restaurante'}
+          {isEdit ? t('onboarding.eyebrow.edit') : t('onboarding.eyebrow.setup')}
         </div>
         <h1 className="editorial" style={{ fontSize: 'clamp(32px,4vw,48px)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0, color: 'var(--ink)' }}>
-          {isEdit ? <>Actualiza los <span className="italic-accent">datos</span> de hoy.</> : <>Bienvenido. <span className="italic-accent">Personaliza</span> tu panel.</>}
+          {isEdit ? (
+            <>{t('onboarding.title.editPre')} <span className="italic-accent">{t('onboarding.title.editAccent')}</span>{t('onboarding.title.editPost')}</>
+          ) : (
+            <>{t('onboarding.title.setupPre')}<span className="italic-accent">{t('onboarding.title.setupAccent')}</span>{t('onboarding.title.setupPost')}</>
+          )}
         </h1>
         <p style={{ color: 'var(--ink-55)', marginTop: 14, fontSize: 15, lineHeight: 1.6 }}>
-          {isEdit ? 'Cambia el aforo, la cocina o la descripción. Las métricas del panel se recalculan al guardar.' : 'Estos datos se usan para construir tu dashboard a medida: gestión de mesas, reservas y métricas — todo basado en tu restaurante.'}
+          {isEdit ? t('onboarding.desc.edit') : t('onboarding.desc.setup')}
         </p>
 
         <form onSubmit={submit} style={{ display: 'grid', gap: 18, marginTop: 36 }}>
-          <Field label="Nombre del restaurante" required>
-            <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} required placeholder="Osteria del Borgo" />
+          <Field label={t('onboarding.fields.name')} required>
+            <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} required placeholder={t('onboarding.fields.namePlaceholder')} />
           </Field>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
-            <Field label="Tipo de cocina">
+            <Field label={t('onboarding.fields.cuisine')}>
               <select style={inputStyle} value={cuisine} onChange={(e) => setCuisine(e.target.value)}>
-                {CUISINES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {CUISINES.map((c) => (
+                  <option key={c} value={c}>
+                    {t(`onboarding.cuisines.${c}`, { defaultValue: c })}
+                  </option>
+                ))}
               </select>
             </Field>
-            <Field label="Capacidad (comensales)">
+            <Field label={t('onboarding.fields.capacity')}>
               <input style={inputStyle} type="number" min={1} value={capacity} onChange={(e) => setCapacity(Number(e.target.value))} required />
             </Field>
           </div>
 
-          <Field label="Dirección" required>
-            <input style={inputStyle} value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="Calle Mayor, 12 · Madrid" />
+          <Field label={t('onboarding.fields.address')} required>
+            <input style={inputStyle} value={address} onChange={(e) => setAddress(e.target.value)} required placeholder={t('onboarding.fields.addressPlaceholder')} />
           </Field>
 
-          <Field label="Teléfono">
-            <input style={inputStyle} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+34 600 000 000" />
+          <Field label={t('onboarding.fields.phone')}>
+            <input style={inputStyle} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('onboarding.fields.phonePlaceholder')} />
           </Field>
 
-          <Field label="Descripción breve">
+          <Field label={t('onboarding.fields.description')}>
             <textarea
               style={{ ...inputStyle, height: 100, padding: '12px 14px', resize: 'vertical' }}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Cocina tradicional con un toque contemporáneo…"
+              placeholder={t('onboarding.fields.descriptionPlaceholder')}
             />
           </Field>
 
           <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
             <button type="submit" className="btn btn-ember" style={{ height: 52 }}>
-              <span>{isEdit ? 'Guardar cambios' : 'Crear mi panel'}</span>
+              <span>{isEdit ? t('onboarding.submit.save') : t('onboarding.submit.create')}</span>
               <span className="mat" style={{ fontSize: 18 }}>{isEdit ? 'check' : 'arrow_forward'}</span>
             </button>
             {isEdit && onCancel && (
               <button type="button" className="btn btn-ghost" style={{ height: 52 }} onClick={onCancel}>
-                Cancelar
+                {t('onboarding.cancel')}
               </button>
             )}
           </div>
