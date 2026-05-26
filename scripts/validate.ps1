@@ -26,9 +26,13 @@ if ($LASTEXITCODE -ne 0) { Fail "Backend tests fallaron" }
 Ok "Backend tests: OK"
 
 Info "Backend: SAST con Bandit..."
-bandit -r api reservia -x api/migrations -ll -ii -q
-if ($LASTEXITCODE -ne 0) { Fail "Bandit SAST falló" }
-Ok "Bandit SAST: OK"
+if (Get-Command bandit -ErrorAction SilentlyContinue) {
+  bandit -r api reservia -x api/migrations -ll -ii -q
+  if ($LASTEXITCODE -ne 0) { Fail "Bandit SAST falló" }
+  Ok "Bandit SAST: OK"
+} else {
+  Write-Host "${Yellow}⚠ Bandit no instalado — saltando SAST (pip install bandit para activarlo)${NC}"
+}
 
 # ── Frontend ───────────────────────────────────────────────────────────────
 Set-Location "$Root\frontend"

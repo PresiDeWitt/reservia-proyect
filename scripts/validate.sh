@@ -29,8 +29,12 @@ python manage.py test tests api.tests --verbosity=1
 ok "Backend tests: OK"
 
 info "Backend: SAST con Bandit..."
-bandit -r api reservia -x api/migrations -ll -ii -q
-ok "Bandit SAST: OK"
+if command -v bandit &>/dev/null; then
+  bandit -r api reservia -x api/migrations -ll -ii -q
+  ok "Bandit SAST: OK"
+else
+  echo -e "${YELLOW}⚠ Bandit no instalado — saltando SAST (pip install bandit para activarlo)${NC}"
+fi
 
 # ── Frontend ───────────────────────────────────────────────────────────────
 cd "$ROOT/frontend"
