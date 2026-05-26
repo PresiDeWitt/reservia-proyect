@@ -16,10 +16,11 @@ def admin_stats(request):
     total_users = DjangoUser.objects.count()
 
     qs = Reservation.objects.all()
+    attended_statuses = ['confirmed', 'arrived']
     total_reservations = qs.count()
-    confirmed = qs.filter(status='confirmed').count()
+    confirmed = qs.filter(status__in=attended_statuses).count()
     cancelled = qs.filter(status='cancelled').count()
-    total_guests = qs.filter(status='confirmed').aggregate(s=Sum('guests'))['s'] or 0
+    total_guests = qs.filter(status__in=attended_statuses).aggregate(s=Sum('guests'))['s'] or 0
     cancellation_rate = round(cancelled / total_reservations * 100, 1) if total_reservations > 0 else 0
     estimated_revenue = total_guests * 35
 
@@ -41,7 +42,10 @@ def admin_top_restaurants(request):
     top = (
         Restaurant.objects.annotate(
             total_reservations=Count('reservations'),
-            confirmed_reservations=Count('reservations', filter=models.Q(reservations__status='confirmed')),
+            confirmed_reservations=Count(
+                'reservations',
+                filter=models.Q(reservations__status__in=['confirmed', 'arrived']),
+            ),
         )
         .order_by('-total_reservations')[:20]
     )

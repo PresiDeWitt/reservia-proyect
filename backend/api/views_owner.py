@@ -7,14 +7,6 @@ from rest_framework.response import Response
 from .models import Restaurant, Reservation
 from .permissions import IsStaffOwner, get_staff_email
 
-OCCASION_LABELS = {
-    'birthday': 'Cumpleaños',
-    'anniversary': 'Aniversario',
-    'business': 'Negocios',
-    'other': 'Otro',
-}
-
-
 def _owner_restaurant(request):
     email = get_staff_email(request)
     if not email:
@@ -31,15 +23,16 @@ def owner_stats(request):
                         status=status.HTTP_403_FORBIDDEN)
 
     qs = Reservation.objects.filter(restaurant=restaurant)
+    attended_statuses = ['confirmed', 'arrived']
     total = qs.count()
-    confirmed = qs.filter(status='confirmed').count()
+    confirmed = qs.filter(status__in=attended_statuses).count()
     cancelled = qs.filter(status='cancelled').count()
-    total_guests = qs.filter(status='confirmed').aggregate(s=Sum('guests'))['s'] or 0
+    total_guests = qs.filter(status__in=attended_statuses).aggregate(s=Sum('guests'))['s'] or 0
     avg_guests = round(total_guests / confirmed, 1) if confirmed > 0 else 0
     cancellation_rate = round(cancelled / total * 100, 1) if total > 0 else 0
 
     hour_dist = list(
-        qs.filter(status='confirmed')
+        qs.filter(status__in=attended_statuses)
         .annotate(hour=ExtractHour('time'))
         .values('hour')
         .annotate(count=Count('id'))
@@ -132,7 +125,7 @@ def owner_update_reservation_status(request, pk):
         return Response({"error": "Reserva no encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
     new_status = request.data.get("status", "").strip()
-    allowed = {"no_show", "confirmed"}
+    allowed = {"arrived", "no_show", "confirmed"}
     if new_status not in allowed:
         return Response(
             {"error": f"Estado no válido. Valores permitidos: {sorted(allowed)}"},

@@ -79,6 +79,7 @@ class AvailabilitySlot(models.Model):
 class Reservation(models.Model):
     STATUS_CHOICES = [
         ('confirmed', 'Confirmed'),
+        ('arrived', 'Arrived'),
         ('cancelled', 'Cancelled'),
         ('no_show', 'No show'),
     ]

@@ -532,8 +532,10 @@
     "filters": {
       "all": "All",
       "confirmed": "Confirmed",
+      "arrived": "Arrived",
       "pending": "Pending",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "no_show": "No show"
     },
     "table": {
       "table": "Table",
@@ -542,12 +544,19 @@
       "time": "Time",
       "status": "Status",
       "actions": "Actions",
-      "confirm": "Confirm"
+      "markArrived": "Arrived",
+      "confirm": "Confirm",
+      "markNoShow": "No-show",
+      "revertConfirmed": "Reset",
+      "noteLabel": "Note",
+      "noNote": "No note"
     },
     "status": {
       "confirmed": "Confirmed",
+      "arrived": "Arrived",
       "pending": "Pending",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "no_show": "No show"
     },
     "floor": {
       "title": "Floor plan — Evening shift",
@@ -569,6 +578,12 @@
       "average": "Daily average",
       "guestsAvg": "avg. guests",
       "cancellationRate": "Cancellation rate"
+    },
+    "occasion": {
+      "birthday": "Birthday",
+      "anniversary": "Anniversary",
+      "business": "Business",
+      "other": "Other"
     }
   },
   "admin": {
@@ -652,6 +667,8 @@
     "cancel": "Cancel",
     "cancelled": "Cancelled",
     "confirmed": "Confirmed",
+    "arrived": "Arrived",
+    "noShow": "No show",
     "filterUpcoming": "Upcoming",
     "filterPast": "Past",
     "filterCancelled": "Cancelled",
