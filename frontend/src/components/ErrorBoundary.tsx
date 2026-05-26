@@ -1,4 +1,5 @@
 import React from 'react';
+import i18n from '../i18n/config';
 
 interface Props {
   children: React.ReactNode;
@@ -33,17 +34,17 @@ class ErrorBoundary extends React.Component<Props, State> {
             error_outline
           </span>
           <h1 className="editorial" style={{ fontSize: 40, fontWeight: 300 }}>
-            Algo salió mal
+            {i18n.t('errorBoundary.title')}
           </h1>
           <p style={{ color: 'var(--ink-55)', marginTop: 12 }}>
-            Ha ocurrido un error inesperado en esta página.
+            {i18n.t('errorBoundary.desc')}
           </p>
           <button
             className="btn btn-primary"
             style={{ marginTop: 28 }}
             onClick={() => window.location.reload()}
           >
-            Recargar página
+            {i18n.t('errorBoundary.reload')}
           </button>
         </div>
       );

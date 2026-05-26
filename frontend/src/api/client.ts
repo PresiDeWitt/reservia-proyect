@@ -1,4 +1,5 @@
 import { STORAGE_KEYS, storage } from './storage';
+import i18n from '../i18n/config';
 
 const BASE = '/api';
 
@@ -38,7 +39,7 @@ async function fetchWithRetry(url: string, options: RequestInit): Promise<Respon
     }
   }
   if (lastError instanceof TypeError) {
-    throw new Error('No se puede conectar al servidor. Comprueba tu conexión.');
+    throw new Error(i18n.t('api.connectionError'));
   }
   throw lastError ?? new Error('Request failed after retries');
 }

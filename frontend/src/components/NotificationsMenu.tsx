@@ -1,21 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 interface Notification {
   id: number;
   icon: string;
-  title: string;
-  description: string;
-  time: string;
   unread: boolean;
 }
 
 const INITIAL: Notification[] = [
-  { id: 1, icon: 'check_circle', title: 'Reserva confirmada', description: 'Kinoko Izakaya · 24 abr, 21:00 · Mesa para 2', time: 'HACE 2H', unread: true },
-  { id: 2, icon: 'schedule', title: 'Mañana tienes mesa', description: 'Panadería Miga · 10:30 · Brunch para 2', time: 'HACE 6H', unread: true },
-  { id: 3, icon: 'local_fire_department', title: 'Tu restaurante favorito tiene hueco', description: 'Le Petit Atelier — sábado 21:30, solo quedan 3 mesas', time: 'HACE 1D', unread: false },
-  { id: 4, icon: 'chat_bubble', title: '¿Qué tal Le Petit Atelier?', description: 'Cuéntale a otros comensales tu experiencia del 18 de marzo', time: 'HACE 2D', unread: false },
-  { id: 5, icon: 'star', title: 'Has subido a Habitué', description: 'Desbloqueaste reservas prioritarias + mesa sin espera en tu cumpleaños', time: 'HACE 1SEM', unread: false },
+  { id: 1, icon: 'check_circle', unread: true },
+  { id: 2, icon: 'schedule', unread: true },
+  { id: 3, icon: 'local_fire_department', unread: false },
+  { id: 4, icon: 'chat_bubble', unread: false },
+  { id: 5, icon: 'star', unread: false },
 ];
 
 interface Props {
@@ -23,6 +21,7 @@ interface Props {
 }
 
 const NotificationsMenu: React.FC<Props> = ({ variant = 'dark' }) => {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(INITIAL);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -47,7 +46,7 @@ const NotificationsMenu: React.FC<Props> = ({ variant = 'dark' }) => {
     <div ref={wrapperRef} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        aria-label="Notificaciones"
+        aria-label={t('notifications.ariaLabel')}
         className="relative grid place-items-center rounded-full transition-colors"
         style={{
           width: 40, height: 40,
@@ -89,15 +88,15 @@ const NotificationsMenu: React.FC<Props> = ({ variant = 'dark' }) => {
           >
             {/* Header */}
             <div style={{ padding: '20px 20px 12px' }}>
-              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--ink-55)', marginBottom: 4 }}>AVISOS</p>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'var(--ink-55)', marginBottom: 4 }}>{t('notifications.header')}</p>
               <div className="flex items-center justify-between">
-                <h2 style={{ fontSize: 28, fontWeight: 400, fontFamily: 'var(--font-editorial)', color: 'var(--ink)', margin: 0 }}>Bandeja</h2>
+                <h2 style={{ fontSize: 28, fontWeight: 400, fontFamily: 'var(--font-editorial)', color: 'var(--ink)', margin: 0 }}>{t('notifications.title')}</h2>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllRead}
                     style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer' }}
                   >
-                    Marcar leídos
+                    {t('notifications.markAllRead')}
                   </button>
                 )}
               </div>
@@ -105,43 +104,48 @@ const NotificationsMenu: React.FC<Props> = ({ variant = 'dark' }) => {
 
             {/* Lista */}
             <div style={{ maxHeight: 380, overflowY: 'auto' }}>
-              {notifications.map((n, i) => (
-                <div
-                  key={n.id}
-                  style={{
-                    display: 'flex', alignItems: 'flex-start', gap: 14,
-                    padding: '14px 20px',
-                    background: n.unread ? 'rgba(249,116,21,0.08)' : 'transparent',
-                    borderTop: i === 0 ? '1px solid var(--border)' : '1px solid var(--border)',
-                    cursor: 'pointer',
-                    transition: 'background 0.15s',
-                  }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = n.unread ? 'rgba(249,116,21,0.13)' : 'var(--ink-5)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = n.unread ? 'rgba(249,116,21,0.08)' : 'transparent'; }}
-                  onClick={() => setNotifications((prev) => prev.map((item) => item.id === n.id ? { ...item, unread: false } : item))}
-                >
-                  {/* Icono */}
-                  <div style={{
-                    width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                    background: n.unread ? 'rgba(249,116,21,0.15)' : 'var(--ink-5)',
-                    display: 'grid', placeItems: 'center',
-                  }}>
-                    <span className="mat" style={{ fontSize: 20, color: n.unread ? 'var(--primary)' : 'var(--ink-55)' }}>{n.icon}</span>
-                  </div>
+              {notifications.map((n, i) => {
+                const title = t(`notifications.items.${n.id}.title`);
+                const description = t(`notifications.items.${n.id}.description`);
+                const time = t(`notifications.items.${n.id}.time`);
+                return (
+                  <div
+                    key={n.id}
+                    style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 14,
+                      padding: '14px 20px',
+                      background: n.unread ? 'rgba(249,116,21,0.08)' : 'transparent',
+                      borderTop: i === 0 ? '1px solid var(--border)' : '1px solid var(--border)',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = n.unread ? 'rgba(249,116,21,0.13)' : 'var(--ink-5)'; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = n.unread ? 'rgba(249,116,21,0.08)' : 'transparent'; }}
+                    onClick={() => setNotifications((prev) => prev.map((item) => item.id === n.id ? { ...item, unread: false } : item))}
+                  >
+                    {/* Icono */}
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                      background: n.unread ? 'rgba(249,116,21,0.15)' : 'var(--ink-5)',
+                      display: 'grid', placeItems: 'center',
+                    }}>
+                      <span className="mat" style={{ fontSize: 20, color: n.unread ? 'var(--primary)' : 'var(--ink-55)' }}>{n.icon}</span>
+                    </div>
 
-                  {/* Texto */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)', margin: '0 0 2px' }}>{n.title}</p>
-                    <p style={{ fontSize: 13, color: 'var(--ink-55)', margin: '0 0 4px', lineHeight: 1.4 }}>{n.description}</p>
-                    <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--ink-40)', margin: 0 }}>{n.time}</p>
-                  </div>
+                    {/* Texto */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)', margin: '0 0 2px' }}>{title}</p>
+                      <p style={{ fontSize: 13, color: 'var(--ink-55)', margin: '0 0 4px', lineHeight: 1.4 }}>{description}</p>
+                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--ink-40)', margin: 0 }}>{time}</p>
+                    </div>
 
-                  {/* Punto no leído */}
-                  {n.unread && (
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 4 }} />
-                  )}
-                </div>
-              ))}
+                    {/* Punto no leído */}
+                    {n.unread && (
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)', flexShrink: 0, marginTop: 4 }} />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </motion.div>
         )}

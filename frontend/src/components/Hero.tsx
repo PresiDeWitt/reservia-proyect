@@ -19,7 +19,7 @@ interface TypewriterLine {
   small?: boolean;
 }
 
-const useTypewriter = (lines: TypewriterLine[], speed = 55, replayKey = 0) => {
+const useTypewriter = (lines: TypewriterLine[], speed = 55, replayKey = 0, lang = 'es') => {
   const [typed, setTyped] = useState<string[]>(() => lines.map(() => ''));
   const [activeIdx, setActiveIdx] = useState(0);
 
@@ -68,13 +68,13 @@ const useTypewriter = (lines: TypewriterLine[], speed = 55, replayKey = 0) => {
       if (timer) clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [replayKey]);
+  }, [replayKey, lang]);
 
   return { typed, activeIdx };
 };
 
 const Hero: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const sectionRef = useRef<HTMLElement>(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -88,11 +88,11 @@ const Hero: React.FC = () => {
   const [plateOffset, setPlateOffset] = useState(0);
 
   const lines: TypewriterLine[] = [
-    { text: 'La mesa que' },
-    { text: 'recordarás', italic: true },
-    { text: 'no la que reservaste.', small: true },
+    { text: t('hero.typewriter.line1') },
+    { text: t('hero.typewriter.line2'), italic: true },
+    { text: t('hero.typewriter.line3'), small: true },
   ];
-  const { typed, activeIdx } = useTypewriter(lines, 55, replayKey);
+  const { typed, activeIdx } = useTypewriter(lines, 55, replayKey, i18n.language);
 
   // Replay typewriter when hero re-enters viewport (scroll back to top)
   useEffect(() => {
@@ -285,7 +285,7 @@ const Hero: React.FC = () => {
                 animation: 'pulse-glow 2s ease-out infinite',
               }}
             />
-            <span>{tonight} mesas disponibles · esta noche · Granada</span>
+            <span>{t('hero.tonightTables', { count: tonight })}</span>
           </div>
 
           <h1
@@ -325,8 +325,7 @@ const Hero: React.FC = () => {
           </h1>
 
           <p style={{ fontSize: 18, lineHeight: 1.5, maxWidth: 540, marginTop: 32, opacity: 0.8 }}>
-            Cocinas independientes, chefs con alma, barrios con historia. Reserva en dos toques y llega
-            directamente a la sobremesa.
+            {t('hero.editorialParagraph')}
           </p>
 
           {/* Search card */}
@@ -344,9 +343,9 @@ const Hero: React.FC = () => {
           >
             <div style={{ display: 'flex', gap: 4, marginBottom: 18, flexWrap: 'wrap' }}>
               {[
-                { k: 'reservar' as const, l: 'Reservar mesa', i: 'restaurant' },
-                { k: 'pedir' as const, l: 'Pedir para recoger', i: 'takeout_dining' },
-                { k: 'evento' as const, l: 'Evento privado', i: 'celebration' },
+                { k: 'reservar' as const, l: t('hero.tabs.bookTable'), i: 'restaurant' },
+                { k: 'pedir' as const, l: t('hero.tabs.orderPickup'), i: 'takeout_dining' },
+                { k: 'evento' as const, l: t('hero.tabs.privateEvent'), i: 'celebration' },
               ].map((tabItem) => (
                 <button
                   key={tabItem.k}
@@ -387,7 +386,7 @@ const Hero: React.FC = () => {
             >
               <div style={{ position: 'relative' }}>
                 <div className="eyebrow" style={{ marginBottom: 6 }}>
-                  Cocina o ambiente
+                  {t('hero.searchForm.cuisineOrAmbience')}
                 </div>
                 <div
                   style={{
@@ -405,7 +404,7 @@ const Hero: React.FC = () => {
                   <input
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="italiano, romántico, terraza…"
+                    placeholder={t('hero.searchForm.placeholder')}
                     style={{
                       border: 'none',
                       background: 'transparent',
@@ -421,7 +420,7 @@ const Hero: React.FC = () => {
               </div>
               <div>
                 <div className="eyebrow" style={{ marginBottom: 6 }}>
-                  Día
+                  {t('hero.searchForm.day')}
                 </div>
                 <select
                   className="input"
@@ -429,15 +428,15 @@ const Hero: React.FC = () => {
                   value={day}
                   onChange={(e) => setDay(e.target.value)}
                 >
-                  <option value="hoy">Hoy</option>
-                  <option value="manana">Mañana</option>
-                  <option value="viernes">Viernes</option>
-                  <option value="sabado">Sábado</option>
+                  <option value="hoy">{t('hero.searchForm.days.hoy')}</option>
+                  <option value="manana">{t('hero.searchForm.days.manana')}</option>
+                  <option value="viernes">{t('hero.searchForm.days.viernes')}</option>
+                  <option value="sabado">{t('hero.searchForm.days.sabado')}</option>
                 </select>
               </div>
               <div>
                 <div className="eyebrow" style={{ marginBottom: 6 }}>
-                  Hora
+                  {t('hero.searchForm.time')}
                 </div>
                 <select
                   className="input"
@@ -455,7 +454,7 @@ const Hero: React.FC = () => {
               </div>
               <div>
                 <div className="eyebrow" style={{ marginBottom: 6 }}>
-                  Mesa
+                  {t('hero.searchForm.table')}
                 </div>
                 <select
                   className="input"
@@ -465,7 +464,7 @@ const Hero: React.FC = () => {
                 >
                   {[1, 2, 3, 4, 5, 6, 8].map((n) => (
                     <option key={n} value={n}>
-                      {n} pers.
+                      {n} {t('hero.searchForm.guest')}
                     </option>
                   ))}
                 </select>
@@ -495,13 +494,13 @@ const Hero: React.FC = () => {
                 auto_awesome
               </span>
               <span>
-                IA:
+                {t('hero.searchForm.aiLabel')}{' '}
                 <span className="italic-accent editorial" style={{ fontStyle: 'italic', margin: '0 4px' }}>
-                  "cena tranquila para una primera cita"
+                  {t('hero.searchForm.aiSuggestion1')}
                 </span>
-                o
+                {t('hero.searchForm.aiOr')}{' '}
                 <span className="italic-accent editorial" style={{ fontStyle: 'italic', margin: '0 4px' }}>
-                  "algo para celebrar un aniversario"
+                  {t('hero.searchForm.aiSuggestion2')}
                 </span>
               </span>
             </div>
@@ -531,7 +530,7 @@ const Hero: React.FC = () => {
         }}
       >
         <span className="eyebrow" style={{ color: 'var(--cream)', opacity: 0.6 }}>
-          Sigue explorando
+          {t('hero.scrollHint')}
         </span>
         <span className="mat" style={{ fontSize: 24, opacity: 0.8 }}>
           expand_more

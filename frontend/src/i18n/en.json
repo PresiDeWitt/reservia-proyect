@@ -1,4 +1,152 @@
 {
+  "common": {
+    "loading": "Loading…",
+    "view": "View",
+    "book": "Book",
+    "close": "Close"
+  },
+  "notFound": {
+    "message": "Page not found",
+    "backHome": "Back to home"
+  },
+  "staff": {
+    "eyebrow": "Restricted access",
+    "title": "Team",
+    "codePlaceholder": "Access code",
+    "submit": "Enter",
+    "errorInvalid": "Invalid access code"
+  },
+  "onboarding": {
+    "eyebrow": {
+      "edit": "Edit restaurant",
+      "setup": "Set up your restaurant"
+    },
+    "title": {
+      "editPre": "Update today's",
+      "editAccent": "details",
+      "editPost": ".",
+      "setupPre": "Welcome. ",
+      "setupAccent": "Personalise",
+      "setupPost": " your panel."
+    },
+    "desc": {
+      "edit": "Change capacity, cuisine or description. Panel metrics recalculate on save.",
+      "setup": "These details build your custom dashboard: table management, reservations and metrics — all based on your restaurant."
+    },
+    "fields": {
+      "name": "Restaurant name",
+      "namePlaceholder": "Osteria del Borgo",
+      "cuisine": "Cuisine type",
+      "capacity": "Capacity (guests)",
+      "address": "Address",
+      "addressPlaceholder": "Main Street, 12 · Granada",
+      "phone": "Phone",
+      "phonePlaceholder": "+34 600 000 000",
+      "description": "Short description",
+      "descriptionPlaceholder": "Traditional cuisine with a contemporary touch…"
+    },
+    "submit": {
+      "save": "Save changes",
+      "create": "Create my panel"
+    },
+    "cancel": "Cancel",
+    "cuisines": {
+      "Italiana": "Italian",
+      "Japonesa": "Japanese",
+      "Mediterránea": "Mediterranean",
+      "Mexicana": "Mexican",
+      "Asiática": "Asian",
+      "Tradicional": "Traditional",
+      "Fusión": "Fusion",
+      "Otra": "Other"
+    }
+  },
+  "notifications": {
+    "ariaLabel": "Notifications",
+    "header": "ALERTS",
+    "title": "Inbox",
+    "markAllRead": "Mark all read",
+    "items": {
+      "1": {
+        "title": "Booking confirmed",
+        "description": "Kinoko Izakaya · 24 Apr, 21:00 · Table for 2",
+        "time": "2H AGO"
+      },
+      "2": {
+        "title": "Table tomorrow",
+        "description": "Panadería Miga · 10:30 · Brunch for 2",
+        "time": "6H AGO"
+      },
+      "3": {
+        "title": "Your favourite spot has space",
+        "description": "Le Petit Atelier — Saturday 21:30, only 3 tables left",
+        "time": "1D AGO"
+      },
+      "4": {
+        "title": "How was Le Petit Atelier?",
+        "description": "Share your experience of March 18 with other diners",
+        "time": "2D AGO"
+      },
+      "5": {
+        "title": "Promoted to Habitué",
+        "description": "Unlocked priority booking + complimentary table on your birthday",
+        "time": "1W AGO"
+      }
+    }
+  },
+  "favorites": {
+    "eyebrow": "Your collection",
+    "title": "Your",
+    "titleAccent": "favourites",
+    "loginPrompt": "Log in to see your favourites.",
+    "goHome": "Go home",
+    "empty": "You haven't saved any restaurants yet.",
+    "explore": "Explore"
+  },
+  "map": {
+    "title": "Table",
+    "titleAccent": "map",
+    "loading": "Loading…",
+    "restaurantCount": "{{count}} restaurants",
+    "view": "View",
+    "book": "Book"
+  },
+  "help": {
+    "titlePre": "How can we",
+    "titleAccent": "help you",
+    "titlePost": "?",
+    "contact": {
+      "title": "Write to us",
+      "desc": "We reply within 24h on working days."
+    },
+    "faqTitle": "Frequently asked questions",
+    "faq": [
+      {
+        "q": "How do I make a reservation?",
+        "a": "Search for a restaurant, choose date, time and number of guests, then press \"Confirm booking\". You'll get instant confirmation."
+      },
+      {
+        "q": "Can I cancel a reservation?",
+        "a": "Yes. Go to \"My Bookings\" and press cancel on the relevant reservation. Cancellations less than 4h before may carry a fee."
+      },
+      {
+        "q": "How does the floor plan work?",
+        "a": "From the restaurant page you can open the interactive 3D floor plan. Brown tables are available; grey ones are taken. Click to select."
+      },
+      {
+        "q": "What is the AI chat for?",
+        "a": "The AI assistant helps you find restaurants based on mood, cuisine, budget or location. Just write naturally."
+      },
+      {
+        "q": "How do I enable Google sign-in?",
+        "a": "The Google button appears in the login modal when the admin has configured the integration. Otherwise use email and password."
+      },
+      {
+        "q": "Can I leave a review?",
+        "a": "Yes, after having a reservation at the restaurant. Go to the restaurant page → Reviews tab → write your rating."
+      }
+    ]
+  },
   "header": {
     "home": "Home",
     "map": "Map",
@@ -12,11 +160,38 @@
     "subtitle": "Skip the wait. Reserve your table or order ahead for a seamless dining experience.",
     "bookTable": "Book a Table",
     "preorderFood": "Pre-order Food",
-    "tabs": {
-      "bookTable": "Book Table",
-      "orderPickup": "Order Pickup"
+    "typewriter": {
+      "line1": "The table you'll",
+      "line2": "remember",
+      "line3": "not just the one you booked."
     },
-    "searchPlaceholder": "Restaurant, cuisine, or specific dish...",
+    "tonightTables": "{{count}} table available · tonight · Granada",
+    "tonightTables_plural": "{{count}} tables available · tonight · Granada",
+    "editorialParagraph": "Independent kitchens, chefs with soul, historic neighbourhoods. Book in two taps and arrive straight for the after-meal talk.",
+    "tabs": {
+      "bookTable": "Book table",
+      "orderPickup": "Order pickup",
+      "privateEvent": "Private event"
+    },
+    "searchForm": {
+      "cuisineOrAmbience": "Cuisine or ambience",
+      "placeholder": "Italian, romantic, terrace…",
+      "day": "Day",
+      "time": "Time",
+      "table": "Table",
+      "guest": "guests",
+      "aiLabel": "AI:",
+      "aiSuggestion1": "\"quiet dinner for a first date\"",
+      "aiSuggestion2": "\"something to celebrate an anniversary\"",
+      "aiOr": "or",
+      "days": {
+        "hoy": "Today",
+        "manana": "Tomorrow",
+        "viernes": "Friday",
+        "sabado": "Saturday"
+      }
+    },
+    "scrollHint": "Keep exploring",
     "filters": {
       "cuisine": "Cuisine",
       "distance": "Distance",
@@ -35,6 +210,37 @@
     "platformLabel": "On the platform",
     "restaurantsLabel": "restaurants",
     "platformSub": "Available right now",
+    "cravingPre": "What do you",
+    "cravingAccent": "fancy",
+    "cravingPost": " today?",
+    "viewAllCuisines": "View all cuisines",
+    "mesasConAlmaPre": "Tables with",
+    "mesasConAlmaAccent": "soul",
+    "mesasConAlmaPost": ".",
+    "manifesto": {
+      "eyebrow": "Manifesto",
+      "quotePre": "We believe a great dinner starts",
+      "quoteAccent1": "before",
+      "quoteMid": "you walk through the door — with the anticipation, the promise, the",
+      "quoteAccent2": "lingering conversation",
+      "quotePost": "you're already imagining.",
+      "author": "The ReserVia editorial team"
+    },
+    "curationEyebrow": "02 · Curated this week",
+    "business": {
+      "eyebrow": "For restaurateurs",
+      "headlinePre": "Fill your kitchen,",
+      "headlineAccent": "effortlessly",
+      "headlinePost": ".",
+      "desc": "Real-time table plan, waiting list, automatic reminders, optional pre-payment, cover analytics. All in a panel that learns from your service.",
+      "ctaRegister": "Register your restaurant",
+      "ctaLogin": "I already have an account"
+    },
+    "howItWorks": {
+      "eyebrow": "How it works",
+      "titlePre": "Three steps.",
+      "titleAccent": "Zero waiting."
+    },
     "steps": {
       "discover": {
         "title": "Discover",
@@ -68,7 +274,9 @@
     "reserved": "Reserved!",
     "reservedDetails": "Table for {{guests}} at {{time}} on {{date}}",
     "gotIt": "Got it",
-    "photos": "+12 photos"
+    "photos": "+12 photos",
+    "removeFromFavorites": "Remove from favourites",
+    "addToFavorites": "Add to favourites"
   },
   "confirmation": {
     "confirmed": "Booking confirmed",
@@ -84,6 +292,40 @@
     "backHome": "Back to home"
   },
   "restaurantDetail": {
+    "descriptions": {
+      "The Golden Fork": "Authentic flavors of Italy in the heart of the city. Our chef uses only the freshest ingredients to create traditional pastas and wood-fired pizzas.",
+      "Sakura Gardens": "An authentic Japanese experience in Granada. Fresh sushi, sashimi, and traditional dishes prepared by our master chef from Osaka.",
+      "Prime Cuts": "The finest cuts in Granada, aged to perfection. Our dry-aged beef comes from sustainable farms and is cooked exactly to your liking.",
+      "El Centro Fusion": "Where East meets West. Creative fusion cuisine combining Mediterranean and Asian influences in an exceptional setting in the heart of Granada.",
+      "Green Leaf": "Award-winning vegetarian and vegan restaurant. Farm-to-table philosophy with daily deliveries of organic, seasonal produce from local farmers.",
+      "Petit Paris Bistro": "A slice of Paris in the heart of Granada. Classic French bistro cuisine with an extensive wine list and the warmth of a Parisian neighborhood spot."
+    },
+    "menuItems": {
+      "Pasta con Trufa": { "name": "Truffle Pasta", "desc": "Handmade tagliatelle with black truffle and parmesan" },
+      "Pizza Margherita": { "name": "Margherita Pizza", "desc": "San Marzano tomatoes, fresh mozzarella, basil" },
+      "Osso Buco": { "name": "Osso Buco", "desc": "Braised veal shank with gremolata and saffron risotto" },
+      "Tiramisú": { "name": "Tiramisu", "desc": "Classic Italian dessert with mascarpone and espresso" },
+      "Omakase Sushi (8 uds)": { "name": "Sushi Omakase (8 pcs)", "desc": "Chef's selection of the finest seasonal nigiri" },
+      "Sashimi de Salmón": { "name": "Salmon Sashimi", "desc": "Premium Norwegian salmon, thinly sliced" },
+      "Gyoza de Wagyu": { "name": "Wagyu Gyoza", "desc": "Pan-fried dumplings filled with Japanese wagyu" },
+      "Ramen de Miso": { "name": "Miso Ramen", "desc": "Rich miso broth with pork chashu and soft-boiled egg" },
+      "Ribeye 300g": { "name": "Ribeye 300g", "desc": "45-day dry-aged ribeye, chimichurri, french fries" },
+      "Solomillo 250g": { "name": "Tenderloin 250g", "desc": "AAA tenderloin, truffle butter, roasted garlic" },
+      "Tomahawk al hueso": { "name": "Bone-in Tomahawk", "desc": "1kg Tomahawk to share, seasonal vegetables" },
+      "Crème Brûlée": { "name": "Crème Brûlée", "desc": "Vanilla custard with a caramelized sugar crust" },
+      "Ceviche Tataki de Atún": { "name": "Tuna Tataki Ceviche", "desc": "Tuna with sesame, citrus ponzu, and avocado" },
+      "Tacos de Wagyu (3)": { "name": "Wagyu Tacos (3)", "desc": "Wagyu, kimchi, and sriracha mayo in mini tortillas" },
+      "Bacalao Glaseado al Miso": { "name": "Miso-Glazed Cod", "desc": "With pak choi, jasmine rice, and yuzu butter" },
+      "Cheesecake de Matcha": { "name": "Matcha Cheesecake", "desc": "Matcha cheesecake with Spanish cream cheese" },
+      "Buddha Bowl": { "name": "Buddha Bowl", "desc": "Quinoa, roasted vegetables, chickpeas, tahini dressing" },
+      "Risotto de Setas Silvestres": { "name": "Wild Mushroom Risotto", "desc": "Creamy Arborio rice with truffle oil and parmesan" },
+      "Tostada de Aguacate": { "name": "Avocado Toast", "desc": "Sourdough bread, smashed avocado, poached egg, microgreens" },
+      "Açaí Bowl": { "name": "Açaí Bowl", "desc": "Organic açaí, seasonal fruits, granola, honey" },
+      "Sopa de Cebolla Francesa": { "name": "French Onion Soup", "desc": "Slow-simmered onion broth, croûtons, gruyère gratin" },
+      "Confit de Pato": { "name": "Duck Confit", "desc": "Confit duck leg, Du Puy lentils, cherry jus" },
+      "Steak Frites": { "name": "Steak Frites", "desc": "Entrecôte, maître d'hôtel butter, crispy fries" },
+      "Crêpe Suzette": { "name": "Crêpe Suzette", "desc": "Classic crêpes flambéed with Grand Marnier and orange" }
+    },
     "tabs": {
       "about": "About",
       "menu": "Menu",
@@ -99,6 +341,19 @@
     "featuredDishes": "Featured dishes",
     "reviewsVerified": "Verified reviews are shown once diners complete their visit.",
     "reviews": "reviews",
+    "notFoundPre": "Not",
+    "notFoundAccent": "found",
+    "fallbackDesc": "{{name}} is a {{cuisine}} restaurant in {{location}}. Honest cooking, local produce and a room with soul.",
+    "menu": {
+      "fallback1": { "name": "Seasonal dish", "desc": "Local market produce" },
+      "fallback2": { "name": "House speciality", "desc": "Traditional recipe" }
+    },
+    "info": {
+      "fallbackHours": "Tue–Sun · 13:00–16:00 · 20:00–23:30",
+      "fallbackPayment": "Visa · MC · AmEx · Bizum",
+      "fallbackDress": "Smart casual",
+      "fallbackParking": "Street parking · 200m"
+    },
     "reviewCategories": {
       "food": "Food",
       "service": "Service",
@@ -231,18 +486,43 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "errorGeneric": "Something went wrong",
-    "errorGoogle": "Google sign-in failed"
+    "errorGoogle": "Google sign-in failed",
+    "forgot": {
+      "recoverAccess": "Recover access",
+      "forgotTitlePre": "Forgot your ",
+      "forgotTitleAccent": "password",
+      "forgotTitlePost": "?",
+      "forgotSubtitle": "Enter your email and we'll send you a link to reset it.",
+      "successMessage": "If that email is registered you will receive a link shortly. In development the link appears in the server console.",
+      "backToLogin": "Back to login",
+      "submit": "Send link",
+      "errorSend": "Error sending the link. Please try again."
+    },
+    "editorial": {
+      "registerPre": "Reserve your",
+      "registerAccent": "seat",
+      "registerPost": "at the table.",
+      "loginPre": "Where the",
+      "loginAccent": "table conversations",
+      "loginPost": "never end.",
+      "restaurants": "Restaurants",
+      "rating": "Rating",
+      "bookings": "Bookings"
+    }
   },
   "owner": {
     "panel": "Management panel",
     "yourRestaurant": "Your restaurant",
     "newReservation": "New reservation",
     "edit": "Edit",
+    "loading": "Loading…",
+    "noReservations": "No reservations",
     "stats": {
       "reservations": "Today's bookings",
       "guests": "Guests",
       "cancellations": "Cancellations",
-      "revenue": "Est. revenue"
+      "revenue": "Est. revenue",
+      "avgGuests": "Avg. guests/booking"
     },
     "tabs": {
       "reservations": "Bookings",
@@ -278,25 +558,34 @@
       "summary": "Summary",
       "freeTables": "Free tables",
       "takenTables": "Taken",
-      "reservedTables": "Reserved"
+      "reservedTables": "Reserved",
+      "entrance": "ENTRANCE"
     },
     "heatmap": {
       "title": "Occupancy by hour",
       "subtitle": "Booking distribution across the day",
       "peak": "Peak hour",
       "quiet": "Quiet hour",
-      "average": "Daily average"
+      "average": "Daily average",
+      "guestsAvg": "avg. guests",
+      "cancellationRate": "Cancellation rate"
     }
   },
   "admin": {
     "eyebrow": "Admin · Platform",
     "title": "Dashboard",
     "systemsOk": "All systems operational",
+    "loading": "Loading…",
+    "confirmedBadge": "{{count}} confirmed",
     "stats": {
       "activeRestaurants": "Active restaurants",
       "totalBookings": "Total bookings",
       "registeredUsers": "Registered users",
       "netRevenue": "Net revenue"
+    },
+    "overview": {
+      "cancellations": "Cancellations",
+      "totalGuests": "Total guests"
     },
     "tabs": {
       "overview": "Overview",
@@ -365,7 +654,8 @@
     "confirmed": "Confirmed",
     "filterUpcoming": "Upcoming",
     "filterPast": "Past",
-    "filterCancelled": "Cancelled"
+    "filterCancelled": "Cancelled",
+    "confirmCancelPrompt": "Cancel this booking? This action cannot be undone."
   },
   "cuisines": {
     "Italian": "Italian",
@@ -443,11 +733,19 @@
     "newPasswordLabel": "New password",
     "newPasswordPlaceholder": "Minimum 8 characters",
     "confirmPasswordLabel": "Confirm password",
-    "confirmPasswordPlaceholder": "Repeat your password",
+    "confirmPasswordPlaceholder": "Repeat the password",
     "saving": "Saving…",
     "setPassword": "Set password",
-    "errorMinLength": "Password must be at least 8 characters.",
-    "errorMismatch": "Passwords don't match.",
-    "errorInvalid": "Invalid or expired link. Request a new one."
+    "errorMinLength": "Password must be at least 8 characters long.",
+    "errorMismatch": "Passwords do not match.",
+    "errorInvalid": "Invalid or expired link. Please request a new one."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "desc": "An unexpected error occurred on this page.",
+    "reload": "Reload page"
+  },
+  "api": {
+    "connectionError": "Cannot connect to server. Please check your connection."
   }
 }

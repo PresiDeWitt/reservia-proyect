@@ -97,7 +97,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = ({ open, onClose, onOpenAuth }
                 <Logo size={28} color="var(--cream)" />
                 <button
                   onClick={onClose}
-                  aria-label="Cerrar"
+                  aria-label={t('common.close')}
                   className="grid place-items-center"
                   style={{
                     width: 36,

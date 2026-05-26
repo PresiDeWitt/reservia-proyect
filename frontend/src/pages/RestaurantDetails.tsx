@@ -46,7 +46,7 @@ const StarInput: React.FC<{ value: number; onChange: (n: number) => void }> = ({
 };
 
 const RestaurantDetails: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
@@ -125,7 +125,7 @@ const RestaurantDetails: React.FC = () => {
     return (
       <div className="container" style={{ padding: '120px 24px', textAlign: 'center' }}>
         <h1 className="editorial" style={{ fontSize: 48, fontWeight: 300 }}>
-          No <span className="italic-accent">encontrado</span>
+          {t('restaurantDetail.notFoundPre')} <span className="italic-accent">{t('restaurantDetail.notFoundAccent')}</span>
         </h1>
       </div>
     );
@@ -274,8 +274,14 @@ const RestaurantDetails: React.FC = () => {
           {tab === 'about' && (
             <div key="about" className="tab-content">
               <p style={{ fontSize: 18, lineHeight: 1.7, maxWidth: 640 }}>
-                {restaurant.description ||
-                  `${restaurant.name} es una propuesta de cocina ${restaurant.cuisine.toLowerCase()} en ${restaurant.location}. Cocina honesta, producto local y una sala con alma.`}
+                {t(`restaurantDetail.descriptions.${restaurant.name}`) !== `restaurantDetail.descriptions.${restaurant.name}`
+                  ? t(`restaurantDetail.descriptions.${restaurant.name}`)
+                  : restaurant.description ||
+                    t('restaurantDetail.fallbackDesc', {
+                      name: restaurant.name,
+                      cuisine: restaurant.cuisine.toLowerCase(),
+                      location: restaurant.location,
+                    })}
               </p>
 
               <div style={{ marginTop: 48 }}>
@@ -317,8 +323,8 @@ const RestaurantDetails: React.FC = () => {
                 {(restaurant.menuItems && restaurant.menuItems.length > 0
                   ? restaurant.menuItems
                   : [
-                      { id: 1, name: 'Plato de temporada', description: 'Producto local de mercado', price: 18 },
-                      { id: 2, name: 'Especialidad de la casa', description: 'Receta de siempre', price: 24 },
+                      { id: 1, name: t('restaurantDetail.menu.fallback1.name'), description: t('restaurantDetail.menu.fallback1.desc'), price: 18 },
+                      { id: 2, name: t('restaurantDetail.menu.fallback2.name'), description: t('restaurantDetail.menu.fallback2.desc'), price: 24 },
                     ]
                 ).map((m) => (
                   <div
@@ -335,9 +341,15 @@ const RestaurantDetails: React.FC = () => {
                   >
                     <div style={{ flex: 1 }}>
                       <h4 className="editorial" style={{ fontSize: 22, fontWeight: 400 }}>
-                        {m.name}
+                        {t(`restaurantDetail.menuItems.${m.name}.name`) !== `restaurantDetail.menuItems.${m.name}.name`
+                          ? t(`restaurantDetail.menuItems.${m.name}.name`)
+                          : m.name}
                       </h4>
-                      <p style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 6 }}>{m.description}</p>
+                      <p style={{ fontSize: 13, color: 'var(--ink-55)', marginTop: 6 }}>
+                        {t(`restaurantDetail.menuItems.${m.name}.desc`) !== `restaurantDetail.menuItems.${m.name}.desc`
+                          ? t(`restaurantDetail.menuItems.${m.name}.desc`)
+                          : m.description}
+                      </p>
                     </div>
                     <div
                       className="editorial mono-num"
@@ -484,7 +496,7 @@ const RestaurantDetails: React.FC = () => {
                         <div>
                           <div style={{ fontWeight: 700, fontSize: 14 }}>{review.userName}</div>
                           <div style={{ fontSize: 12, color: 'var(--ink-55)' }}>
-                            {new Date(review.created_at).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            {new Date(review.created_at).toLocaleDateString(i18n.language, { year: 'numeric', month: 'long', day: 'numeric' })}
                           </div>
                         </div>
                         <div style={{ marginLeft: 'auto', display: 'flex', gap: 2 }}>
@@ -531,11 +543,11 @@ const RestaurantDetails: React.FC = () => {
             >
               {[
                 { k: 'address', v: restaurant.address, i: 'location_on' },
-                { k: 'phone', v: '+34 912 345 678', i: 'call' },
-                { k: 'hours', v: 'Mar a Dom · 13:00 a 16:00 · 20:00 a 23:30', i: 'schedule' },
-                { k: 'payment', v: 'Visa · MC · AmEx · Bizum', i: 'credit_card' },
-                { k: 'dress', v: 'Smart casual', i: 'checkroom' },
-                { k: 'parking', v: 'SER · parking 200m', i: 'local_parking' },
+                { k: 'phone', v: t('restaurantDetail.info.fallbackPhone', { defaultValue: '+34 912 345 678' }), i: 'call' },
+                { k: 'hours', v: t('restaurantDetail.info.fallbackHours'), i: 'schedule' },
+                { k: 'payment', v: t('restaurantDetail.info.fallbackPayment'), i: 'credit_card' },
+                { k: 'dress', v: t('restaurantDetail.info.fallbackDress'), i: 'checkroom' },
+                { k: 'parking', v: t('restaurantDetail.info.fallbackParking'), i: 'local_parking' },
               ].map((x) => (
                 <div
                   key={x.k}

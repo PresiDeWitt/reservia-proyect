@@ -93,7 +93,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
       await authApi.requestPasswordReset(email);
       setResetSent(true);
     } catch {
-      setError('Error al enviar el enlace. Inténtalo de nuevo.');
+      setError(t('auth.forgot.errorSend'));
     } finally {
       setLoading(false);
     }
@@ -108,7 +108,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
   const isRegister = mode === 'register';
   const isForgot = mode === 'forgot';
   const title = isRegister ? t('auth.createAccount') : t('auth.signIn');
-  const stepLabel = isRegister ? t('auth.stepRegister') : isForgot ? 'Recuperar acceso' : t('auth.stepLogin');
+  const stepLabel = isRegister ? t('auth.stepRegister') : isForgot ? t('auth.forgot.recoverAccess') : t('auth.stepLogin');
 
   return (
     <AnimatePresence>
@@ -136,7 +136,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
           >
             <button
               onClick={onClose}
-              aria-label="Cerrar"
+              aria-label={t('common.close')}
               className="absolute top-3 right-3 z-30 w-9 h-9 rounded-full flex items-center justify-center bg-white/15 hover:bg-white/25 backdrop-blur-md text-white lg:bg-transparent lg:text-navy/50 lg:hover:text-navy lg:hover:bg-navy/5 transition-all"
             >
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span>
@@ -168,17 +168,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                 >
                   {isRegister ? (
                     <>
-                      Reserva tu<br />
-                      <em className="italic text-primary" style={{ fontWeight: 400 }}>asiento</em>
+                      {t('auth.editorial.registerPre')}<br />
+                      <em className="italic text-primary" style={{ fontWeight: 400 }}>{t('auth.editorial.registerAccent')}</em>
                       <br />
-                      <span className="text-background-light/85">en la mesa.</span>
+                      <span className="text-background-light/85">{t('auth.editorial.registerPost')}</span>
                     </>
                   ) : (
                     <>
-                      Donde la<br />
-                      <em className="italic text-primary" style={{ fontWeight: 400 }}>sobremesa</em>
+                      {t('auth.editorial.loginPre')}<br />
+                      <em className="italic text-primary" style={{ fontWeight: 400 }}>{t('auth.editorial.loginAccent')}</em>
                       <br />
-                      <span className="text-background-light/85">nunca termina.</span>
+                      <span className="text-background-light/85">{t('auth.editorial.loginPost')}</span>
                     </>
                   )}
                 </h2>
@@ -196,7 +196,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                     <span className="text-background-light/60 text-xs">+</span>
                   </div>
                   <span className="text-[10px] tracking-[0.2em] uppercase text-background-light/55">
-                    Restaurantes
+                    {t('auth.editorial.restaurants')}
                   </span>
                 </div>
                 <div className="h-10 w-px bg-background-light/15" />
@@ -210,7 +210,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                     </span>
                   </div>
                   <span className="text-[10px] tracking-[0.2em] uppercase text-background-light/55">
-                    Valoración
+                    {t('auth.editorial.rating')}
                   </span>
                 </div>
                 <div className="h-10 w-px bg-background-light/15" />
@@ -219,7 +219,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                     24/7
                   </span>
                   <span className="text-[10px] tracking-[0.2em] uppercase text-background-light/55">
-                    Reservas
+                    {t('auth.editorial.bookings')}
                   </span>
                 </div>
               </div>
@@ -230,12 +230,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
               {isForgot && (
                 <div key="forgot" className="auth-rise flex flex-col gap-6 mt-2 lg:mt-0">
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">Recuperar acceso</span>
+                    <span className="text-[10px] tracking-[0.3em] uppercase text-navy/50 font-bold">{t('auth.forgot.recoverAccess')}</span>
                     <h3 className="auth-editorial text-navy text-3xl" style={{ fontWeight: 400 }}>
-                      ¿Olvidaste tu <em className="italic text-primary">contraseña</em>?
+                      {t('auth.forgot.forgotTitlePre')}<em className="italic text-primary">{t('auth.forgot.forgotTitleAccent')}</em>{t('auth.forgot.forgotTitlePost')}
                     </h3>
                     <p className="text-sm text-navy/55 leading-relaxed mt-1">
-                      Introduce tu email y te enviaremos un enlace para restablecerla.
+                      {t('auth.forgot.forgotSubtitle')}
                     </p>
                   </div>
 
@@ -245,14 +245,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                         <span className="material-symbols-outlined text-emerald-600" style={{ fontSize: 36 }}>mark_email_read</span>
                       </div>
                       <p className="text-sm text-navy/70 max-w-xs leading-relaxed">
-                        Si ese email está registrado recibirás un enlace en breve. En desarrollo el enlace aparece en la consola del servidor.
+                        {t('auth.forgot.successMessage')}
                       </p>
                       <button
                         type="button"
                         onClick={() => switchMode('login')}
                         className="text-sm font-bold text-primary hover:underline"
                       >
-                        Volver al inicio de sesión
+                        {t('auth.forgot.backToLogin')}
                       </button>
                     </div>
                   ) : (
@@ -291,14 +291,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                             <span className="w-4 h-4 border-2 border-background-light/30 border-t-background-light rounded-full animate-spin" />
                           ) : (
                             <>
-                              <span>Enviar enlace</span>
+                              <span>{t('auth.forgot.submit')}</span>
                               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>send</span>
                             </>
                           )}
                         </span>
                       </button>
                       <button type="button" onClick={() => switchMode('login')} className="text-xs text-navy/50 hover:text-primary transition-colors text-center">
-                        ← Volver al inicio de sesión
+                        ← {t('auth.forgot.backToLogin')}
                       </button>
                     </form>
                   )}
@@ -455,7 +455,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                       onClick={() => switchMode('forgot')}
                       className="text-xs text-navy/50 hover:text-primary transition-colors text-right self-end"
                     >
-                      ¿Olvidaste tu contraseña?
+                      {t('auth.forgot.forgotTitlePre') + t('auth.forgot.forgotTitleAccent') + t('auth.forgot.forgotTitlePost')}
                     </button>
                   )}
 

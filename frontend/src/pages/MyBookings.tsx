@@ -22,7 +22,7 @@ const MyBookings: React.FC = () => {
   }, [isAuthenticated]);
 
   const cancel = async (id: number) => {
-    if (!window.confirm('¿Cancelar esta reserva? Esta acción no se puede deshacer.')) return;
+    if (!window.confirm(t('bookings.confirmCancelPrompt'))) return;
     await reservationsApi.cancel(id);
     setBookings((b) => b.map((r) => (r.id === id ? { ...r, status: 'cancelled' } : r)));
   };
