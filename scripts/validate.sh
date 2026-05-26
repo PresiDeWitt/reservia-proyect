@@ -39,19 +39,26 @@ fi
 # ── Frontend ───────────────────────────────────────────────────────────────
 cd "$ROOT/frontend"
 
+# Detectar pnpm: instalación global, o fallback a npx
+if command -v pnpm &>/dev/null; then
+  PNPM="pnpm"
+else
+  PNPM="npx --yes pnpm"
+fi
+
 info "Frontend: instalando dependencias..."
-pnpm install --frozen-lockfile --silent
+$PNPM install --frozen-lockfile --silent
 
 info "Frontend: build (tsc + vite)..."
-pnpm build
+$PNPM build
 ok "Frontend build: OK"
 
 info "Frontend: ESLint..."
-pnpm lint
+$PNPM lint
 ok "Frontend lint: OK"
 
 info "Frontend: Vitest..."
-pnpm test:run
+$PNPM test:run
 ok "Frontend tests: OK"
 
 # ── Resultado ─────────────────────────────────────────────────────────────
