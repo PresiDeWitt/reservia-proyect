@@ -242,8 +242,8 @@ def create_reservation_notification(sender, instance, created, **kwargs):
                     message=f'Tu reserva en {instance.restaurant.name} para el {instance.date} ha sido cancelada.',
                     reservation=instance,
                 )
-            # 2. Despachar email de cancelación con useSend
-            send_booking_cancellation_email(instance)
+                # 2. Despachar email de cancelación solo la primera vez
+                send_booking_cancellation_email(instance)
 
 
 @receiver(post_save, sender=User)

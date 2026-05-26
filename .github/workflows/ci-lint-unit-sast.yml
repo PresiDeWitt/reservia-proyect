@@ -101,7 +101,7 @@ jobs:
         env:
           SECRET_KEY: ci-test-secret-key
           DEBUG: 'True'
-        run: python backend/manage.py test tests --verbosity 2
+        run: python backend/manage.py test tests api.tests --verbosity 2
 
   backend-sast:
     name: Backend SAST (Bandit)
