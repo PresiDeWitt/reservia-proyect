@@ -30,8 +30,8 @@ const FloorPlan3D: React.FC = () => {
     if (!mount) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x23170f);
-    scene.fog = new THREE.Fog(0x23170f, 14, 40);
+    scene.background = new THREE.Color(0x2a2018);
+    scene.fog = new THREE.Fog(0x2a2018, 18, 50);
 
     const camera = new THREE.PerspectiveCamera(45, mount.clientWidth / mount.clientHeight, 0.1, 100);
     camera.position.set(0, 12, 14);
@@ -45,12 +45,17 @@ const FloorPlan3D: React.FC = () => {
     mount.appendChild(renderer.domElement);
 
     // Lighting
-    scene.add(new THREE.AmbientLight(0xfff1d9, 0.45));
-    const key = new THREE.DirectionalLight(0xfff1d9, 0.9);
+    scene.add(new THREE.HemisphereLight(0xfff1d9, 0x3a2a1c, 0.3));
+    scene.add(new THREE.AmbientLight(0xfff1d9, 1.0));
+    const key = new THREE.DirectionalLight(0xfff1d9, 1.4);
     key.position.set(8, 14, 6);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
     scene.add(key);
+
+    const fill = new THREE.DirectionalLight(0xffeedd, 0.6);
+    fill.position.set(-6, 8, -4);
+    scene.add(fill);
 
     // Candle-like point lights
     [
@@ -60,14 +65,14 @@ const FloorPlan3D: React.FC = () => {
       [-3, 1.2, 4],
       [3, 1.2, 4],
     ].forEach(([x, y, z]) => {
-      const p = new THREE.PointLight(0xf97415, 1.2, 6, 2);
+      const p = new THREE.PointLight(0xf97415, 1.8, 8, 2);
       p.position.set(x, y, z);
       scene.add(p);
     });
 
     // Floor
     const floorGeom = new THREE.PlaneGeometry(20, 18);
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x3a2a1c, roughness: 0.95 });
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x4a3828, roughness: 0.95 });
     const floor = new THREE.Mesh(floorGeom, floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
@@ -75,7 +80,7 @@ const FloorPlan3D: React.FC = () => {
 
     // Bar
     const barGeom = new THREE.BoxGeometry(8, 1.1, 1);
-    const barMat = new THREE.MeshStandardMaterial({ color: 0x1a1108, roughness: 0.4, metalness: 0.2 });
+    const barMat = new THREE.MeshStandardMaterial({ color: 0x2a1c10, roughness: 0.35, metalness: 0.25 });
     const bar = new THREE.Mesh(barGeom, barMat);
     bar.position.set(0, 0.55, -7);
     bar.castShadow = true;
@@ -83,7 +88,7 @@ const FloorPlan3D: React.FC = () => {
     scene.add(bar);
 
     // Private room walls
-    const wallMat = new THREE.MeshStandardMaterial({ color: 0x2a1c12, roughness: 0.8 });
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0x3a2c1c, roughness: 0.8 });
     [
       { pos: [4.5, 1.5, -2], size: [0.12, 3, 4] },
       { pos: [7.5, 1.5, -2], size: [0.12, 3, 4] },
@@ -144,7 +149,7 @@ const FloorPlan3D: React.FC = () => {
         const cz = tableData.posY + Math.sin(angle) * r;
         const chair = new THREE.Mesh(
           new THREE.BoxGeometry(0.4, 0.5, 0.4),
-          new THREE.MeshStandardMaterial({ color: 0x1a1108, roughness: 0.7 }),
+          new THREE.MeshStandardMaterial({ color: 0x2a1c10, roughness: 0.7 }),
         );
         chair.position.set(cx, 0.25, cz);
         chair.castShadow = true;
