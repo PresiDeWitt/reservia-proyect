@@ -20,6 +20,18 @@ if [[ -f "venv/Scripts/activate" ]]; then
 elif [[ -f "venv/bin/activate" ]]; then
   # shellcheck disable=SC1091
   source venv/bin/activate
+elif [[ -f "../.venv/Scripts/activate" ]]; then
+  # shellcheck disable=SC1091
+  source ../.venv/Scripts/activate
+elif [[ -f "../.venv/bin/activate" ]]; then
+  # shellcheck disable=SC1091
+  source ../.venv/bin/activate
+elif [[ -f "../venv/Scripts/activate" ]]; then
+  # shellcheck disable=SC1091
+  source ../venv/Scripts/activate
+elif [[ -f "../venv/bin/activate" ]]; then
+  # shellcheck disable=SC1091
+  source ../venv/bin/activate
 else
   fail "No se encontró venv. Ejecuta: cd backend && python -m venv venv && pip install -r requirements.txt"
 fi

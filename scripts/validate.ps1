@@ -16,6 +16,10 @@ Set-Location "$Root\backend"
 Info "Backend: activando entorno virtual..."
 $activate = if (Test-Path "venv\Scripts\Activate.ps1") { "venv\Scripts\Activate.ps1" }
             elseif (Test-Path "venv\bin\activate")      { "venv\bin\activate" }
+            elseif (Test-Path "..\.venv\Scripts\Activate.ps1") { "..\.venv\Scripts\Activate.ps1" }
+            elseif (Test-Path "..\.venv\bin\activate")      { "..\.venv\bin\activate" }
+            elseif (Test-Path "..\venv\Scripts\Activate.ps1") { "..\venv\Scripts\Activate.ps1" }
+            elseif (Test-Path "..\venv\bin\activate")      { "..\venv\bin\activate" }
             else { Fail "No se encontró venv. Ejecuta: cd backend; python -m venv venv; pip install -r requirements.txt" }
 
 . $activate
