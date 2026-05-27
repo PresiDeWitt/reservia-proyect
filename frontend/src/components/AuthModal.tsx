@@ -15,19 +15,17 @@ interface AuthModalProps {
   defaultRole?: UserRole;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, defaultRole }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode }) => {
   const { t } = useTranslation();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register' | 'forgot'>('login');
-  const [role, setRoleState] = useState<UserRole>('customer');
 
   useEffect(() => {
     if (isOpen) {
       if (defaultMode) setMode(defaultMode);
-      if (defaultRole) setRoleState(defaultRole);
     }
-  }, [isOpen, defaultMode, defaultRole]);
+  }, [isOpen, defaultMode]);
   const [name, setName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -54,7 +52,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
               password,
             });
       const finalRole: UserRole =
-        mode === 'register' ? role : getRole(res.user.email);
+        mode === 'register' ? 'customer' : getRole(res.user.email);
       if (mode === 'register') setRole(res.user.email, finalRole);
       login(res.token, res.refresh, { ...res.user, role: finalRole });
       onClose();
@@ -72,7 +70,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
     setLoading(true);
     try {
       const res = await authApi.google(credential);
-      const finalRole: UserRole = mode === 'register' ? role : getRole(res.user.email);
+      const finalRole: UserRole = mode === 'register' ? 'customer' : getRole(res.user.email);
       if (mode === 'register') setRole(res.user.email, finalRole);
       login(res.token, res.refresh, { ...res.user, role: finalRole });
       onClose();
@@ -387,35 +385,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode, def
                         autoComplete="tel"
                         required
                       />
-                      <div className="flex flex-col gap-2">
-                        <span className="text-[10px] tracking-[0.3em] uppercase font-bold" style={{ color: 'var(--ink-55)' }}>
-                          {t('auth.accountType')}
-                        </span>
-                        <div className="grid grid-cols-2 gap-2">
-                          {([
-                            { v: 'customer', label: t('auth.customer'), icon: 'person' },
-                            { v: 'owner', label: t('auth.restaurant'), icon: 'storefront' },
-                          ] as { v: UserRole; label: string; icon: string }[]).map((opt) => {
-                            const active = role === opt.v;
-                            return (
-                              <button
-                                key={opt.v}
-                                type="button"
-                                onClick={() => setRoleState(opt.v)}
-                                className="flex flex-col items-center gap-1 py-3 rounded-xl transition-all"
-                                style={{
-                                  background: active ? 'var(--primary)' : 'var(--ink-5)',
-                                  color: active ? '#fff' : 'var(--ink)',
-                                  border: `1px solid ${active ? 'var(--primary)' : 'var(--border)'}`,
-                                }}
-                              >
-                                <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{opt.icon}</span>
-                                <span className="text-xs font-semibold">{opt.label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
                     </>
                   )}
                   <FloatField

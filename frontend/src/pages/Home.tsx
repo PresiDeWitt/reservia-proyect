@@ -342,7 +342,7 @@ const Home: React.FC = () => {
             <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
               <button
                 className="btn btn-ember"
-                onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }))}
+                onClick={() => { window.location.href = 'mailto:hola@reservia.es?subject=Registro%20de%20Restaurante%20en%20ReserVia'; }}
               >
                 <span>{t('home.business.ctaRegister')}</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>
