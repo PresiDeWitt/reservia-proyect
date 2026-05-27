@@ -68,7 +68,7 @@ const Footer: React.FC = () => {
       if (isOwnerOrAdmin) {
         navigate('/owner');
       } else {
-        window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }));
+        window.location.assign('mailto:hola@reservia.es?subject=Registro%20de%20Restaurante%20en%20ReserVia');
       }
     } else if (link.action === '__go_owner_panel') {
       if (isOwnerOrAdmin) {
