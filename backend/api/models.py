@@ -79,7 +79,9 @@ class AvailabilitySlot(models.Model):
 class Reservation(models.Model):
     STATUS_CHOICES = [
         ('confirmed', 'Confirmed'),
+        ('arrived', 'Arrived'),
         ('cancelled', 'Cancelled'),
+        ('no_show', 'No show'),
     ]
     user = models.ForeignKey(User, related_name='reservations', on_delete=models.CASCADE)
     restaurant = models.ForeignKey(Restaurant, related_name='reservations', on_delete=models.CASCADE)

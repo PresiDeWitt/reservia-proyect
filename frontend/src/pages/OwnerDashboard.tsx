@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { getOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
 import OwnerOnboarding from '../components/OwnerOnboarding';
-import { ownerApi, type OwnerStats, type OwnerReservation } from '../api/owner';
+import { ownerApi, type OwnerStats, type OwnerReservation, type OwnerAttendanceStatus } from '../api/owner';
 import { STORAGE_KEYS, storage } from '../api/storage';
 
 const FLOOR = [
@@ -26,8 +26,10 @@ const ALL_HOURS = ['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '
 
 const statusColor: Record<string, string> = {
   confirmed: 'var(--emerald)',
+  arrived: '#0ea5e9',
   pending: '#f59e0b',
   cancelled: 'var(--ruby)',
+  no_show: '#6b7280',
 };
 
 const floorColor: Record<string, string> = {
@@ -55,12 +57,21 @@ const OwnerDashboard: React.FC = () => {
   const [reservations, setReservations] = useState<OwnerReservation[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingRes, setLoadingRes] = useState(true);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   const handleLogout = () => {
     storage.remove(STORAGE_KEYS.STAFF_ROLE);
     storage.remove(STORAGE_KEYS.STAFF_TOKEN);
     navigate('/staff', { replace: true });
   };
+
+  const loadStats = useCallback(() => {
+    setLoadingStats(true);
+    ownerApi.stats()
+      .then(setApiStats)
+      .catch(() => {})
+      .finally(() => setLoadingStats(false));
+  }, []);
 
   useEffect(() => {
     const role = storage.get(STORAGE_KEYS.STAFF_ROLE);
@@ -69,18 +80,33 @@ const OwnerDashboard: React.FC = () => {
       navigate('/staff', { replace: true });
       return;
     }
-    ownerApi.stats()
-      .then(setApiStats)
-      .catch(() => {})
-      .finally(() => setLoadingStats(false));
-  }, [navigate]);
+    loadStats();
+  }, [loadStats, navigate]);
 
-  useEffect(() => {
+  const loadReservations = useCallback(() => {
+    setLoadingRes(true);
     ownerApi.reservations({ status: filter })
       .then((r) => setReservations(r.reservations))
       .catch(() => setReservations([]))
       .finally(() => setLoadingRes(false));
   }, [filter]);
+
+  useEffect(() => { loadReservations(); }, [loadReservations]);
+
+  const handleStatusUpdate = async (id: number, newStatus: OwnerAttendanceStatus) => {
+    setUpdatingId(id);
+    try {
+      await ownerApi.updateStatus(id, newStatus);
+      setReservations(prev => prev
+        .map(r => r.id === id ? { ...r, status: newStatus } : r)
+        .filter(r => filter === 'all' || r.status === filter));
+      loadStats();
+    } catch {
+      // State stays unchanged if the backend rejects the update.
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   if (!profile && user?.email) {
     return <OwnerOnboarding email={user.email} initialName={user.name} onDone={setProfile} />;
@@ -110,8 +136,44 @@ const OwnerDashboard: React.FC = () => {
 
   const statusLabel: Record<string, string> = {
     confirmed: t('owner.status.confirmed'),
+    arrived: t('owner.status.arrived'),
     pending: t('owner.status.pending'),
     cancelled: t('owner.status.cancelled'),
+    no_show: t('owner.status.no_show'),
+  };
+
+  const occasionLabel: Record<string, string> = {
+    birthday: t('owner.occasion.birthday'),
+    anniversary: t('owner.occasion.anniversary'),
+    business: t('owner.occasion.business'),
+    other: t('owner.occasion.other'),
+  };
+
+  const actionButtonStyle = (
+    variant: 'success' | 'danger' | 'neutral',
+    disabled: boolean,
+  ): React.CSSProperties => {
+    const colors = {
+      success: { bg: '#ecfdf5', border: '#bbf7d0', text: '#047857' },
+      danger: { bg: '#fef2f2', border: '#fecaca', text: '#b91c1c' },
+      neutral: { bg: 'var(--surface-2)', border: 'var(--border)', text: 'var(--ink-55)' },
+    }[variant];
+
+    return {
+      height: 30,
+      padding: '0 10px',
+      borderRadius: 8,
+      border: `1px solid ${colors.border}`,
+      background: disabled ? 'var(--ink-5)' : colors.bg,
+      color: disabled ? 'var(--ink-40)' : colors.text,
+      fontSize: 11,
+      fontWeight: 700,
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 4,
+      whiteSpace: 'nowrap',
+    };
   };
 
   const heatmapData = ALL_HOURS.map((h) => {
@@ -215,7 +277,7 @@ const OwnerDashboard: React.FC = () => {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {/* Filter pills */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-              {[['all', t('owner.filters.all')], ['confirmed', t('owner.filters.confirmed')], ['pending', t('owner.filters.pending')], ['cancelled', t('owner.filters.cancelled')]].map(([v, l]) => (
+              {[['all', t('owner.filters.all')], ['confirmed', t('owner.filters.confirmed')], ['arrived', t('owner.filters.arrived')], ['no_show', t('owner.filters.no_show')], ['cancelled', t('owner.filters.cancelled')]].map(([v, l]) => (
                 <button
                   key={v}
                   onClick={() => setFilter(v)}
@@ -234,8 +296,8 @@ const OwnerDashboard: React.FC = () => {
               ))}
             </div>
 
-            <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', overflow: 'hidden' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', overflowX: 'auto', overflowY: 'hidden' }}>
+              <table style={{ width: '100%', minWidth: 880, borderCollapse: 'collapse' }}>
                 <thead>
                   <tr style={{ borderBottom: '1px solid var(--border)' }}>
                     {[t('owner.table.table'), t('owner.table.client'), t('owner.table.guests'), t('owner.table.time'), t('owner.table.status'), t('owner.table.actions')].map(h => (
@@ -248,7 +310,13 @@ const OwnerDashboard: React.FC = () => {
                     <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>{t('owner.loading')}</td></tr>
                   ) : reservations.length === 0 ? (
                     <tr><td colSpan={6} style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>{t('owner.noReservations')}</td></tr>
-                  ) : reservations.map((r, i) => (
+                  ) : reservations.map((r, i) => {
+                    const note = r.note.trim();
+                    const occasion = r.occasion ? (occasionLabel[r.occasion] ?? r.occasion) : '';
+                    const isUpdating = updatingId === r.id;
+                    const canUpdate = r.status !== 'cancelled';
+
+                    return (
                     <tr key={r.id} style={{ borderBottom: i < reservations.length - 1 ? '1px solid var(--border)' : 'none', transition: 'background 0.15s' }}
                       onMouseEnter={e => (e.currentTarget.style.background = 'var(--cream-2)')}
                       onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -256,7 +324,27 @@ const OwnerDashboard: React.FC = () => {
                       <td style={{ padding: '14px 16px' }}>
                         <span style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--ink-5)', display: 'grid', placeItems: 'center', fontSize: 12, fontWeight: 700, color: 'var(--ink)' }}>{r.table}</span>
                       </td>
-                      <td style={{ padding: '14px 16px', fontWeight: 600, fontSize: 14, color: 'var(--ink)' }}>{r.name}</td>
+                      <td style={{ padding: '14px 16px', color: 'var(--ink)' }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{r.name}</div>
+                        {(occasion || note) ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxWidth: 300 }}>
+                            {occasion && (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--ink-55)', fontSize: 12, lineHeight: 1.35 }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>celebration</span>
+                                {occasion}
+                              </span>
+                            )}
+                            {note && (
+                              <span title={note} style={{ display: 'inline-flex', alignItems: 'flex-start', gap: 4, color: 'var(--ink-55)', fontSize: 12, lineHeight: 1.35, whiteSpace: 'normal' }}>
+                                <span className="material-symbols-outlined" style={{ fontSize: 14, marginTop: 1 }}>medical_information</span>
+                                {note}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <div style={{ color: 'var(--ink-40)', fontSize: 12 }}>{t('owner.table.noNote')}</div>
+                        )}
+                      </td>
                       <td style={{ padding: '14px 16px', color: 'var(--ink-55)', fontSize: 13 }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                           <span className="material-symbols-outlined" style={{ fontSize: 14 }}>group</span>
@@ -275,12 +363,49 @@ const OwnerDashboard: React.FC = () => {
                         </span>
                       </td>
                       <td style={{ padding: '14px 16px' }}>
-                        <button style={{ height: 30, padding: '0 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--ink-55)', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 14 }}>more_horiz</span>
-                        </button>
+                        {canUpdate ? (
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', minWidth: 220 }}>
+                            {r.status !== 'arrived' && (
+                              <button
+                                type="button"
+                                disabled={isUpdating}
+                                onClick={() => handleStatusUpdate(r.id, 'arrived')}
+                                style={actionButtonStyle('success', isUpdating)}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>check_circle</span>
+                                {t('owner.table.markArrived')}
+                              </button>
+                            )}
+                            {r.status !== 'no_show' && (
+                              <button
+                                type="button"
+                                disabled={isUpdating}
+                                onClick={() => handleStatusUpdate(r.id, 'no_show')}
+                                style={actionButtonStyle('danger', isUpdating)}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>person_off</span>
+                                {t('owner.table.markNoShow')}
+                              </button>
+                            )}
+                            {(r.status === 'arrived' || r.status === 'no_show') && (
+                              <button
+                                type="button"
+                                disabled={isUpdating}
+                                onClick={() => handleStatusUpdate(r.id, 'confirmed')}
+                                style={actionButtonStyle('neutral', isUpdating)}
+                              >
+                                <span className="material-symbols-outlined" style={{ fontSize: 14 }}>undo</span>
+                                {t('owner.table.revertConfirmed')}
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ color: 'var(--ink-40)', fontSize: 12 }}>—</span>
+                        )}
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -46,6 +46,18 @@ const MyBookings: React.FC = () => {
     const dt = new Date(`${b.date}T${b.time || '00:00'}`);
     return filter === 'upcoming' ? dt >= now : dt < now;
   });
+  const bookingStatusLabel: Record<Reservation['status'], string> = {
+    confirmed: t('bookings.confirmed'),
+    arrived: t('bookings.arrived'),
+    cancelled: t('bookings.cancelled'),
+    no_show: t('bookings.noShow'),
+  };
+  const bookingStatusStyle: Record<Reservation['status'], React.CSSProperties> = {
+    confirmed: { background: 'rgba(16,185,129,0.12)', color: '#0a7c5a', borderColor: 'transparent' },
+    arrived: { background: 'rgba(14,165,233,0.12)', color: '#0369a1', borderColor: 'transparent' },
+    cancelled: { background: 'rgba(225,29,72,0.12)', color: '#b01446', borderColor: 'transparent' },
+    no_show: { background: 'rgba(107,114,128,0.12)', color: '#4b5563', borderColor: 'transparent' },
+  };
 
   return (
     <motion.div
@@ -132,13 +144,9 @@ const MyBookings: React.FC = () => {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
                 <span
                   className="chip"
-                  style={
-                    b.status === 'confirmed'
-                      ? { background: 'rgba(16,185,129,0.12)', color: '#0a7c5a', borderColor: 'transparent' }
-                      : { background: 'rgba(225,29,72,0.12)', color: '#b01446', borderColor: 'transparent' }
-                  }
+                  style={bookingStatusStyle[b.status]}
                 >
-                  {b.status === 'confirmed' ? t('bookings.confirmed') : t('bookings.cancelled')}
+                  {bookingStatusLabel[b.status]}
                 </span>
                 {b.status === 'confirmed' && filter === 'upcoming' && (
                   <button onClick={() => cancel(b.id)} className="btn btn-ghost" style={{ height: 36, fontSize: 12 }}>

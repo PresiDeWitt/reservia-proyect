@@ -1,5 +1,8 @@
 import { staffApi } from './client';
 
+export type OwnerReservationStatus = 'confirmed' | 'arrived' | 'cancelled' | 'no_show';
+export type OwnerAttendanceStatus = 'confirmed' | 'arrived' | 'no_show';
+
 export interface OwnerStats {
   restaurantName: string;
   restaurantCuisine: string;
@@ -18,8 +21,10 @@ export interface OwnerReservation {
   guests: number;
   date: string;
   time: string;
-  status: 'confirmed' | 'cancelled';
+  status: OwnerReservationStatus;
   table: string;
+  note: string;
+  occasion: string;
 }
 
 export interface OwnerReservationsResponse {
@@ -40,4 +45,6 @@ export const ownerApi = {
     const query = qs.toString() ? `?${qs}` : '';
     return staffApi.get<OwnerReservationsResponse>(`/owner/reservations/${query}`);
   },
+  updateStatus: (id: number, status: OwnerAttendanceStatus) =>
+    staffApi.patch<{ id: number; status: OwnerReservationStatus }>(`/owner/reservations/${id}/status/`, { status }),
 };
