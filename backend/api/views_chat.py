@@ -59,28 +59,28 @@ def _parse_date(text: str) -> str | None:
     Parse natural language dates from Spanish and English text.
     Returns ISO date string (YYYY-MM-DD) or None.
     """
-    msg = text.lower()
+    msg = text.lower().strip()
     today = dt_date.today()
 
     # hoy / today
     if "hoy" in msg or "today" in msg:
         return today.isoformat()
 
+    # pasado mañana / day after tomorrow (check this before mañana)
+    if "pasado mañana" in msg or "pasado manana" in msg or "day after tomorrow" in msg:
+        return (today + datetime.timedelta(days=2)).isoformat()
+
     # mañana / tomorrow
     if "mañana" in msg or "manana" in msg or "tomorrow" in msg:
         return (today + datetime.timedelta(days=1)).isoformat()
-
-    # pasado mañana / day after tomorrow
-    if "pasado mañana" in msg or "pasado manana" in msg or "day after tomorrow" in msg:
-        return (today + datetime.timedelta(days=2)).isoformat()
 
     # ISO format: YYYY-MM-DD
     iso = re.search(r'\b(\d{4}-\d{2}-\d{2})\b', msg)
     if iso:
         return iso.group(1)
 
-    # DD/MM/YYYY or DD-MM-YYYY
-    dmy = re.search(r'\b(\d{1,2})[/-](\d{1,2})[/-](\d{4})\b', msg)
+    # DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
+    dmy = re.search(r'\b(\d{1,2})[/\-\.](\d{1,2})[/\-\.](\d{4})\b', msg)
     if dmy:
         d, m, y = int(dmy.group(1)), int(dmy.group(2)), int(dmy.group(3))
         try:
@@ -88,18 +88,30 @@ def _parse_date(text: str) -> str | None:
         except ValueError:
             pass
 
-    # "30 de mayo", "el 30 de mayo", "dia 30 de mayo", "mayo 30"
-    named_date = re.search(
-        r'\b(?:el\s+)?(?:d[ií]a\s+)?(\d{1,2})\s+de\s+([a-záéíóúñ]+)\b',
+    # DD/MM or DD-MM (implying current year)
+    dm = re.search(r'\b(\d{1,2})[/\-](\d{1,2})\b', msg)
+    if dm:
+        d, m = int(dm.group(1)), int(dm.group(2))
+        try:
+            year = today.year
+            candidate = dt_date(year, m, d)
+            if candidate < today:
+                candidate = dt_date(year + 1, m, d)
+            return candidate.isoformat()
+        except ValueError:
+            pass
+
+    # "30 de mayo", "30 mayo", "el 30 de mayo"
+    day_month = re.search(
+        r'\b(?:el\s+)?(?:d[ií]a\s+)?(\d{1,2})\s*(?:de\s+)?(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)\b',
         msg
     )
-    if named_date:
-        day = int(named_date.group(1))
-        month_name = named_date.group(2)
+    if day_month:
+        day = int(day_month.group(1))
+        month_name = day_month.group(2)
         month = MONTH_MAP.get(month_name)
         if month and 1 <= day <= 31:
             year = today.year
-            # If the date has already passed this year, assume next year
             try:
                 candidate = dt_date(year, month, day)
                 if candidate < today:
@@ -108,14 +120,14 @@ def _parse_date(text: str) -> str | None:
             except ValueError:
                 pass
 
-    # "mayo 30" (month-first)
-    named_date_rev = re.search(
-        r'\b([a-záéíóúñ]+)\s+(\d{1,2})\b',
+    # "mayo 30", "mayo del 30"
+    month_day = re.search(
+        r'\b(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|january|february|march|april|may|june|july|august|september|october|november|december)\s*(?:del\s+|de\s+)?(\d{1,2})\b',
         msg
     )
-    if named_date_rev:
-        month_name = named_date_rev.group(1)
-        day = int(named_date_rev.group(2))
+    if month_day:
+        month_name = month_day.group(1)
+        day = int(month_day.group(2))
         month = MONTH_MAP.get(month_name)
         if month and 1 <= day <= 31:
             year = today.year
@@ -123,6 +135,27 @@ def _parse_date(text: str) -> str | None:
                 candidate = dt_date(year, month, day)
                 if candidate < today:
                     candidate = dt_date(year + 1, month, day)
+                return candidate.isoformat()
+            except ValueError:
+                pass
+
+    # "el 30", "el dia 30", "para el 30" (just a day number, referring to the current/next month)
+    just_day = re.search(r'\b(?:el\s+|d[ií]a\s+|para\s+el\s+)(\d{1,2})\b', msg)
+    if just_day:
+        day = int(just_day.group(1))
+        if 1 <= day <= 31:
+            # First check if the day is possible in current month and >= today
+            try:
+                candidate = dt_date(today.year, today.month, day)
+                if candidate >= today:
+                    return candidate.isoformat()
+            except ValueError:
+                pass
+            # Otherwise, check next month
+            try:
+                next_month = today.month + 1 if today.month < 12 else 1
+                next_month_year = today.year if today.month < 12 else today.year + 1
+                candidate = dt_date(next_month_year, next_month, day)
                 return candidate.isoformat()
             except ValueError:
                 pass
@@ -451,22 +484,22 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
         if not pending_guests:
             missing.append("el número de personas" if not is_english else "the number of guests")
         if not pending_date:
-            missing.append("la fecha" if not is_english else "the date")
+            missing.append("la fecha (ej. 30 de mayo, el próximo viernes, hoy o mañana)" if not is_english else "the date (e.g. May 30, next Friday, today or tomorrow)")
         if not pending_time:
             missing.append("la hora" if not is_english else "the time")
 
         if missing:
             if is_english:
-                return f"For your reservation at **{r.name}**, I still need: {', '.join(missing)}."
-            return f"Para tu reserva en **{r.name}**, necesito: {', '.join(missing)}."
+                return f"For your reservation at {r.name}, I still need: {', '.join(missing)}."
+            return f"Para tu reserva en {r.name}, necesito: {', '.join(missing)}."
 
         # All required params collected → emit draft
         draft = _build_reservation_draft(r, pending_guests, pending_date, pending_time,
                                          pending_occasion, pending_note)
         if is_english:
-            return (f"All set! Table at **{r.name}** for {pending_guests} guest(s) "
+            return (f"All set! Table at {r.name} for {pending_guests} guest(s) "
                     f"on {pending_date} at {pending_time}. Confirm below:\n\n{draft}")
-        return (f"¡Perfecto! Mesa en **{r.name}** para {pending_guests} persona(s) "
+        return (f"¡Perfecto! Mesa en {r.name} para {pending_guests} persona(s) "
                 f"el {pending_date} a las {pending_time}. Confirma aquí:\n\n{draft}")
 
     # Recommendation flow
@@ -498,20 +531,20 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
         selected = selected[:2]
 
     parts = []
-    for rest in selected:
+    for idx, rest in enumerate(selected, 1):
         items = list(rest.menu_items.all()[:2])
         dish_hint = ""
         if items:
             dish_hint = (" (prueba el " + " o el ".join(i.name for i in items) + ")"
                          if not is_english
                          else " (try: " + ", ".join(i.name for i in items) + ")")
-        parts.append(f"**{rest.name}** — {rest.cuisine}, ⭐{rest.rating}{dish_hint}")
+        parts.append(f"{idx}. {rest.name} — {rest.cuisine}, valoración {rest.rating}/5{dish_hint}")
 
     if is_english:
-        return ("I'd recommend " + " or ".join(parts) +
-                ". Want me to book a table? If so, how many guests and when?")
-    return ("Te recomiendo " + " o ".join(parts) +
-            ". ¿Quieres que te reserve mesa? Si es así, ¿para cuántas personas y cuándo?")
+        return ("I'd recommend the following:\n\n" + "\n".join(parts) +
+                "\n\nWant me to book a table? If so, how many guests and when?")
+    return ("Te recomiendo los siguientes restaurantes:\n\n" + "\n".join(parts) +
+            "\n\n¿Quieres que te reserve mesa? Si es así, ¿para cuántas personas y cuándo?")
 
 
 # ─────────────────────────────────────────────
@@ -615,14 +648,23 @@ RESTAURANTES DISPONIBLES (RAG)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 COMPORTAMIENTO GENERAL
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-- Eres amable, natural y conciso. Máximo 120 palabras por respuesta.
+- Eres amable, natural y extremadamente estructurado. Máximo 150 palabras por respuesta.
 - Responde en el mismo idioma que el usuario (español o inglés).
-- Si el usuario solo saluda, pregunta qué le apetece. No recomiendes nada aún.
+- Si el usuario solo saluda, pregunta qué le apetece de forma amigable. No recomiendes nada aún.
 - NO inventes restaurantes, platos ni precios. Solo datos del RAG.
-- Cuando recomiendes un restaurante, pregunta siempre cuántas personas son y para cuándo,
-  así puedes preparar la reserva de inmediato si el usuario quiere.
-- Acepta fechas en cualquier formato natural: "30 de mayo", "el viernes", "el día 3 de junio", etc.
-  No le digas al usuario que solo aceptas "hoy" o "mañana".
+- Cuando recomiendes un restaurante, pregunta siempre cuántas personas son y cuándo desean reservar.
+- Acepta fechas en cualquier formato natural de calendario (ej. "30 de mayo", "el 12 de junio", "el próximo viernes", etc.) además de "hoy" y "mañana". NUNCA restrinjas al usuario a solo elegir "hoy" o "mañana".
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FORMATO DE RESPUESTA (¡OBLIGATORIO!)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- ¡NUNCA utilices asteriscos `*` ni dobles asteriscos `**` en tus respuestas para formatear texto en negrita, cursiva o listas! NUNCA.
+- En lugar de negritas con asteriscos, escribe los nombres de los restaurantes en MAYÚSCULAS para que destaquen limpia y profesionalmente.
+- No uses sintaxis de Markdown en absoluto, excepto para separar líneas y párrafos de forma limpia con saltos de línea (\n).
+- Presenta las recomendaciones de restaurantes en listas numeradas súper legibles, un restaurante por línea, por ejemplo:
+  1. EL CENTRO FUSION - Cocina: Fusion, Valoración: 4.5/5, Dirección: ...
+  2. SAKURA GARDENS - Cocina: Japanese, Valoración: 4.5/5, Dirección: ...
+- Las respuestas deben estar bellamente estructuradas con espacios limpios entre párrafos.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GUARDRAILS
