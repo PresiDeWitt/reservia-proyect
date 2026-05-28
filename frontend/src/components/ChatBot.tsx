@@ -17,12 +17,12 @@ const ChatBot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // States for verification booking cards
-  const [confirmedDrafts, setConfirmedDrafts] = useState<Record<number, { code: string; date: string; time: string; guests: number; restaurantName: string }>>({});
+  const [confirmedDrafts, setConfirmedDrafts] = useState<Record<number, { code: string; date: string; time: string; guests: number; restaurantName: string; occasion?: string; note?: string }>>({});
   const [loadingDrafts, setLoadingDrafts] = useState<Record<number, boolean>>({});
   const [cancelledDrafts, setCancelledDrafts] = useState<Record<number, boolean>>({});
 
   const parseMessage = (content: string) => {
-    const match = content.match(/\[RESERVATION_DRAFT:(\{.*?\})\]/);
+    const match = content.match(/\[RESERVATION_DRAFT:(\{[\s\S]*?\})\]/);
     if (match) {
       try {
         const draft = JSON.parse(match[1]);
@@ -43,6 +43,8 @@ const ChatBot: React.FC = () => {
       date: string;
       time: string;
       guests: number;
+      occasion?: string;
+      note?: string;
     }
   ) => {
     if (!isAuthenticated) {
@@ -57,6 +59,8 @@ const ChatBot: React.FC = () => {
         date: draft.date,
         time: draft.time,
         guests: draft.guests,
+        occasion: draft.occasion || '',
+        note: draft.note || '',
       });
       const code = 'RV-' + res.id.toString().padStart(4, '0');
       setConfirmedDrafts((prev) => ({
@@ -67,6 +71,8 @@ const ChatBot: React.FC = () => {
           time: draft.time,
           guests: draft.guests,
           restaurantName: draft.restaurant_name,
+          occasion: draft.occasion,
+          note: draft.note,
         },
       }));
     } catch (err) {
@@ -231,8 +237,14 @@ const ChatBot: React.FC = () => {
                             <span className="material-symbols-outlined text-emerald-600 text-3xl">check_circle</span>
                             <div className="text-xs font-bold uppercase tracking-wider">¡Reserva Confirmada!</div>
                             <div className="font-semibold text-xs leading-normal">
-                              Mesa para {isConfirmed.guests} en **{isConfirmed.restaurantName}** para el {isConfirmed.date} a las {isConfirmed.time}.
+                              Mesa para {isConfirmed.guests} en <strong>{isConfirmed.restaurantName}</strong> — {isConfirmed.date} a las {isConfirmed.time}.
                             </div>
+                            {isConfirmed.occasion && (
+                              <div className="text-xs opacity-80">🎉 {isConfirmed.occasion}</div>
+                            )}
+                            {isConfirmed.note && (
+                              <div className="text-xs opacity-80">📝 {isConfirmed.note}</div>
+                            )}
                             <div className="text-sm font-black mono-num tracking-wide mt-1 bg-white/60 py-1 rounded-lg">
                               {isConfirmed.code}
                             </div>
