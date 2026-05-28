@@ -806,7 +806,7 @@ def chat_view(request):
                 "X-Title": "ReserVia",
             },
             json={
-                "model": "google/gemma-2-9b-it:free",
+                "model": "google/gemma-4-31b-it:free",
                 "messages": messages_payload,
                 "max_tokens": 350,
                 "temperature": 0.3,
