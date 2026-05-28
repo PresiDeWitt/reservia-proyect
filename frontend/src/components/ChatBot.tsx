@@ -2,9 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { chatApi, type ChatMessage } from '../api/chat';
+import { useAuth } from '../context/AuthContext';
+import { reservationsApi } from '../api/reservations';
 
 const ChatBot: React.FC = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -12,6 +15,66 @@ const ChatBot: React.FC = () => {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locEnabled, setLocEnabled] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // States for verification booking cards
+  const [confirmedDrafts, setConfirmedDrafts] = useState<Record<number, { code: string; date: string; time: string; guests: number; restaurantName: string }>>({});
+  const [loadingDrafts, setLoadingDrafts] = useState<Record<number, boolean>>({});
+  const [cancelledDrafts, setCancelledDrafts] = useState<Record<number, boolean>>({});
+
+  const parseMessage = (content: string) => {
+    const match = content.match(/\[RESERVATION_DRAFT:(\{.*?\})\]/);
+    if (match) {
+      try {
+        const draft = JSON.parse(match[1]);
+        const text = content.replace(match[0], '').trim();
+        return { text, draft };
+      } catch {
+        // Ignorar si el JSON no es válido
+      }
+    }
+    return { text: content, draft: null };
+  };
+
+  const handleConfirmReservation = async (
+    index: number,
+    draft: {
+      restaurant_id: number | string;
+      restaurant_name: string;
+      date: string;
+      time: string;
+      guests: number;
+    }
+  ) => {
+    if (!isAuthenticated) {
+      window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'login' } }));
+      return;
+    }
+    
+    setLoadingDrafts((prev) => ({ ...prev, [index]: true }));
+    try {
+      const res = await reservationsApi.create({
+        restaurantId: parseInt(draft.restaurant_id.toString(), 10),
+        date: draft.date,
+        time: draft.time,
+        guests: draft.guests,
+      });
+      const code = 'RV-' + res.id.toString().padStart(4, '0');
+      setConfirmedDrafts((prev) => ({
+        ...prev,
+        [index]: {
+          code,
+          date: draft.date,
+          time: draft.time,
+          guests: draft.guests,
+          restaurantName: draft.restaurant_name,
+        },
+      }));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Error al confirmar la reserva');
+    } finally {
+      setLoadingDrafts((prev) => ({ ...prev, [index]: false }));
+    }
+  };
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -129,23 +192,127 @@ const ChatBot: React.FC = () => {
                 </div>
               )}
 
-              {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+              {messages.map((msg, i) => {
+                const isUser = msg.role === 'user';
+                const { text, draft } = isUser ? { text: msg.content, draft: null } : parseMessage(msg.content);
+                const isConfirmed = confirmedDrafts[i];
+                const isLoading = loadingDrafts[i];
+                const isCancelled = cancelledDrafts[i];
+                
+                return (
                   <div
-                    className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
-                      msg.role === 'user'
-                        ? 'bg-primary text-white rounded-br-sm'
-                        : 'rounded-bl-sm'
-                    }`}
-                    style={msg.role === 'assistant' ? { background: 'var(--ink-5)', color: 'var(--ink)' } : undefined}
+                    key={i}
+                    className={`flex flex-col gap-1.5 ${isUser ? 'items-end' : 'items-start'}`}
                   >
-                    {msg.content}
+                    <div
+                      className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                        isUser
+                          ? 'bg-primary text-white rounded-br-sm'
+                          : 'rounded-bl-sm'
+                      }`}
+                      style={!isUser ? { background: 'var(--ink-5)', color: 'var(--ink)' } : undefined}
+                    >
+                      {text}
+                    </div>
+                    
+                    {/* Render Interactive Draft Card if present and assistant role */}
+                    {draft && !isUser && (
+                      <div className="w-[82%] mt-1">
+                        {isConfirmed ? (
+                          <div
+                            className="scale-in p-3 rounded-xl flex flex-col gap-2 text-center"
+                            style={{
+                              background: '#ecfdf5',
+                              border: '1px solid #a7f3d0',
+                              color: '#065f46',
+                              boxShadow: 'var(--sh-sm)'
+                            }}
+                          >
+                            <span className="material-symbols-outlined text-emerald-600 text-3xl">check_circle</span>
+                            <div className="text-xs font-bold uppercase tracking-wider">¡Reserva Confirmada!</div>
+                            <div className="font-semibold text-xs leading-normal">
+                              Mesa para {isConfirmed.guests} en **{isConfirmed.restaurantName}** para el {isConfirmed.date} a las {isConfirmed.time}.
+                            </div>
+                            <div className="text-sm font-black mono-num tracking-wide mt-1 bg-white/60 py-1 rounded-lg">
+                              {isConfirmed.code}
+                            </div>
+                          </div>
+                        ) : isCancelled ? (
+                          <div
+                            className="p-3 rounded-xl text-center text-xs"
+                            style={{
+                              background: 'var(--ink-5)',
+                              border: '1px solid var(--border)',
+                              color: 'var(--ink-55)'
+                            }}
+                          >
+                            Reserva borrador cancelada.
+                          </div>
+                        ) : (
+                          <div
+                            className="p-4 rounded-xl flex flex-col gap-3"
+                            style={{
+                              background: 'color-mix(in srgb, var(--primary) 5%, var(--surface-3))',
+                              border: '1px solid var(--primary-200)',
+                              boxShadow: 'var(--sh-sm)'
+                            }}
+                          >
+                            <div className="flex items-center gap-1.5 text-primary text-xs font-bold uppercase tracking-wider">
+                              <span className="material-symbols-outlined text-base">restaurant</span>
+                              Borrador de Reserva
+                            </div>
+                            
+                            <div className="text-xs space-y-1.5" style={{ color: 'var(--ink)' }}>
+                              <div className="flex items-center gap-2 font-semibold">
+                                <span className="material-symbols-outlined text-sm opacity-60">storefront</span>
+                                <span>{draft.restaurant_name}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm opacity-60">calendar_month</span>
+                                <span>{draft.date}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm opacity-60">schedule</span>
+                                <span>{draft.time}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-sm opacity-60">group</span>
+                                <span>{draft.guests} {draft.guests === 1 ? 'persona' : 'personas'}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="flex gap-2 mt-1">
+                              <button
+                                disabled={isLoading}
+                                onClick={() => handleConfirmReservation(i, draft)}
+                                className="flex-1 btn btn-primary flex items-center justify-center gap-1.5"
+                                style={{ height: 32, padding: '0 12px', fontSize: 12, borderRadius: 8 }}
+                              >
+                                {isLoading ? (
+                                  <span className="spin" style={{ width: 12, height: 12, borderRadius: '50%', border: '2px solid currentColor', borderTopColor: 'transparent', display: 'inline-block' }} />
+                                ) : (
+                                  <>
+                                    <span>Confirmar</span>
+                                    <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                disabled={isLoading}
+                                onClick={() => setCancelledDrafts((prev) => ({ ...prev, [i]: true }))}
+                                className="btn btn-dark"
+                                style={{ height: 32, padding: '0 12px', fontSize: 12, borderRadius: 8, background: 'var(--ink-10)', color: 'var(--ink)', border: 'none' }}
+                              >
+                                <span>Cancelar</span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {loading && (
                 <div className="flex justify-start">

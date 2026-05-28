@@ -20,6 +20,8 @@ services:
       DB_PATH: "/data/db.sqlite3"
       REDIS_URL: "redis://redis:6379/0"
       FIELD_ENCRYPTION_KEY: "ouTNozcMT8SvH2payAj7oun47CrXAb_Q7DPDJ5D550q=" # Clave Fernet mock estable para previsualización
+      SECURE_SSL_REDIRECT: "False"
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
     volumes:
       - db_data_preview:/data
     depends_on:
