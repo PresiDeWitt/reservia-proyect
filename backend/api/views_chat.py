@@ -83,6 +83,24 @@ def _build_reservation_draft(r, guests, date_str, time_str):
     return tag
 
 
+def _find_restaurant_in_text(text: str, restaurants: list):
+    """
+    Try to match a restaurant by name or significant keywords in text.
+    Returns the first matching restaurant or None.
+    """
+    msg = text.lower()
+    # First pass: exact name match
+    for r in restaurants:
+        if r.name.lower() in msg:
+            return r
+    # Second pass: significant word match (words > 3 chars)
+    for r in restaurants:
+        words = [w for w in r.name.lower().split() if len(w) > 3]
+        if any(w in msg for w in words):
+            return r
+    return None
+
+
 def generate_local_fallback(message: str, top_restaurants: list, history: list = None):
     """
     Context-aware local assistant.
@@ -115,10 +133,14 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
                 "¿Qué te apetece hoy?")
 
     # ── Reconstruct booking state from history ─
+    # We track which restaurants the assistant has RECOMMENDED or is BOOKING
     pending_restaurant = None
     pending_guests = None
     pending_date = None
     pending_time = None
+
+    # Keep track of what was last recommended to handle "ese", "ahí", etc.
+    last_recommended = []
 
     for turn in history:
         role = turn.get("role", "")
@@ -126,31 +148,46 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
         content_lower = content.lower()
 
         if role == "assistant":
-            # Was the assistant in a booking context for a known restaurant?
+            # Detect recommended restaurants from assistant messages
+            turn_recommended = []
             for r in top_restaurants:
-                name_lower = r.name.lower()
-                booking_signals = ["reserva", "mesa", "book", "encantaría", "necesito saber",
-                                   "todavía necesito", "i still need", "to book"]
-                if name_lower in content_lower and any(s in content_lower for s in booking_signals):
-                    pending_restaurant = r
-                    break
-            # Also detect recommendation context (user may say "reserva ahí")
-            if not pending_restaurant:
+                if r.name.lower() in content_lower:
+                    turn_recommended.append(r)
+            if turn_recommended:
+                last_recommended = turn_recommended
+
+            # If assistant was asking for booking details, track the restaurant
+            booking_signals = ["reserva", "mesa", "book", "encantaría", "necesito saber",
+                               "todavía necesito", "i still need", "to book", "para tu reserva",
+                               "for your reservation"]
+            if any(s in content_lower for s in booking_signals):
                 for r in top_restaurants:
-                    if r.name.lower() in content_lower and "recomiendo" in content_lower:
+                    if r.name.lower() in content_lower:
                         pending_restaurant = r
                         break
 
-        if role == "user" and pending_restaurant:
-            g, d, t = _extract_booking_params(content_lower)
-            if g and not pending_guests:
-                pending_guests = g
-            if d and not pending_date:
-                pending_date = d
-            if t and not pending_time:
-                pending_time = t
+        if role == "user":
+            # Check if user explicitly names a restaurant
+            named = _find_restaurant_in_text(content_lower, top_restaurants)
+            if named:
+                pending_restaurant = named
 
-    # Also extract from current message
+            # Extract booking params from user messages
+            if pending_restaurant or last_recommended:
+                g, d, t = _extract_booking_params(content_lower)
+                if g and not pending_guests:
+                    pending_guests = g
+                if d and not pending_date:
+                    pending_date = d
+                if t and not pending_time:
+                    pending_time = t
+
+    # ── Check current message for explicit restaurant name ──
+    explicit_restaurant = _find_restaurant_in_text(msg, top_restaurants)
+    if explicit_restaurant:
+        pending_restaurant = explicit_restaurant
+
+    # ── Extract params from current message ──
     cur_g, cur_d, cur_t = _extract_booking_params(msg)
     if cur_g and not pending_guests:
         pending_guests = cur_g
@@ -159,17 +196,18 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
     if cur_t and not pending_time:
         pending_time = cur_t
 
-    # ── Check if user explicitly names a restaurant in THIS message ──
-    explicit_restaurant = None
-    for r in top_restaurants:
-        name_lower = r.name.lower()
-        words = [w for w in name_lower.split() if len(w) > 3]
-        if name_lower in msg or any(w in msg for w in words):
-            explicit_restaurant = r
-            break
-
-    if explicit_restaurant:
-        pending_restaurant = explicit_restaurant
+    # ── Handle correction: "te equivocaste", "ese no", etc. ──
+    correction_signals = ["equivoca", "equivocaste", "ese no", "esa no", "no era",
+                          "no era ese", "wrong restaurant", "not that one", "me refería"]
+    is_correction = any(s in msg for s in correction_signals)
+    if is_correction and last_recommended and len(last_recommended) > 1:
+        # The user is correcting us — they meant the FIRST recommended restaurant
+        # (the one they originally said, e.g. "steakhouse")
+        pending_restaurant = last_recommended[0]
+        # Reset params so we re-ask
+        pending_guests = None
+        pending_date = None
+        pending_time = None
 
     # ── Detect booking intent ─────────────────
     booking_signals_msg = ["reserva", "reservar", "mesa", "book", "reserve", "quiero reservar",
@@ -180,6 +218,10 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
     continuation = ["vale", "sí", "si", "ahí", "ese", "esa", "mismo", "misma",
                     "same", "that one", "el mismo", "la misma", "de acuerdo", "ok"]
     is_continuation = any(p in msg.split() or p == msg for p in continuation)
+
+    # If user is continuing AND there's a pending restaurant from context
+    if is_continuation and not pending_restaurant and last_recommended:
+        pending_restaurant = last_recommended[0]
 
     # ── Booking flow ──────────────────────────
     enter_booking = pending_restaurant and (is_booking or is_continuation or cur_g or cur_d or cur_t)
@@ -214,11 +256,9 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
 
     # By restaurant name
     for r in top_restaurants:
-        name_lower = r.name.lower()
-        words = [w for w in name_lower.split() if len(w) > 3]
-        if name_lower in msg or any(w in msg for w in words):
-            if r not in selected:
-                selected.append(r)
+        named = _find_restaurant_in_text(msg, [r])
+        if named and named not in selected:
+            selected.append(named)
 
     # By dish name
     if not selected:
@@ -263,10 +303,9 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
         elif any(kw in msg for kw in ["mejor", "top", "mejor valorado", "rating", "estrella"]):
             selected = [r for r in top_restaurants if r.rating >= 4.5]
 
-    # Default: random 2 from top
+    # Default: top 2 by rating (deterministic, no shuffle)
     if not selected:
-        import random
-        selected = random.sample(top_restaurants, min(2, len(top_restaurants)))
+        selected = top_restaurants[:2]
     else:
         selected = selected[:2]
 
@@ -292,7 +331,7 @@ def generate_local_fallback(message: str, top_restaurants: list, history: list =
 def _build_system_prompt(top_restaurants: list, lat=None, lng=None) -> str:
     today = dt_date.today().isoformat()
 
-    # RAG block: restaurants + menus
+    # RAG block: restaurants + menus (ordered by rating, deterministic)
     rag_lines = []
     for r in top_restaurants:
         menu_text = ", ".join(
@@ -333,9 +372,18 @@ COMPORTAMIENTO GENERAL
 - Eres amable, natural y conciso. Máximo 150 palabras por respuesta.
 - Responde en el mismo idioma que el usuario (español o inglés).
 - Si el usuario solo saluda, salúdale sin recomendar nada directamente; pregunta qué le apetece.
-- Usa el historial de la conversación para mantener el contexto y no repetir preguntas ya respondidas.
+- Usa el historial de la conversación para mantener el contexto y NO repetir preguntas ya respondidas.
 - NO inventes restaurantes, platos ni precios. Usa ÚNICAMENTE los datos del bloque RAG.
 - Si no sabes algo, dilo con naturalidad ("No tengo esa información en este momento").
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GESTIÓN DE CONTEXTO (MUY IMPORTANTE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+- Cuando el usuario mencione un restaurante por nombre (aunque sea con errores ortográficos como "steakhouse", "staekhouse", "el japones", etc.), identifícalo correctamente del bloque RAG y úsalo.
+- Cuando el usuario diga "ese", "ahí", "ese mismo", "el primero", "el que has dicho", etc., usa el ÚLTIMO restaurante mencionado en la conversación.
+- Si el usuario te corrige ("te has equivocado", "ese no", "me refería a..."), identifica cuál restaurante quería el usuario y continúa el flujo con ESE restaurante. No recomiendes otros.
+- NUNCA cambies de restaurante a mitad de un flujo de reserva a menos que el usuario lo pida explícitamente.
+- Si el usuario ya dio información en mensajes anteriores (personas, fecha, hora), NO la vuelvas a pedir.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 GUARDRAILS DE SEGURIDAD
@@ -350,7 +398,8 @@ GUARDRAILS DE SEGURIDAD
 FLUJO DE RESERVAS (OBLIGATORIO)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Cuando el usuario quiera reservar mesa, sigue este flujo en orden:
-  1. Confirma el restaurante elegido (si no está claro, pregúntale).
+  1. Identifica claramente el restaurante. Si hay ambigüedad, pregunta cuál de los que mencionaste quiere.
+     Si el usuario nombra uno (aunque mal escrito), búscalo en el RAG y confírmalo.
   2. Recoge el número de comensales (si no lo ha dicho).
   3. Recoge la fecha deseada (si no la ha dicho). Hoy es {today}.
   4. Recoge la hora deseada (si no la ha dicho).
@@ -365,6 +414,7 @@ IMPORTANTE:
 - Convierte la hora a HH:MM en formato 24h.
 - NO pidas datos que el usuario ya haya dado en mensajes anteriores. Usa el historial.
 - NO digas "haz clic aquí" ni "usa el formulario". La etiqueta lo gestiona automáticamente.
+- Puedes pedir varios datos faltantes en un mismo mensaje para ser más eficiente (ej: "¿Para cuántas personas y a qué hora?").
 """
     return system_prompt
 
@@ -443,9 +493,8 @@ def chat_view(request):
         except (TypeError, ValueError):
             pass
 
-    import random
+    # Order by rating descending — deterministic, no random shuffle
     top_restaurants = list(restaurants_qs.order_by("-rating")[:20])
-    random.shuffle(top_restaurants)
 
     # ── Sanitize history for LLM ───────────────────────────────────────────────
     safe_history = [
@@ -479,7 +528,7 @@ def chat_view(request):
                 "model": "google/gemma-3-4b-it:free",
                 "messages": messages_payload,
                 "max_tokens": 400,
-                "temperature": 0.65,
+                "temperature": 0.4,
             },
             timeout=20,
         )
