@@ -77,7 +77,7 @@ echo ""
 
 # --- Arrancar servidores ---
 cd "$ROOT/backend"
-python manage.py runserver --noreload &
+python manage.py runserver &
 BACKEND_PID=$!
 
 cd "$ROOT/frontend"

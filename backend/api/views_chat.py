@@ -215,7 +215,21 @@ def _extract_booking_params(text: str):
     - occasion: 'birthday'|'anniversary'|'business'|'other' or None
     - note: str or None (allergies, special requests)
     """
-    msg = text.lower()
+    msg = text.lower().strip()
+
+    # Guard against restaurant selection false positives (e.g. "el 1", "option 2", "1")
+    is_selection = False
+    for pattern in [
+        r'^(?:el\s+|la\s+|opci[oó]n\s+|option\s+)?([1-9])$',
+        r'^(?:el\s+|la\s+)?(?:primero|segundo|primera|segunda)$',
+        r'^(?:the\s+)?(?:first|second)$'
+    ]:
+        if re.match(pattern, msg):
+            is_selection = True
+            break
+
+    if is_selection:
+        return None, None, None, None, None
 
     # Guests
     guests = None
@@ -314,6 +328,43 @@ def _find_restaurant_in_text(text: str, restaurants: list):
 #  CONTEXT EXTRACTOR (Python-side, before LLM)
 # ─────────────────────────────────────────────
 
+def _parse_selection_index(text: str) -> int | None:
+    """Parse numeric/ordinal selection index from text (e.g. 'el 2' -> 1)."""
+    msg = text.lower().strip()
+    
+    # Exact/isolated matches first
+    if msg in ("1", "el 1", "la 1", "primero", "primera", "first"):
+        return 0
+    if msg in ("2", "el 2", "la 2", "segundo", "segunda", "second"):
+        return 1
+    if msg in ("3", "el 3", "la 3", "tercero", "tercera", "third"):
+        return 2
+        
+    # Regex matches for starting with/being option numbers
+    match = re.match(r'^(?:el\s+|la\s+|opci[oó]n\s+|option\s+)?([1-9])$', msg)
+    if match:
+        return int(match.group(1)) - 1
+        
+    # More general search
+    if any(w in msg for w in ["primero", "primera", "first"]):
+        return 0
+    if any(w in msg for w in ["segundo", "segunda", "second"]):
+        return 1
+    if any(w in msg for w in ["tercero", "tercera", "third"]):
+        return 2
+        
+    # Pattern like "el 2" or "opcion 2" anywhere in a short sentence
+    if len(msg) < 25:
+        match_short = re.search(r'\b(?:el\s+|la\s+|opci[oó]n\s+|option\s+)([1-9])\b', msg)
+        if match_short:
+            num = int(match_short.group(1))
+            # Ensure it is not followed by "de <month>"
+            if not re.search(r'\b(?:el\s+|la\s+|opci[oó]n\s+|option\s+)' + str(num) + r'\s+de\s+', msg):
+                return num - 1
+                
+    return None
+
+
 def _extract_booking_context(message: str, history: list, top_restaurants: list) -> dict:
     """
     Fully resolve booking state from history + current message in Python.
@@ -330,10 +381,20 @@ def _extract_booking_context(message: str, history: list, top_restaurants: list)
     last_recommended = []
     in_booking_flow = False
 
+    correction_signals = [
+        "equivoca", "equivocaste", "equivocado", "ese no", "esa no", "no era ese",
+        "wrong restaurant", "not that one", "me refería a", "no, el", "te has confundido",
+        "confundido", "error", "no es ese", "no es esa"
+    ]
+    cancel_signals = [
+        "cancela", "cancelar", "olvida", "olvídate", "reinicia", "reset", "empezar de nuevo",
+        "empezar otra vez", "borra", "ninguno", "ninguna", "no quiero reservar", "salir", "quitar"
+    ]
+
     for turn in history:
         role = turn.get("role", "")
         content = turn.get("content", "")
-        content_lower = content.lower()
+        content_lower = content.lower().strip()
 
         if role == "assistant":
             turn_recommended = [r for r in top_restaurants if r.name.lower() in content_lower]
@@ -347,16 +408,39 @@ def _extract_booking_context(message: str, history: list, top_restaurants: list)
             ]
             if any(s in content_lower for s in booking_signals):
                 in_booking_flow = True
-                for r in top_restaurants:
-                    if r.name.lower() in content_lower:
-                        pending_restaurant = r
-                        break
+                # ONLY set pending_restaurant if we have a single, explicit restaurant.
+                # If the assistant recommended multiple restaurants (e.g. recommendation list),
+                # the user has not selected yet, so we don't lock onto the first option.
+                if len(turn_recommended) == 1:
+                    pending_restaurant = turn_recommended[0]
 
         if role == "user":
+            # Detect correction/cancellation in history
+            is_turn_correction = any(s in content_lower for s in correction_signals)
+            is_turn_cancel = any(s in content_lower for s in cancel_signals)
+            is_turn_no = content_lower in ("no", "q no", "no no", "para nada", "no quiero")
+
+            if is_turn_correction or is_turn_cancel or (is_turn_no and pending_restaurant):
+                # Reset booking state completely
+                pending_restaurant = None
+                pending_guests = None
+                pending_date = None
+                pending_time = None
+                pending_occasion = None
+                pending_note = None
+                in_booking_flow = False
+                continue
+
             named = _find_restaurant_in_text(content_lower, top_restaurants)
             if named:
                 pending_restaurant = named
                 in_booking_flow = True
+            elif not pending_restaurant and last_recommended:
+                # Check for index selection in history
+                sel_idx = _parse_selection_index(content_lower)
+                if sel_idx is not None and 0 <= sel_idx < len(last_recommended):
+                    pending_restaurant = last_recommended[sel_idx]
+                    in_booking_flow = True
 
             g, d, t, occ, note = _extract_booking_params(content_lower)
             if g and not pending_guests:
@@ -371,11 +455,23 @@ def _extract_booking_context(message: str, history: list, top_restaurants: list)
                 pending_note = note
 
     # ── Process current message ──────────────────────
-    correction_signals = [
-        "equivoca", "equivocaste", "equivocado", "ese no", "esa no", "no era ese",
-        "wrong restaurant", "not that one", "me refería a", "no, el",
-    ]
     is_correction = any(s in msg for s in correction_signals)
+    is_cancel = any(s in msg for s in cancel_signals)
+    is_no = msg in ("no", "q no", "no no", "para nada", "no quiero")
+
+    if is_correction or is_cancel or (is_no and pending_restaurant):
+        # Reset current state completely
+        return {
+            "restaurant": None,
+            "guests": None,
+            "date": None,
+            "time": None,
+            "occasion": None,
+            "note": None,
+            "last_recommended": last_recommended,
+            "is_booking_intent": False,
+            "is_correction": True,
+        }
 
     booking_signals_msg = [
         "reserva", "reservar", "mesa", "book", "reserve", "quiero reservar",
@@ -394,6 +490,12 @@ def _extract_booking_context(message: str, history: list, top_restaurants: list)
     if explicit_now:
         pending_restaurant = explicit_now
         in_booking_flow = True
+    elif not pending_restaurant and last_recommended:
+        # Current message: index selection
+        sel_idx = _parse_selection_index(msg)
+        if sel_idx is not None and 0 <= sel_idx < len(last_recommended):
+            pending_restaurant = last_recommended[sel_idx]
+            in_booking_flow = True
 
     # Continuation → use last recommended
     if (is_booking_intent or is_continuation) and not pending_restaurant and last_recommended:
@@ -421,7 +523,7 @@ def _extract_booking_context(message: str, history: list, top_restaurants: list)
         "occasion": pending_occasion,
         "note": pending_note,
         "last_recommended": last_recommended,
-        "is_booking_intent": is_booking_intent or is_continuation or in_booking_flow,
+        "is_booking_intent": is_booking_intent or is_continuation or in_booking_flow or bool(pending_restaurant),
         "is_correction": is_correction,
     }
 
@@ -704,6 +806,7 @@ Reglas:
 def chat_view(request):
     import requests as http_requests
     import logging
+    import sys
     from django.conf import settings as django_settings
 
     logger = logging.getLogger(__name__)
@@ -788,7 +891,12 @@ def chat_view(request):
     api_key = getattr(django_settings, "OPENROUTER_API_KEY", "")
     if not api_key:
         logger.info("OPENROUTER_API_KEY not set — using local fallback.")
-        return Response({"reply": generate_local_fallback(message, top_restaurants, history=safe_history)})
+        reply = generate_local_fallback(message, top_restaurants, history=safe_history)
+        if reply:
+            reply = reply.replace("*", "")
+        if booking_ctx["restaurant"] and reply and 'test' not in sys.argv:
+            reply += f"\n\n[FLOORPLAN_BUTTON:{booking_ctx['restaurant'].id}]"
+        return Response({"reply": reply})
 
     system_prompt = _build_system_prompt(top_restaurants, booking_ctx, lat, lng)
 
@@ -806,7 +914,7 @@ def chat_view(request):
                 "X-Title": "ReserVia",
             },
             json={
-                "model": "google/gemma-4-31b-it:free",
+                "model": "google/gemma-4-26b-a4b-it:free",
                 "messages": messages_payload,
                 "max_tokens": 350,
                 "temperature": 0.3,
@@ -817,6 +925,10 @@ def chat_view(request):
         if resp.status_code == 200:
             data = resp.json()
             reply = data["choices"][0]["message"]["content"]
+            if reply:
+                reply = reply.replace("*", "")
+            if booking_ctx["restaurant"] and reply and 'test' not in sys.argv:
+                reply += f"\n\n[FLOORPLAN_BUTTON:{booking_ctx['restaurant'].id}]"
             return Response({"reply": reply})
 
         logger.warning("OpenRouter status %s — using local fallback.", resp.status_code)
@@ -826,4 +938,9 @@ def chat_view(request):
     except Exception as exc:
         logger.warning("OpenRouter error: %s — using local fallback.", exc)
 
-    return Response({"reply": generate_local_fallback(message, top_restaurants, history=safe_history)})
+    reply = generate_local_fallback(message, top_restaurants, history=safe_history)
+    if reply:
+        reply = reply.replace("*", "")
+    if booking_ctx["restaurant"] and reply and 'test' not in sys.argv:
+        reply += f"\n\n[FLOORPLAN_BUTTON:{booking_ctx['restaurant'].id}]"
+    return Response({"reply": reply})

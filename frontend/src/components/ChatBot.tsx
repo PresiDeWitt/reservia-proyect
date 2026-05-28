@@ -1,16 +1,40 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { chatApi, type ChatMessage } from '../api/chat';
 import { useAuth } from '../context/AuthContext';
 import { reservationsApi } from '../api/reservations';
 
+// Clear chatbot session storage on manual browser reload
+if (typeof window !== 'undefined') {
+  const navigation = window.performance?.getEntriesByType?.('navigation')[0] as PerformanceNavigationTiming | undefined;
+  const isReload = navigation 
+    ? navigation.type === 'reload'
+    : window.performance?.navigation?.type === 1;
+
+  if (isReload) {
+    sessionStorage.removeItem('reservia_chat_messages');
+    sessionStorage.removeItem('reservia_chat_open');
+    sessionStorage.removeItem('reservia_chat_input');
+  }
+}
+
 const ChatBot: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
-  const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
+  const [open, setOpen] = useState(() => {
+    const saved = sessionStorage.getItem('reservia_chat_open');
+    return saved === 'true';
+  });
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = sessionStorage.getItem('reservia_chat_messages');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [input, setInput] = useState(() => {
+    return sessionStorage.getItem('reservia_chat_input') || '';
+  });
   const [loading, setLoading] = useState(false);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locEnabled, setLocEnabled] = useState(false);
@@ -21,18 +45,42 @@ const ChatBot: React.FC = () => {
   const [loadingDrafts, setLoadingDrafts] = useState<Record<number, boolean>>({});
   const [cancelledDrafts, setCancelledDrafts] = useState<Record<number, boolean>>({});
 
+  useEffect(() => {
+    sessionStorage.setItem('reservia_chat_open', String(open));
+  }, [open]);
+
+  useEffect(() => {
+    sessionStorage.setItem('reservia_chat_messages', JSON.stringify(messages));
+  }, [messages]);
+
+  useEffect(() => {
+    sessionStorage.setItem('reservia_chat_input', input);
+  }, [input]);
+
   const parseMessage = (content: string) => {
-    const match = content.match(/\[RESERVATION_DRAFT:(\{[\s\S]*?\})\]/);
-    if (match) {
+    let text = content;
+    let draft = null;
+    let floorPlanRestaurantId: number | null = null;
+
+    // 1. Parse reservation draft
+    const draftMatch = text.match(/\[RESERVATION_DRAFT:(\{[\s\S]*?\})\]/);
+    if (draftMatch) {
       try {
-        const draft = JSON.parse(match[1]);
-        const text = content.replace(match[0], '').trim();
-        return { text, draft };
+        draft = JSON.parse(draftMatch[1]);
+        text = text.replace(draftMatch[0], '');
       } catch {
         // Ignorar si el JSON no es válido
       }
     }
-    return { text: content, draft: null };
+
+    // 2. Parse floorplan button
+    const fpMatch = text.match(/\[FLOORPLAN_BUTTON:(\d+)\]/);
+    if (fpMatch) {
+      floorPlanRestaurantId = parseInt(fpMatch[1], 10);
+      text = text.replace(fpMatch[0], '');
+    }
+
+    return { text: text.trim(), draft, floorPlanRestaurantId };
   };
 
   const handleConfirmReservation = async (
@@ -124,6 +172,18 @@ const ChatBot: React.FC = () => {
     }
   };
 
+  // Restore open state and auto-send selected table from 3D map
+  useEffect(() => {
+    const selectedTable = localStorage.getItem('reservia_chat_selected_table');
+    if (selectedTable) {
+      localStorage.removeItem('reservia_chat_selected_table');
+      setOpen(true); // Ensure chatbot is open
+      setTimeout(() => {
+        send(`He seleccionado la ${selectedTable} en el mapa 3D`);
+      }, 600);
+    }
+  }, []);
+
   return (
     <>
       {/* Floating button */}
@@ -200,7 +260,9 @@ const ChatBot: React.FC = () => {
 
               {messages.map((msg, i) => {
                 const isUser = msg.role === 'user';
-                const { text, draft } = isUser ? { text: msg.content, draft: null } : parseMessage(msg.content);
+                const { text, draft, floorPlanRestaurantId } = isUser 
+                  ? { text: msg.content, draft: null, floorPlanRestaurantId: null } 
+                  : parseMessage(msg.content);
                 const isConfirmed = confirmedDrafts[i];
                 const isLoading = loadingDrafts[i];
                 const isCancelled = cancelledDrafts[i];
@@ -220,6 +282,21 @@ const ChatBot: React.FC = () => {
                     >
                       {text}
                     </div>
+
+                    {/* Render Choose Table 3D Button if present and assistant role */}
+                    {floorPlanRestaurantId && !isUser && (
+                      <div className="w-[82%] mt-0.5 scale-in">
+                        <button
+                          onClick={() => {
+                            navigate(`/floor/${floorPlanRestaurantId}?fromChat=true`);
+                          }}
+                          className="w-full py-2 px-3.5 rounded-xl text-xs font-black bg-[#f97415] hover:bg-[#d95d02] text-[#f8f7f5] transition-colors duration-200 shadow-md flex items-center justify-center gap-1.5 border border-[#f97415]/10 tracking-wide uppercase"
+                        >
+                          <span className="material-symbols-outlined text-base">3d_rotation</span>
+                          Elegir Mesa en 3D
+                        </button>
+                      </div>
+                    )}
                     
                     {/* Render Interactive Draft Card if present and assistant role */}
                     {draft && !isUser && (
@@ -248,6 +325,16 @@ const ChatBot: React.FC = () => {
                             <div className="text-sm font-black mono-num tracking-wide mt-1 bg-white/60 py-1 rounded-lg">
                               {isConfirmed.code}
                             </div>
+                            <button
+                              onClick={() => {
+                                navigate('/my-bookings');
+                                setOpen(false);
+                              }}
+                              className="mt-2 w-full py-1.5 px-3 rounded-lg text-xs font-bold bg-white text-emerald-800 hover:bg-emerald-50 transition-colors duration-200 shadow-sm flex items-center justify-center gap-1.5 border border-emerald-200/50"
+                            >
+                              <span className="material-symbols-outlined text-base">visibility</span>
+                              Ver Reserva
+                            </button>
                           </div>
                         ) : isCancelled ? (
                           <div

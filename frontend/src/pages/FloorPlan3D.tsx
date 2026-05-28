@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { restaurantsApi } from '../api/restaurants';
@@ -9,7 +9,9 @@ import type { TableData } from '../api/restaurants';
 const FloorPlan3D: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+  const fromChat = new URLSearchParams(location.search).get('fromChat') === 'true';
   const mountRef = useRef<HTMLDivElement>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const selectedRef = useRef<string[]>([]);
@@ -391,7 +393,15 @@ const FloorPlan3D: React.FC = () => {
                 </div>
               )}
               <button
-                onClick={() => navigate(`/restaurant/${id}`)}
+                onClick={() => {
+                  if (fromChat) {
+                    const tableLabels = selectedTables.map((t) => t.label).join(', ');
+                    localStorage.setItem('reservia_chat_selected_table', `Mesa ${tableLabels}`);
+                    navigate(-1); // Go back to where the chat was open
+                  } else {
+                    navigate(`/restaurant/${id}`);
+                  }
+                }}
                 className="btn btn-primary"
                 style={{ height: 52, padding: '0 28px' }}
               >
