@@ -60,6 +60,7 @@ cssclasses:
 > - 📅 [[Reservation System]] — Flujo completo de reservas
 > - 🪑 [[Floor Plan System]] — Editor visual de planos y selección de asientos
 > - 🗺️ [[Map Explorer]] — Mapa interactivo con geolocalización
+> - 🤖 [[AI Chat Assistant]] — Chatbot RAG con guardrails, historial y flujo de reservas
 
 ---
 
@@ -110,7 +111,7 @@ cssclasses:
 > > **SQLite** *(dev)* · **PostgreSQL** *(prod)*
 >
 > > [!warning] 🤖 Inteligencia Artificial
-> > **Anthropic Claude Haiku 4.5** — Chatbot de recomendaciones
+> > **OpenRouter** · `google/gemma-3-4b-it:free` — Chatbot RAG con fallback local
 >
 > > [!example] 🚀 Despliegue
 > > **Docker** + **Railway** · Mapas con **Leaflet.js** · i18n con **i18next** *(EN/ES)*
