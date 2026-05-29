@@ -155,6 +155,7 @@ const Hero: React.FC = () => {
     <section
       ref={sectionRef}
       onMouseMove={onMove}
+      className="hero-section"
       style={{
         position: 'relative',
         minHeight: '100vh',
@@ -269,7 +270,7 @@ const Hero: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div className="container" style={{ position: 'relative', zIndex: 3, paddingTop: 100, paddingBottom: 120 }}>
+      <div className="container hero-content" style={{ position: 'relative', zIndex: 3, paddingTop: 100, paddingBottom: 120 }}>
         <div className="rise-stagger" style={{ maxWidth: 860 }}>
           <div
             className="eyebrow"
@@ -418,7 +419,7 @@ const Hero: React.FC = () => {
                   />
                 </div>
               </div>
-              <div>
+              <div className="hero-form-optional">
                 <div className="eyebrow" style={{ marginBottom: 6 }}>
                   {t('hero.searchForm.day')}
                 </div>
@@ -434,7 +435,7 @@ const Hero: React.FC = () => {
                   <option value="sabado">{t('hero.searchForm.days.sabado')}</option>
                 </select>
               </div>
-              <div>
+              <div className="hero-form-optional">
                 <div className="eyebrow" style={{ marginBottom: 6 }}>
                   {t('hero.searchForm.time')}
                 </div>
@@ -452,7 +453,7 @@ const Hero: React.FC = () => {
                   <option>22:00</option>
                 </select>
               </div>
-              <div>
+              <div className="hero-form-optional">
                 <div className="eyebrow" style={{ marginBottom: 6 }}>
                   {t('hero.searchForm.table')}
                 </div>
@@ -542,11 +543,18 @@ const Hero: React.FC = () => {
           .hero-form-grid { grid-template-columns: 1fr 1fr !important; }
           .hero-form-grid > div:first-child { grid-column: 1 / -1; }
           .hero-form-grid > div:last-child { grid-column: 1 / -1; }
+          .hero-section { min-height: auto !important; }
+          .hero-content { padding-top: 60px !important; padding-bottom: 60px !important; }
         }
-        @media (max-width: 600px) {
+        @media (max-width: 640px) {
           .hero-form-grid { grid-template-columns: 1fr !important; }
           .hero-form-grid > div:first-child,
           .hero-form-grid > div:last-child { grid-column: auto; }
+          .hero-form-optional { display: none !important; }
+          .hero-form-grid > div:last-child { display: flex !important; align-items: stretch; }
+          .hero-form-grid > div:last-child .btn { width: 100%; justify-content: center; }
+          .hero-section { margin-top: -64px !important; padding-top: 64px !important; }
+          .hero-content { padding-top: 28px !important; padding-bottom: 40px !important; }
         }
       `}</style>
     </section>
