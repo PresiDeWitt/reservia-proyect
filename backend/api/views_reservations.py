@@ -1,5 +1,10 @@
+from datetime import datetime
+
+from django.db import transaction
+from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from .models import Reservation, AvailabilitySlot
@@ -11,39 +16,44 @@ class ReservationCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
-        from datetime import datetime
-        from rest_framework.exceptions import ValidationError as DRFValidationError
         restaurant = serializer.validated_data['restaurant']
         res_date = serializer.validated_data['date']
         res_time = serializer.validated_data['time']
         guests = serializer.validated_data['guests']
 
-        reservation_dt = datetime.combine(res_date, res_time)
-        if reservation_dt <= datetime.now():
-            raise DRFValidationError({'detail': 'No puedes reservar una hora que ya ha pasado.'})
+        # Comparación consciente de zona horaria (USE_TZ=True): el servidor corre
+        # en UTC pero el negocio opera en TIME_ZONE. Construir un datetime naive
+        # con datetime.now() comparaba relojes distintos y dejaba reservar slots ya pasados.
+        reservation_dt = timezone.make_aware(datetime.combine(res_date, res_time))
+        if reservation_dt <= timezone.localtime():
+            raise ValidationError({'detail': 'No puedes reservar una hora que ya ha pasado.'})
 
-        slot = (
-            AvailabilitySlot.objects
-            .select_for_update()
-            .filter(
-                is_available=True,
-                date=res_date,
-                time=res_time,
-                table__restaurant=restaurant,
-                table__is_active=True,
-                table__capacity__gte=guests,
+        # transaction.atomic es obligatorio: sin él, select_for_update() es un no-op
+        # en SQLite (race condition → doble reserva) y lanza TransactionManagementError
+        # en PostgreSQL. El bloqueo de fila garantiza que dos peticiones concurrentes
+        # no asignen el mismo slot.
+        with transaction.atomic():
+            slot = (
+                AvailabilitySlot.objects
+                .select_for_update()
+                .filter(
+                    is_available=True,
+                    date=res_date,
+                    time=res_time,
+                    table__restaurant=restaurant,
+                    table__is_active=True,
+                    table__capacity__gte=guests,
+                )
+                .select_related('table')
+                .order_by('table__capacity')
+                .first()
             )
-            .select_related('table')
-            .order_by('table__capacity')
-            .first()
-        )
-        if slot is None:
-            from rest_framework.exceptions import ValidationError
-            raise ValidationError({'detail': 'No hay mesas disponibles para esa fecha, hora y número de comensales.'})
+            if slot is None:
+                raise ValidationError({'detail': 'No hay mesas disponibles para esa fecha, hora y número de comensales.'})
 
-        slot.is_available = False
-        slot.save(update_fields=['is_available'])
-        serializer.save(user=self.request.user, assigned_table=slot.table)
+            slot.is_available = False
+            slot.save(update_fields=['is_available'])
+            serializer.save(user=self.request.user, assigned_table=slot.table)
 
 
 
@@ -60,18 +70,26 @@ def my_reservations(request):
 @api_view(["DELETE"])
 @permission_classes([permissions.IsAuthenticated])
 def cancel_reservation(request, pk):
-    try:
-        reservation = Reservation.objects.select_related('assigned_table').get(pk=pk, user=request.user)
-    except Reservation.DoesNotExist:
-        return Response(
-            {"error": "Reservation not found"}, status=status.HTTP_404_NOT_FOUND
-        )
-    reservation.status = "cancelled"
-    reservation.save()
-    if reservation.assigned_table:
-        AvailabilitySlot.objects.filter(
-            table=reservation.assigned_table,
-            date=reservation.date,
-            time=reservation.time,
-        ).update(is_available=True)
+    with transaction.atomic():
+        try:
+            reservation = (
+                Reservation.objects
+                .select_for_update()
+                .select_related('assigned_table')
+                .get(pk=pk, user=request.user)
+            )
+        except Reservation.DoesNotExist:
+            return Response(
+                {"error": "Reservation not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        if reservation.status == "cancelled":
+            return Response({"message": "Reservation cancelled"})
+        reservation.status = "cancelled"
+        reservation.save(update_fields=["status"])
+        if reservation.assigned_table:
+            AvailabilitySlot.objects.filter(
+                table=reservation.assigned_table,
+                date=reservation.date,
+                time=reservation.time,
+            ).update(is_available=True)
     return Response({"message": "Reservation cancelled"})
