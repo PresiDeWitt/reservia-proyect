@@ -446,9 +446,12 @@ class SignalEmailTests(TestCase):
 
     @patch("api.emails.send_email_async")
     def test_welcome_email_sent_on_user_creation(self, mock_async):
-        User.objects.create_user(
-            username="newuser", email="new@example.com", password="pass1234!"
-        )
+        # El envío se despacha en transaction.on_commit; en TestCase la transacción
+        # no commitea, así que capturamos y ejecutamos los callbacks de commit.
+        with self.captureOnCommitCallbacks(execute=True):
+            User.objects.create_user(
+                username="newuser", email="new@example.com", password="pass1234!"
+            )
         called_subjects = [c[1]["subject"] for c in mock_async.call_args_list if c[1].get("subject")]
         # Al menos uno de los emails debe ser el de bienvenida
         welcome_calls = [s for s in called_subjects if "bienvenida" in s.lower() or "bienvenido" in s.lower()]
@@ -458,8 +461,9 @@ class SignalEmailTests(TestCase):
     def test_welcome_email_NOT_sent_on_user_update(self, mock_async):
         user = _make_user(username="exuser", email="ex@example.com")
         mock_async.reset_mock()
-        user.first_name = "Updated"
-        user.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            user.first_name = "Updated"
+            user.save()
         # No debería haber nuevas llamadas de bienvenida
         welcome_calls = [
             c for c in mock_async.call_args_list
@@ -474,7 +478,8 @@ class SignalEmailTests(TestCase):
         table = _make_table(restaurant)
         mock_async.reset_mock()
 
-        _make_reservation(user, restaurant, table)
+        with self.captureOnCommitCallbacks(execute=True):
+            _make_reservation(user, restaurant, table)
 
         confirm_calls = [
             c for c in mock_async.call_args_list
@@ -492,8 +497,9 @@ class SignalEmailTests(TestCase):
         mock_async.reset_mock()
 
         # Primera cancelación
-        reservation.status = "cancelled"
-        reservation.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            reservation.status = "cancelled"
+            reservation.save()
 
         cancel_calls = [
             c for c in mock_async.call_args_list
@@ -509,13 +515,15 @@ class SignalEmailTests(TestCase):
         table = _make_table(restaurant)
         reservation = _make_reservation(user, restaurant, table)
 
-        reservation.status = "cancelled"
-        reservation.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            reservation.status = "cancelled"
+            reservation.save()
         mock_async.reset_mock()
 
         # Segundo save con status='cancelled' (ej. actualización de otro campo)
-        reservation.guests = 3
-        reservation.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            reservation.guests = 3
+            reservation.save()
 
         cancel_calls = [
             c for c in mock_async.call_args_list
@@ -532,8 +540,9 @@ class SignalEmailTests(TestCase):
         mock_async.reset_mock()
 
         # Actualizar guests sin cambiar status
-        reservation.guests = 5
-        reservation.save()
+        with self.captureOnCommitCallbacks(execute=True):
+            reservation.guests = 5
+            reservation.save()
 
         cancel_calls = [
             c for c in mock_async.call_args_list

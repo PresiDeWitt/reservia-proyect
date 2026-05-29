@@ -2,7 +2,7 @@ import logging
 import requests
 import concurrent.futures
 from django.conf import settings
-from django.utils.html import strip_tags
+from django.utils.html import escape, strip_tags
 
 logger = logging.getLogger(__name__)
 
@@ -249,10 +249,11 @@ def send_welcome_email(user):
     if not user.email:
         return
 
-    subject = f"¡Te damos la bienvenida a ReserVia, {user.first_name or user.username}!"
-    
+    display_name = escape(user.first_name or user.username)
+    subject = f"¡Te damos la bienvenida a ReserVia, {display_name}!"
+
     content = f"""
-    <h1>¡Hola, {user.first_name or user.username}!</h1>
+    <h1>¡Hola, {display_name}!</h1>
     <p>Estamos sumamente felices de que te unas a la comunidad gastronómica de <strong>ReserVia</strong>.</p>
     <p>Nuestra plataforma te permitirá descubrir los mejores restaurantes de tu ciudad, explorar su distribución de mesas en 3D en tiempo real y asegurar tu mesa favorita en cuestión de segundos.</p>
     
@@ -287,37 +288,43 @@ def send_booking_confirmation_email(reservation):
     if not user.email:
         return
 
-    subject = f"Reserva Confirmada: {reservation.restaurant.name}"
-    
+    restaurant_name = escape(reservation.restaurant.name)
+    subject = f"Reserva Confirmada: {restaurant_name}"
+
+    display_name = escape(user.first_name or user.username)
+
     occasion_label = reservation.get_occasion_display() if hasattr(reservation, "get_occasion_display") else reservation.occasion
     occasion_html = ""
     if occasion_label:
         occasion_html = f"""
         <div class="card-row">
             <span class="card-label">Celebración:</span>
-            <span class="card-value">{occasion_label}</span>
+            <span class="card-value">{escape(occasion_label)}</span>
         </div>
         """
 
     note_html = ""
     if reservation.note:
+        # reservation.note es texto libre del cliente: debe escaparse para evitar
+        # inyección de HTML/atributos en el cliente de correo del destinatario.
         note_html = f"""
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
             <strong style="font-size: 13.5px; color: #475569; display: block; margin-bottom: 5px;">Nota especial:</strong>
-            <span style="font-size: 13.5px; color: #0f172a; font-style: italic;">"{reservation.note}"</span>
+            <span style="font-size: 13.5px; color: #0f172a; font-style: italic;">"{escape(reservation.note)}"</span>
         </div>
         """
 
-    table_label = reservation.assigned_table.label if reservation.assigned_table else "Mesa Asignada"
+    table_label = escape(reservation.assigned_table.label) if reservation.assigned_table else "Mesa Asignada"
+    table_zone = escape(reservation.assigned_table.zone) if reservation.assigned_table else "General"
 
     content = f"""
     <h1>¡Tu reserva ha sido confirmada!</h1>
-    <p>¡Hola, {user.first_name or user.username}! Todo está listo para tu visita gastronómica. El restaurante ha confirmado tu asistencia y reservado tu mesa favorita.</p>
-    
+    <p>¡Hola, {display_name}! Todo está listo para tu visita gastronómica. El restaurante ha confirmado tu asistencia y reservado tu mesa favorita.</p>
+
     <div class="card">
         <div class="card-row">
             <span class="card-label">Restaurante:</span>
-            <span class="card-value" style="color: #312e81; font-size: 16px;">{reservation.restaurant.name}</span>
+            <span class="card-value" style="color: #312e81; font-size: 16px;">{restaurant_name}</span>
         </div>
         <div class="card-row">
             <span class="card-label">Fecha:</span>
@@ -333,14 +340,14 @@ def send_booking_confirmation_email(reservation):
         </div>
         <div class="card-row">
             <span class="card-label">Ubicación mesa:</span>
-            <span class="card-value">{table_label} ({reservation.assigned_table.zone if reservation.assigned_table else 'General'})</span>
+            <span class="card-value">{table_label} ({table_zone})</span>
         </div>
         {occasion_html}
         {note_html}
     </div>
-    
+
     <p><strong>Dirección del restaurante:</strong><br>
-    <span style="color: #64748b; font-size: 14px;">📍 {reservation.restaurant.address}</span></p>
+    <span style="color: #64748b; font-size: 14px;">📍 {escape(reservation.restaurant.address)}</span></p>
     
     <p style="text-align: center; margin-top: 30px;">
         <a href="{settings.FRONTEND_URL}/bookings" class="btn">Gestionar mis Reservas</a>
@@ -364,11 +371,13 @@ def send_booking_cancellation_email(reservation):
     if not user.email:
         return
 
-    subject = f"Reserva Cancelada: {reservation.restaurant.name}"
-    
+    restaurant_name = escape(reservation.restaurant.name)
+    display_name = escape(user.first_name or user.username)
+    subject = f"Reserva Cancelada: {restaurant_name}"
+
     content = f"""
     <h1 style="color: #dc2626;">Tu reserva ha sido cancelada</h1>
-    <p>Hola, {user.first_name or user.username}. Te informamos que tu reserva para el restaurante <strong>{reservation.restaurant.name}</strong> programada para el <strong>{reservation.date.strftime('%d/%m/%Y')}</strong> a las <strong>{reservation.time.strftime('%H:%M')} hs</strong> ha sido cancelada exitosamente.</p>
+    <p>Hola, {display_name}. Te informamos que tu reserva para el restaurante <strong>{restaurant_name}</strong> programada para el <strong>{reservation.date.strftime('%d/%m/%Y')}</strong> a las <strong>{reservation.time.strftime('%H:%M')} hs</strong> ha sido cancelada exitosamente.</p>
     
     <div class="card" style="border-left-color: #dc2626; background-color: #fef2f2; border-color: #fee2e2;">
         <p style="margin: 0; font-size: 14.5px; color: #991b1b; font-weight: 600;">
