@@ -149,7 +149,21 @@ jobs:
           script: |
             set -euo pipefail
             cd /opt/reservia
-            cat > .env <<ENVFILE
+
+            # Guard rail: abortar si faltan secrets CRÍTICOS antes de tocar el .env.
+            # Si SECRET_KEY o FIELD_ENCRYPTION_KEY van vacíos (secret no definido en
+            # GitHub), el backend no arranca y, peor, sobrescribiríamos un .env válido.
+            # Preferimos fallar el deploy a dejar producción caída.
+            : "${SECRET_KEY:?Falta el secret SECRET_KEY en GitHub — deploy abortado para no romper produccion}"
+            : "${FIELD_ENCRYPTION_KEY:?Falta el secret FIELD_ENCRYPTION_KEY en GitHub — deploy abortado (cifra PII en reposo)}"
+
+            # Backup del .env anterior antes de regenerarlo (recuperación ante errores).
+            if [ -f .env ]; then cp -p .env ".env.bak.$(date +%Y%m%d-%H%M%S)"; fi
+            ls -1t .env.bak.* 2>/dev/null | tail -n +11 | xargs -r rm -f
+
+            # Escritura atómica del .env (tmp + mv) para no dejar un fichero a medias.
+            umask 077
+            cat > .env.tmp <<ENVFILE
             SECRET_KEY=${SECRET_KEY}
             FIELD_ENCRYPTION_KEY=${FIELD_ENCRYPTION_KEY}
             OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
@@ -160,6 +174,7 @@ jobs:
             REDIS_URL=${REDIS_URL}
             DB_PATH=${DB_PATH}
             ENVFILE
+            mv .env.tmp .env
             chmod 600 .env
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
