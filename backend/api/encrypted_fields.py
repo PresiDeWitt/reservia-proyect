@@ -1,7 +1,11 @@
+import logging
+
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
+
+logger = logging.getLogger(__name__)
 
 
 def _get_fernet() -> Fernet:
@@ -11,6 +15,18 @@ def _get_fernet() -> Fernet:
     return Fernet(key.encode() if isinstance(key, str) else key)
 
 
+def _decrypt(value):
+    """Descifra un valor o lo devuelve crudo si no es un token Fernet válido
+    (filas previas a la migración de cifrado). Solo se captura el fallo de
+    descifrado esperado; cualquier otro error se propaga en vez de enmascararse,
+    y el descifrado fallido (p. ej. clave rotada) se registra para diagnóstico."""
+    try:
+        return _get_fernet().decrypt(value.encode()).decode()
+    except (InvalidToken, ValueError):
+        logger.warning("No se pudo descifrar un campo cifrado; se devuelve el valor crudo.")
+        return value
+
+
 class EncryptedCharField(models.CharField):
     """CharField cifrado en reposo con Fernet (AES-128-CBC + HMAC-SHA256).
     No soporta búsquedas por igualdad (el ciphertext es aleatorio por IV)."""
@@ -18,10 +34,7 @@ class EncryptedCharField(models.CharField):
     def from_db_value(self, value, expression, connection):
         if not value:
             return value
-        try:
-            return _get_fernet().decrypt(value.encode()).decode()
-        except (InvalidToken, Exception):
-            return value
+        return _decrypt(value)
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if not value:
@@ -36,10 +49,7 @@ class EncryptedTextField(models.TextField):
     def from_db_value(self, value, expression, connection):
         if not value:
             return value
-        try:
-            return _get_fernet().decrypt(value.encode()).decode()
-        except (InvalidToken, Exception):
-            return value
+        return _decrypt(value)
 
     def get_db_prep_value(self, value, connection, prepared=False):
         if not value:

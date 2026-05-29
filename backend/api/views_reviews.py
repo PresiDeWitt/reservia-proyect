@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from .models import Restaurant, Review, Reservation
 from .serializers import ReviewSerializer
 
+REVIEWABLE_RESERVATION_STATUSES = ['confirmed', 'arrived']
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
@@ -25,7 +27,7 @@ def restaurant_reviews(request, pk):
                 can_review = Reservation.objects.filter(
                     user=request.user,
                     restaurant=restaurant,
-                    status='confirmed',
+                    status__in=REVIEWABLE_RESERVATION_STATUSES,
                     date__lt=date_type.today(),
                 ).exists()
 
@@ -42,7 +44,7 @@ def restaurant_reviews(request, pk):
     has_past_reservation = Reservation.objects.filter(
         user=request.user,
         restaurant=restaurant,
-        status='confirmed',
+        status__in=REVIEWABLE_RESERVATION_STATUSES,
         date__lt=date_type.today(),
     ).exists()
     if not has_past_reservation:

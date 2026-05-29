@@ -1,21 +1,8 @@
 services:
-  caddy:
-    image: caddy:2-alpine
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    depends_on:
-      - frontend
-    restart: unless-stopped
-
   frontend:
     image: ghcr.io/presidewitt/reservia-frontend:latest
+    ports:
+      - "127.0.0.1:3001:80"
     depends_on:
       - backend
     restart: unless-stopped
@@ -27,6 +14,12 @@ services:
       DEBUG: "False"
       SECURE_SSL_REDIRECT: "False"
       SECURE_HSTS_SECONDS: "0"
+      # Garantiza que el rate-limit de DRF use Redis (no LocMemCache por-proceso).
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      # Opt-in a PostgreSQL: vacío => sigue usando SQLite (DB_PATH). Para activar
+      # Postgres, migrar datos y definir DATABASE_URL en .env + usar el override
+      # docker-compose.postgres.yml. Ver docs/PLAN_REMEDIACION_AUDITORIA_2026-05-29.md.
+      DATABASE_URL: ${DATABASE_URL:-}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health/"]
       interval: 30s
@@ -50,5 +43,3 @@ services:
 
 volumes:
   db_data:
-  caddy_data:
-  caddy_config:

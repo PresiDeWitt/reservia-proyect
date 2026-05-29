@@ -49,3 +49,46 @@ class ChatApiTests(APITestCase):
         args, kwargs = mock_post.call_args
         self.assertEqual(args[0], 'https://openrouter.ai/api/v1/chat/completions')
         self.assertEqual(kwargs['headers']['Authorization'], 'Bearer dummy-test-key')
+
+    def test_parse_selection_index_helper(self):
+        from api.views_chat import _parse_selection_index
+        self.assertEqual(_parse_selection_index("1"), 0)
+        self.assertEqual(_parse_selection_index("el 2"), 1)
+        self.assertEqual(_parse_selection_index("la segunda"), 1)
+        self.assertEqual(_parse_selection_index("segundo"), 1)
+        self.assertEqual(_parse_selection_index("tercero"), 2)
+        # Should not match dates
+        self.assertIsNone(_parse_selection_index("el 2 de mayo"))
+
+    def test_extract_booking_context_selection_and_correction(self):
+        from api.views_chat import _extract_booking_context
+        
+        # Setup dummy restaurants
+        r1 = create_restaurant(name='The Golden Fork', cuisine='Italian', rating=4.7)
+        r2 = create_restaurant(name='Prime Cuts', cuisine='Steakhouse', rating=4.5)
+        top_restaurants = [r1, r2]
+        
+        # Scenario 1: Assistant recommends two restaurants, user selects the second one using "el 2"
+        history = [
+            {"role": "user", "content": "cenar"},
+            {"role": "assistant", "content": "Te recomiendo:\n1. The Golden Fork\n2. Prime Cuts\n¿Para cuántas personas?"}
+        ]
+        
+        # The user replies "el 2"
+        ctx = _extract_booking_context("el 2", history, top_restaurants)
+        
+        # Check that it resolved to Prime Cuts (r2), not The Golden Fork (r1)!
+        self.assertEqual(ctx["restaurant"], r2)
+        self.assertTrue(ctx["is_booking_intent"])
+        
+        # Scenario 2: User says "te has equivocao" to cancel/reset
+        history.append({"role": "user", "content": "el 2"})
+        history.append({"role": "assistant", "content": "Para tu reserva en Prime Cuts, necesito..."})
+        
+        ctx_correction = _extract_booking_context("te has equivocao", history, top_restaurants)
+        
+        # The state should be fully reset
+        self.assertIsNone(ctx_correction["restaurant"])
+        self.assertIsNone(ctx_correction["guests"])
+        self.assertFalse(ctx_correction["is_booking_intent"])
+        self.assertTrue(ctx_correction["is_correction"])

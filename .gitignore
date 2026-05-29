@@ -96,6 +96,8 @@ coverage.xml
 CLAUDE.md
 .claude/
 docs/.obsidian/
+AGENTS.md
+AGENTS.md
 
 # pnpm / lockfile alternatives
 frontend/.pnpm-store/

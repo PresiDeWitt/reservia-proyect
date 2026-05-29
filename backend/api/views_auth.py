@@ -73,12 +73,15 @@ def staff_login_view(request):
 
     # Fallback to env vars for backward compatibility
     if not staff_code:
+        import hmac
+
         owner_code = os.environ.get('STAFF_OWNER_CODE', '')
         admin_code = os.environ.get('STAFF_ADMIN_CODE', '')
-        if code == owner_code and owner_code:
+        # compare_digest evita filtrar la longitud/contenido del secreto por timing.
+        if owner_code and hmac.compare_digest(code, owner_code):
             role = 'owner'
             email = os.environ.get('STAFF_OWNER_EMAIL', '')
-        elif code == admin_code and admin_code:
+        elif admin_code and hmac.compare_digest(code, admin_code):
             role = 'admin'
             email = ''
         else:

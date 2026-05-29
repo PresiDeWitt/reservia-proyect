@@ -12,7 +12,7 @@ export interface Reservation {
   guests: number;
   occasion: string;
   note: string;
-  status: 'confirmed' | 'cancelled';
+  status: 'confirmed' | 'arrived' | 'cancelled' | 'no_show';
   created_at: string;
 }
 

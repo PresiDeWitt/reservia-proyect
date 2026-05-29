@@ -1,0 +1,45 @@
+# Override OPT-IN para migrar de SQLite a PostgreSQL en producción.
+#
+# NO se aplica automáticamente: el pipeline (deploy.yml) solo usa
+# `-f docker-compose.prod.yml`. Para activarlo manualmente, tras migrar los datos:
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.postgres.yml up -d
+#
+# Requiere en .env:  POSTGRES_PASSWORD=...   y   DATABASE_URL=postgres://reservia:<pass>@db:5432/reservia
+#
+# Runbook de cutover (una sola vez, sin pérdida de datos):
+#   1. docker compose -f docker-compose.prod.yml exec backend \
+#        python manage.py dumpdata --natural-foreign --natural-primary \
+#        -e contenttypes -e auth.permission --indent 2 > dump.json
+#   2. Definir POSTGRES_PASSWORD y DATABASE_URL en .env (ver arriba).
+#   3. docker compose -f docker-compose.prod.yml -f docker-compose.postgres.yml up -d db
+#   4. ...exec backend python manage.py migrate
+#   5. cat dump.json | ...exec -T backend python manage.py loaddata --format=json -
+#   6. up -d backend  (ya apunta a Postgres vía DATABASE_URL)
+#   7. Verificar /api/health/ y un login antes de retirar el volumen db_data.
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-reservia}
+      POSTGRES_USER: ${POSTGRES_USER:-reservia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD es obligatorio}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-reservia}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  pg_data:

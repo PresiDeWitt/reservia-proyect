@@ -532,8 +532,10 @@
     "filters": {
       "all": "Todas",
       "confirmed": "Confirmadas",
+      "arrived": "Llegaron",
       "pending": "Pendientes",
-      "cancelled": "Canceladas"
+      "cancelled": "Canceladas",
+      "no_show": "No se presentó"
     },
     "table": {
       "table": "Mesa",
@@ -542,12 +544,19 @@
       "time": "Hora",
       "status": "Estado",
       "actions": "Acciones",
-      "confirm": "Confirmar"
+      "markArrived": "Llegó",
+      "confirm": "Confirmar",
+      "markNoShow": "No llegó",
+      "revertConfirmed": "Restaurar",
+      "noteLabel": "Nota",
+      "noNote": "Sin nota"
     },
     "status": {
       "confirmed": "Confirmada",
+      "arrived": "Llegó",
       "pending": "Pendiente",
-      "cancelled": "Cancelada"
+      "cancelled": "Cancelada",
+      "no_show": "No se presentó"
     },
     "floor": {
       "title": "Plano de sala — Turno noche",
@@ -569,6 +578,12 @@
       "average": "Media diaria",
       "guestsAvg": "comensales medios",
       "cancellationRate": "Tasa de cancelación"
+    },
+    "occasion": {
+      "birthday": "Cumpleaños",
+      "anniversary": "Aniversario",
+      "business": "Negocios",
+      "other": "Otro"
     }
   },
   "admin": {
@@ -652,6 +667,8 @@
     "cancel": "Cancelar",
     "cancelled": "Cancelada",
     "confirmed": "Confirmada",
+    "arrived": "Llegó",
+    "noShow": "No se presentó",
     "filterUpcoming": "Próximas",
     "filterPast": "Pasadas",
     "filterCancelled": "Canceladas",

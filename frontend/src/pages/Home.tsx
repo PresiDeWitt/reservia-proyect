@@ -97,7 +97,7 @@ const Home: React.FC = () => {
       <Hero key={location.key} />
 
       {/* Cuisines ribbon */}
-      <section style={{ padding: 'var(--d-section) 0 40px', background: 'var(--surface)' }}>
+      <section style={{ padding: 'var(--d-section) 0 clamp(24px, 4vw, 40px)', background: 'var(--surface)' }}>
         <div className="container">
           <div
             style={{
@@ -233,7 +233,7 @@ const Home: React.FC = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: 24,
+                gap: 'clamp(16px, 2.5vw, 24px)',
               }}
             >
               {[1, 2, 3].map((i) => (
@@ -268,7 +268,7 @@ const Home: React.FC = () => {
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: 24,
+                gap: 'clamp(16px, 2.5vw, 24px)',
               }}
             >
               {featured.map((rest, i) => {
@@ -342,7 +342,7 @@ const Home: React.FC = () => {
             <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
               <button
                 className="btn btn-ember"
-                onClick={() => window.dispatchEvent(new CustomEvent('reservia:open-auth', { detail: { mode: 'register', role: 'owner' } }))}
+                onClick={() => { window.location.assign('mailto:hola@reservia.es?subject=Registro%20de%20Restaurante%20en%20ReserVia'); }}
               >
                 <span>{t('home.business.ctaRegister')}</span>
                 <span className="mat" style={{ fontSize: 16 }}>arrow_forward</span>

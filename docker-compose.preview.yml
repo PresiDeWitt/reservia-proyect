@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  backend:
+    build: ./backend
+    environment:
+      SECRET_KEY: "reservia-preview-secret-key-2026-strictly-for-local-testing"
+      DEBUG: "False"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,backend"
+      CORS_ALLOWED_ORIGINS: "http://localhost:8080"
+      DB_PATH: "/data/db.sqlite3"
+      REDIS_URL: "redis://redis:6379/0"
+      FIELD_ENCRYPTION_KEY: "ouTNozcMT8SvH2payAj7oun47CrXAb_Q7DPDJ5D550q=" # Clave Fernet mock estable para previsualización
+      SECURE_SSL_REDIRECT: "False"
+      OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
+    volumes:
+      - db_data_preview:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_GOOGLE_CLIENT_ID: "preview-client-id"
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  db_data_preview:

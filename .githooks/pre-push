@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Git hook: pre-push — bloquea el push si la validación local falla.
+# Instalado con: git config core.hooksPath .githooks
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+echo ""
+echo "╔══════════════════════════════════════╗"
+echo "║   Pre-push: ejecutando validación    ║"
+echo "╚══════════════════════════════════════╝"
+echo ""
+
+exec bash "$ROOT/scripts/validate.sh"
