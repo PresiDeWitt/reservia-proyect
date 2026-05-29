@@ -124,7 +124,13 @@ const ChatBot: React.FC = () => {
         },
       }));
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al confirmar la reserva');
+      const errorMsg = err instanceof Error ? err.message : 'Error al confirmar la reserva';
+      // Show error in chat instead of browser alert
+      setMessages((prev) => [...prev, {
+        role: 'assistant',
+        content: `⚠️ ${errorMsg}\n\nPuedes intentar con otra hora, fecha o restaurante si lo deseas.`,
+      }]);
+      setCancelledDrafts((prev) => ({ ...prev, [index]: true }));
     } finally {
       setLoadingDrafts((prev) => ({ ...prev, [index]: false }));
     }
@@ -156,11 +162,13 @@ const ChatBot: React.FC = () => {
     const userMsg: ChatMessage = { role: 'user', content: text };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
-    setInput('');
+    if (!override) {
+      setInput('');
+    }
     setLoading(true);
 
     try {
-      const reply = await chatApi.send(text, newMessages.slice(-10), location ?? undefined);
+      const reply = await chatApi.send(text, messages.slice(-10), location ?? undefined);
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
     } catch (err) {
       const msg = err instanceof Error && err.message.toLowerCase().includes('not configured')
@@ -378,6 +386,12 @@ const ChatBot: React.FC = () => {
                                 <span className="material-symbols-outlined text-sm opacity-60">group</span>
                                 <span>{draft.guests} {draft.guests === 1 ? 'persona' : 'personas'}</span>
                               </div>
+                              {draft.table && (
+                                <div className="flex items-center gap-2">
+                                  <span className="material-symbols-outlined text-sm opacity-60">table_restaurant</span>
+                                  <span>Mesa {draft.table}</span>
+                                </div>
+                              )}
                             </div>
                             
                             <div className="flex gap-2 mt-1">
