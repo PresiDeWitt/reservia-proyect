@@ -62,8 +62,8 @@ python manage.py seed 2>/dev/null || true
 # --- Frontend setup ---
 cd "$ROOT/frontend"
 if [ ! -d "node_modules" ]; then
-  echo -e "${YELLOW}Instalando dependencias npm...${NC}"
-  npm install
+  echo -e "${YELLOW}Instalando dependencias pnpm...${NC}"
+  pnpm install
 fi
 
 echo ""
@@ -77,11 +77,11 @@ echo ""
 
 # --- Arrancar servidores ---
 cd "$ROOT/backend"
-python manage.py runserver --noreload &
+python manage.py runserver &
 BACKEND_PID=$!
 
 cd "$ROOT/frontend"
-npm run dev &
+pnpm run dev &
 FRONTEND_PID=$!
 
 wait $BACKEND_PID $FRONTEND_PID
