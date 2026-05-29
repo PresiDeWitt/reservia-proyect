@@ -213,6 +213,7 @@ def update_restaurant_rating(sender, instance, **kwargs):
 
 @receiver(post_save, sender=Reservation)
 def create_reservation_notification(sender, instance, created, **kwargs):
+    from django.db import transaction
     from .emails import send_booking_confirmation_email, send_booking_cancellation_email
 
     if created:
@@ -224,8 +225,10 @@ def create_reservation_notification(sender, instance, created, **kwargs):
             message=f'Tu reserva en {instance.restaurant.name} para el {instance.date} a las {instance.time} ha sido confirmada.',
             reservation=instance,
         )
-        # 2. Despachar email asíncrono con useSend
-        send_booking_confirmation_email(instance)
+        # 2. Despachar email SOLO si la transacción confirma. La creación de la
+        # reserva corre dentro de transaction.atomic(); sin on_commit se enviaría
+        # el email incluso si la transacción hace rollback (slot agotado, error...).
+        transaction.on_commit(lambda: send_booking_confirmation_email(instance))
     else:
         # En caso de actualización, si pasa a cancelada
         if instance.status == 'cancelled':
@@ -235,7 +238,7 @@ def create_reservation_notification(sender, instance, created, **kwargs):
                 reservation=instance,
                 type=Notification.Type.BOOKING_CANCELLED
             ).exists()
-            
+
             if not already_exists:
                 Notification.objects.create(
                     user=instance.user,
@@ -244,12 +247,13 @@ def create_reservation_notification(sender, instance, created, **kwargs):
                     message=f'Tu reserva en {instance.restaurant.name} para el {instance.date} ha sido cancelada.',
                     reservation=instance,
                 )
-                # 2. Despachar email de cancelación solo la primera vez
-                send_booking_cancellation_email(instance)
+                # 2. Despachar email de cancelación solo la primera vez, tras commit
+                transaction.on_commit(lambda: send_booking_cancellation_email(instance))
 
 
 @receiver(post_save, sender=User)
 def create_user_welcome_email(sender, instance, created, **kwargs):
     if created:
+        from django.db import transaction
         from .emails import send_welcome_email
-        send_welcome_email(instance)
+        transaction.on_commit(lambda: send_welcome_email(instance))

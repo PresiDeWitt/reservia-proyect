@@ -1298,7 +1298,13 @@ def chat_view(request):
 
     logger = logging.getLogger(__name__)
 
-    message = request.data.get("message", "").strip()
+    MAX_MESSAGE_LEN = 2000
+    MAX_HISTORY_ITEMS = 10
+
+    message = request.data.get("message", "")
+    if not isinstance(message, str):
+        return Response({"error": "Message must be a string"}, status=status.HTTP_400_BAD_REQUEST)
+    message = message.strip()
     history = request.data.get("history", [])
     lat = request.data.get("lat")
     lng = request.data.get("lng")
@@ -1306,6 +1312,12 @@ def chat_view(request):
     if not message:
         return Response(
             {"error": "Message required"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if len(message) > MAX_MESSAGE_LEN:
+        return Response(
+            {"error": f"Message too long (max {MAX_MESSAGE_LEN} characters)"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     msg_lower = message.lower().strip()
@@ -1401,10 +1413,18 @@ def chat_view(request):
     top_restaurants = list(restaurants_qs.order_by("-rating")[:20])
 
     # ── Sanitize history ────────────────────────────────────────────────────────
+    # Saneamos el historial recibido del cliente: garantizamos que sea una lista
+    # de dicts válidos, acotamos el número de turnos y la longitud de cada uno
+    # para no enviar prompts arbitrariamente grandes (coste/DoS) ni crashear con
+    # entradas malformadas (p. ej. items que no son dicts).
+    history = history if isinstance(history, list) else []
     safe_history = [
-        {"role": m["role"], "content": m["content"]}
-        for m in history
-        if m.get("role") in ("user", "assistant") and m.get("content")
+        {"role": m["role"], "content": m["content"][:MAX_MESSAGE_LEN]}
+        for m in history[-MAX_HISTORY_ITEMS:]
+        if isinstance(m, dict)
+        and m.get("role") in ("user", "assistant")
+        and isinstance(m.get("content"), str)
+        and m["content"].strip()
     ]
 
     # ── Pre-resolve booking context in Python ───────────────────────────────────
