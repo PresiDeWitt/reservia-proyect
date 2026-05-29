@@ -1,6 +1,7 @@
 # AI Chat Assistant — ReserVia
 
 > **Fecha de implementación:** 2026-05-27
+> **Última actualización de producción:** 2026-05-29
 > **Archivo principal:** `backend/api/views_chat.py`
 > **Componente frontend:** `frontend/src/components/ChatBot.tsx`
 > **API cliente:** `frontend/src/api/chat.ts`
