@@ -222,7 +222,7 @@ def create_reservation_notification(sender, instance, created, **kwargs):
             user=instance.user,
             type=Notification.Type.BOOKING_CONFIRMED,
             title='Reserva confirmada',
-            message=f'Tu reserva en {instance.restaurant.name} para el {instance.date} a las {instance.time} ha sido confirmada.',
+            message=f'Tu reserva en {instance.restaurant.name} para el {instance.date} a las {instance.time.strftime("%H:%M")} ha sido confirmada.',
             reservation=instance,
         )
         # 2. Despachar email SOLO si la transacción confirma. La creación de la
