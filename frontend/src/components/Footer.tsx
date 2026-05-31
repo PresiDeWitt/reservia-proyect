@@ -96,7 +96,7 @@ const Footer: React.FC = () => {
           }}
         >
           {/* Brand column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>
             <Logo size={38} />
 
             <p
