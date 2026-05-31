@@ -51,6 +51,7 @@ urlpatterns = [
     ),
     path("reservations/my/", views_reservations.my_reservations, name="my-reservations"),
     path("reservations/<int:pk>/", views_reservations.cancel_reservation, name="cancel-reservation"),
+    path("reservations/<int:pk>/edit/", views_reservations.edit_reservation, name="edit-reservation"),
     # Favorites
     path('favorites/', list_favorites, name='list-favorites'),
     path('favorites/add/', add_favorite, name='add-favorite'),

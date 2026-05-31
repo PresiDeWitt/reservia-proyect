@@ -16,6 +16,14 @@ export interface Reservation {
   created_at: string;
 }
 
+export interface EditReservationData {
+  date?: string;
+  time?: string;
+  guests?: number;
+  occasion?: string;
+  note?: string;
+}
+
 export const reservationsApi = {
   create: (data: { restaurantId: number; date: string; time: string; guests: number; occasion?: string; note?: string }) =>
     api.post<Reservation>('/reservations/', data),
@@ -23,4 +31,7 @@ export const reservationsApi = {
   myReservations: () => api.get<Reservation[]>('/reservations/my/'),
 
   cancel: (id: number) => api.delete<{ message: string }>(`/reservations/${id}/`),
+
+  edit: (id: number, data: EditReservationData) =>
+    api.patch<Reservation>(`/reservations/${id}/edit/`, data),
 };
