@@ -19,6 +19,18 @@
   --espresso: #23170f;
   --emerald: #10B981;
   --ruby: #E11D48;
+
+  /* Semantic — estado de reservas */
+  --danger:              var(--ruby);
+  --danger-bg:           rgba(225, 29, 72, 0.10);
+  --status-confirmed:    #0a7c5a;
+  --status-confirmed-bg: rgba(16, 185, 129, 0.12);
+  --status-arrived:      #0369a1;
+  --status-arrived-bg:   rgba(14, 165, 233, 0.12);
+  --status-cancelled:    #b01446;
+  --status-cancelled-bg: rgba(225, 29, 72, 0.12);
+  --status-no-show:      #4b5563;
+  --status-no-show-bg:   rgba(107, 114, 128, 0.12);
   --ink: var(--navy);
   --ink-55: rgba(15, 23, 42, 0.55);
   --ink-40: rgba(15, 23, 42, 0.40);

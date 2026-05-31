@@ -218,7 +218,7 @@ const EditModal: React.FC<EditModalProps> = ({ booking, onClose, onSaved }) => {
           {error && (
             <div style={{
               padding: '10px 14px', borderRadius: 'var(--r-md)',
-              background: 'rgba(225,29,72,0.08)', color: '#b01446', fontSize: 13,
+          background: 'var(--danger-bg)', color: 'var(--danger)', fontSize: 13,
             }}>
               <span className="mat" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 6 }}>error</span>
               {error}
@@ -312,10 +312,10 @@ const MyBookings: React.FC = () => {
     no_show:   t('bookings.noShow'),
   };
   const bookingStatusStyle: Record<Reservation['status'], React.CSSProperties> = {
-    confirmed: { background: 'rgba(16,185,129,0.12)',  color: '#0a7c5a',  borderColor: 'transparent' },
-    arrived:   { background: 'rgba(14,165,233,0.12)',  color: '#0369a1',  borderColor: 'transparent' },
-    cancelled: { background: 'rgba(225,29,72,0.12)',   color: '#b01446',  borderColor: 'transparent' },
-    no_show:   { background: 'rgba(107,114,128,0.12)', color: '#4b5563',  borderColor: 'transparent' },
+    confirmed: { background: 'var(--status-confirmed-bg)', color: 'var(--status-confirmed)', borderColor: 'transparent' },
+    arrived:   { background: 'var(--status-arrived-bg)',   color: 'var(--status-arrived)',   borderColor: 'transparent' },
+    cancelled: { background: 'var(--status-cancelled-bg)', color: 'var(--status-cancelled)', borderColor: 'transparent' },
+    no_show:   { background: 'var(--status-no-show-bg)',   color: 'var(--status-no-show)',   borderColor: 'transparent' },
   };
 
   const editingBooking = bookings.find((b) => b.id === editingId) ?? null;
@@ -437,7 +437,7 @@ const MyBookings: React.FC = () => {
                           id={`cancel-booking-${b.id}`}
                           onClick={() => cancel(b.id)}
                           className="btn btn-ghost"
-                          style={{ height: 36, fontSize: 12, color: '#b01446' }}
+                          style={{ height: 36, fontSize: 12, color: 'var(--danger)' }}
                         >
                           {t('bookings.cancel')}
                         </button>
