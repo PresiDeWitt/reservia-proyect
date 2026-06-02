@@ -367,7 +367,7 @@ const Home: React.FC = () => {
               }}
             />
             <div
-              className="card"
+              className="card home-stats-card"
               style={{
                 position: 'absolute',
                 bottom: -28,
@@ -399,6 +399,10 @@ const Home: React.FC = () => {
         <style>{`
           @media (max-width: 900px) {
             .business-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
+            .home-stats-card {
+              left: 16px !important;
+              bottom: 16px !important;
+            }
           }
         `}</style>
       </section>

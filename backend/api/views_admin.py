@@ -88,3 +88,42 @@ def admin_city_distribution(request):
             "pct": pct,
         })
     return Response({"cities": data})
+
+
+@api_view(["POST"])
+@permission_classes([IsStaffAdmin])
+def admin_impersonate_owner(request):
+    from rest_framework_simplejwt.tokens import RefreshToken
+    from django.contrib.auth.models import User
+    from rest_framework import status
+
+    restaurant_id = request.data.get("restaurant_id")
+    if not restaurant_id:
+        return Response({"error": "Falta restaurant_id"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        return Response({"error": "Restaurante no encontrado"}, status=status.HTTP_404_NOT_FOUND)
+
+    owner = restaurant.owner
+    if not owner:
+        # If no owner exists, create a default one dynamically
+        owner_email = f"owner_{restaurant_id}@reservia.demo"
+        owner, _ = User.objects.get_or_create(
+            username=owner_email,
+            defaults={'email': owner_email, 'first_name': 'Owner', 'last_name': restaurant.name},
+        )
+        restaurant.owner = owner
+        restaurant.save(update_fields=['owner'])
+
+    refresh = RefreshToken.for_user(owner)
+    refresh['staff_role'] = 'owner'
+    refresh['email'] = owner.email
+
+    return Response({
+        "token": str(refresh.access_token),
+        "refresh": str(refresh),
+        "role": "owner",
+    })
+

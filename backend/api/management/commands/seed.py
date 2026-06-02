@@ -168,16 +168,22 @@ class Command(BaseCommand):
                 RestaurantTable.objects.create(restaurant=restaurant, **tbl)
             self.stdout.write(f'  Created: {restaurant.name}')
 
-        owner_email = os.environ.get('STAFF_OWNER_EMAIL', 'owner@reservia.demo')
-        owner_user, _ = User.objects.get_or_create(
-            username=owner_email,
-            defaults={'email': owner_email, 'first_name': 'Owner', 'last_name': 'Demo'},
-        )
-        first_restaurant = Restaurant.objects.first()
-        if first_restaurant and first_restaurant.owner is None:
-            first_restaurant.owner = owner_user
-            first_restaurant.save(update_fields=['owner'])
-            self.stdout.write(f'  Owner assigned to: {first_restaurant.name}')
+        env_owner_email = os.environ.get('STAFF_OWNER_EMAIL', 'owner@reservia.website')
+        for idx, restaurant in enumerate(Restaurant.objects.all()):
+            if idx == 0:
+                owner_email = env_owner_email
+            else:
+                slug = restaurant.name.lower().replace(' ', '')
+                owner_email = f"owner_{slug}@reservia.demo"
+
+            owner_user, _ = User.objects.get_or_create(
+                username=owner_email,
+                defaults={'email': owner_email, 'first_name': 'Owner', 'last_name': restaurant.name},
+            )
+            restaurant.owner = owner_user
+            restaurant.save(update_fields=['owner'])
+            self.stdout.write(f'  Owner ({owner_email}) assigned to: {restaurant.name}')
+
 
         from django.core.management import call_command
         call_command('generate_slots', days=30)
@@ -237,6 +243,53 @@ class Command(BaseCommand):
                 restaurant.rating = round(agg['avg'], 1)
                 restaurant.reviews_count = agg['cnt']
                 restaurant.save(update_fields=['rating', 'reviews_count'])
+
+        # Seed realistic reservations for all restaurants to populate their Owner Dashboards
+        import random
+        from datetime import date as dt_date, time as dt_time, timedelta
+        from api.models import Reservation
+
+        statuses = ['confirmed', 'arrived', 'no_show', 'cancelled', 'confirmed', 'arrived']
+        occasions = ['', '', 'birthday', '', 'anniversary', '', 'business', '']
+        notes = ['', '', 'Alergia al gluten', '', 'Mesa cerca de la ventana, por favor', '']
+        hours = [13, 14, 20, 21]
+        minutes = [0, 30]
+        today = dt_date.today()
+
+        reservations_count = 0
+        for restaurant in restaurants:
+            tables = list(RestaurantTable.objects.filter(restaurant=restaurant))
+            if not tables:
+                continue
+
+            for day_offset in range(-5, 6): # from 5 days ago to 5 days in future
+                num_res = random.choice([1, 2, 3])
+                for _ in range(num_res):
+                    user = random.choice(reviewer_users)
+                    table = random.choice(tables)
+                    status_choice = random.choice(statuses)
+
+                    res_date = today + timedelta(days=day_offset)
+                    if res_date > today:
+                        status_choice = 'confirmed'
+
+                    res_hour = random.choice(hours)
+                    res_min = random.choice(minutes)
+
+                    Reservation.objects.create(
+                        user=user,
+                        restaurant=restaurant,
+                        assigned_table=table,
+                        guests=random.randint(2, table.capacity),
+                        date=res_date,
+                        time=dt_time(res_hour, res_min),
+                        status=status_choice,
+                        occasion=random.choice(occasions),
+                        note=random.choice(notes)
+                    )
+                    reservations_count += 1
+
+        self.stdout.write(self.style.SUCCESS(f'  Seeded {reservations_count} realistic reservations across all restaurants.'))
 
         # Seed staff codes only if env vars are explicitly configured
         from api.models import StaffCode

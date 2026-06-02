@@ -14,6 +14,22 @@ const AdminDashboard: React.FC = () => {
   const [topRestaurants, setTopRestaurants] = useState<TopRestaurant[]>([]);
   const [cities, setCities] = useState<CityData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [impersonatingId, setImpersonatingId] = useState<number | null>(null);
+
+  const handleImpersonate = async (restaurantId: number) => {
+    if (impersonatingId) return;
+    setImpersonatingId(restaurantId);
+    try {
+      const res = await adminApi.impersonate(restaurantId);
+      storage.set(STORAGE_KEYS.STAFF_ROLE, 'owner');
+      storage.set(STORAGE_KEYS.STAFF_TOKEN, res.token);
+      navigate('/owner');
+    } catch (err) {
+      console.error('Fallo al impersonar propietario:', err);
+    } finally {
+      setImpersonatingId(null);
+    }
+  };
 
   const handleLogout = () => {
     storage.remove(STORAGE_KEYS.STAFF_ROLE);
@@ -155,14 +171,14 @@ const AdminDashboard: React.FC = () => {
               <table className="admin-table">
                 <thead>
                   <tr>
-                    {['#', t('admin.table.restaurant'), t('admin.table.city'), t('admin.table.bookings'), t('admin.table.revenue'), t('admin.table.rating')].map(h => (
+                    {['#', t('admin.table.restaurant'), t('admin.table.city'), t('admin.table.bookings'), t('admin.table.revenue'), t('admin.table.rating'), t('admin.table.actions', { defaultValue: 'Acciones' })].map(h => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr className="admin-loading-row"><td colSpan={6}>{t('admin.loading')}</td></tr>
+                    <tr className="admin-loading-row"><td colSpan={7}>{t('admin.loading')}</td></tr>
                   ) : topRestaurants.map((r, i) => (
                     <tr key={r.id}>
                       <td>
@@ -177,6 +193,30 @@ const AdminDashboard: React.FC = () => {
                           <span className="material-symbols-outlined">star</span>
                           {r.rating}
                         </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleImpersonate(r.id)}
+                          disabled={impersonatingId !== null}
+                          className="admin-button-action"
+                          style={{
+                            height: 28,
+                            padding: '0 10px',
+                            borderRadius: 6,
+                            border: '1px solid var(--border)',
+                            background: 'var(--surface-3)',
+                            color: 'var(--ink)',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 4,
+                          }}
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: 13 }}>login</span>
+                          {impersonatingId === r.id ? 'Cargando...' : t('admin.impersonateBtn', { defaultValue: 'Gestionar' })}
+                        </button>
                       </td>
                     </tr>
                   ))}

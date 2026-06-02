@@ -29,10 +29,18 @@ export interface CityData {
   pct: number;
 }
 
+export interface ImpersonateResponse {
+  token: string;
+  refresh: string;
+  role: 'owner';
+}
+
 export const adminApi = {
   stats: () => staffApi.get<AdminStats>('/admin/stats/'),
   topRestaurants: () =>
     staffApi.get<{ restaurants: TopRestaurant[] }>('/admin/top-restaurants/'),
   cityDistribution: () =>
     staffApi.get<{ cities: CityData[] }>('/admin/city-distribution/'),
+  impersonate: (restaurantId: number) =>
+    staffApi.post<ImpersonateResponse>('/admin/impersonate/', { restaurant_id: restaurantId }),
 };

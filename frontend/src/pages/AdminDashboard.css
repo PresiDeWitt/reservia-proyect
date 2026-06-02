@@ -405,3 +405,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+.admin-button-action {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.admin-button-action:hover:not(:disabled) {
+  background: var(--surface-2) !important;
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.admin-button-action:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.admin-button-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
