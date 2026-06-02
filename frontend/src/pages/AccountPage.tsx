@@ -69,13 +69,6 @@ const AccountPage: React.FC = () => {
             </h1>
             <div style={{ fontSize: 14, opacity: 0.7, marginTop: 4 }}>{user.email}</div>
           </div>
-          <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-            <div className="eyebrow" style={{ color: 'rgba(248,247,245,0.5)' }}>{t('account.points')}</div>
-            <div className="editorial mono-num" style={{ fontSize: 56, fontWeight: 300, color: 'var(--primary)' }}>
-              0
-            </div>
-            <div style={{ fontSize: 11, opacity: 0.6 }}>{t('account.pointsHint')}</div>
-          </div>
         </div>
       </div>
 
