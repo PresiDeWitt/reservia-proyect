@@ -83,7 +83,7 @@ def staff_login_view(request):
             email = os.environ.get('STAFF_OWNER_EMAIL', '')
         elif admin_code and hmac.compare_digest(code, admin_code):
             role = 'admin'
-            email = ''
+            email = os.environ.get('STAFF_ADMIN_EMAIL', '')
         else:
             return Response({"error": "Invalid access code"}, status=401)
     else:

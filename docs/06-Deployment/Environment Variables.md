@@ -114,6 +114,29 @@ Reservia requiere variables de entorno tanto para el ==backend (Django)== como p
 
 ---
 
+## 🛡️ Códigos de Staff (Owner / Admin)
+
+> [!danger] 🔐 Secretos críticos
+> Los códigos staff dan acceso al panel de dashboard con rol `owner` o `admin`. ==No commitear nunca en el repo==. Configurar como ==GitHub Secrets== o variables equivalentes en el proveedor cloud.
+>
+> | Variable | GitHub Secret | Descripción |
+> |----------|:-------------:|-------------|
+> | `STAFF_OWNER_CODE` | `STAFF_OWNER_CODE` | Código que introduce un dueño de restaurante en `POST /api/auth/staff-login` para obtener un JWT con `role: owner` |
+> | `STAFF_OWNER_EMAIL` | `STAFF_OWNER_EMAIL` | Email asociado al owner (se incluye como claim `email` en el JWT y se guarda en `StaffCode.email` al seedear) |
+> | `STAFF_ADMIN_CODE` | `STAFF_ADMIN_CODE` | Código para el panel administrativo de plataforma (`role: admin`) |
+> | `STAFF_ADMIN_EMAIL` | `STAFF_ADMIN_EMAIL` | Email asociado al admin de plataforma |
+>
+> > [!tip] 🔑 Generar valores seguros
+> > Usar `python -c "import secrets; print(secrets.token_urlsafe(24))"` para cada código. Mínimo 32 caracteres.
+>
+> > [!info] 📦 Flujo en el deploy
+> > 1. CI (`deploy.yml`) lee los 4 GitHub Secrets y los inyecta en el `env:` del job
+> > 2. La acción SSH escribe el `.env` del server (`chmod 600`)
+> > 3. `docker-compose.prod.yml` los propaga al backend con `env_file: .env`
+> > 4. Django los lee en `seed` (hashea el código en `StaffCode`) y en `staff_login_view` (fallback de validación)
+
+---
+
 ## 🔗 Links Relacionados
 
 - [[Docker Setup]] — Cómo se inyectan las variables en Docker
