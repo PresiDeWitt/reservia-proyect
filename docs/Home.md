@@ -78,6 +78,7 @@ cssclasses:
 > [!note] 👨‍💻 Entorno Local
 > - 💻 [[Local Setup]] — Cómo correr el proyecto en local
 > - 🌱 [[Database Seeding]] — Datos de prueba pre-cargados
+> - 🚀 [[Plan_Desarrollo_Fases]] — Plan de desarrollo estructurado en 5 fases
 > - 📈 [[Seguimiento Fase 2 - Ejecucion y Pruebas]] — Plan de ejecucion, control y KPIs
 
 ---

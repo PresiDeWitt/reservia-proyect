@@ -126,8 +126,11 @@ def google_auth_view(request):
         info = id_token.verify_oauth2_token(
             credential, google_requests.Request(), django_settings.GOOGLE_CLIENT_ID
         )
-    except ValueError:
-        return Response({'error': 'Invalid Google token'}, status=status.HTTP_401_UNAUTHORIZED)
+    except ValueError as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Google Token Verification failed: {str(e)}")
+        return Response({'error': f'Invalid Google token: {str(e)}'}, status=status.HTTP_401_UNAUTHORIZED)
 
     email = info.get('email')
     if not email or not info.get('email_verified'):
