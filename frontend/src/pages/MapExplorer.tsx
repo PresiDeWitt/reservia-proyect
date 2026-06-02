@@ -97,299 +97,296 @@ const MapExplorer: React.FC = () => {
   const currentOptions = cuisineOptions.length > 0 ? cuisineOptions : FALLBACK_CUISINES;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: 'calc(100vh - 72px)',
-        overflow: 'hidden',
-        background: 'var(--surface)',
-      }}
-    >
-      {/* Filter bar */}
-      <div
-        style={{
-          padding: '12px 24px',
-          background: 'var(--surface-3)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          gap: 8,
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          flexShrink: 0,
-          zIndex: 10,
-        }}
-      >
-        <span
-          className="editorial"
-          style={{ fontSize: 16, fontWeight: 400, letterSpacing: '-0.02em', marginRight: 8 }}
-        >
-          {t('map.title')} <span className="italic-accent">{t('map.titleAccent')}</span>
-        </span>
-        <div style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 4px' }} />
-        {currentOptions.map((c) => (
-          <button
-            key={c}
-            onClick={() => setCuisineFilter(cuisineFilter === c ? '' : c)}
-            style={{
-              height: 30,
-              padding: '0 12px',
-              borderRadius: 999,
-              fontSize: 12,
-              fontWeight: 600,
-              cursor: 'pointer',
-              border: '1px solid',
-              background: cuisineFilter === c ? 'var(--navy)' : 'transparent',
-              borderColor: cuisineFilter === c ? 'var(--navy)' : 'var(--border-strong)',
-              color: cuisineFilter === c ? '#fff' : 'var(--ink)',
-              transition: 'all 0.15s',
-            }}
-          >
-            {t(`cuisines.${c}`, { defaultValue: c })}
-          </button>
-        ))}
+    <div className="gmap-layout">
+      {/* Mobile-only floating filter pills at the top */}
+      <div className="gmap-mobile-filters show-mobile">
+        <div className="gmap-filters-scroll">
+          {currentOptions.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCuisineFilter(cuisineFilter === c ? '' : c)}
+              style={{
+                height: 30,
+                padding: '0 12px',
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                border: '1px solid',
+                background: cuisineFilter === c ? 'var(--navy)' : 'var(--surface-3)',
+                borderColor: cuisineFilter === c ? 'var(--navy)' : 'var(--border-strong)',
+                color: cuisineFilter === c ? '#fff' : 'var(--ink)',
+                transition: 'all 0.15s',
+                flexShrink: 0,
+              }}
+            >
+              {t(`cuisines.${c}`, { defaultValue: c })}
+            </button>
+          ))}
           {loading && (
-            <span style={{ fontSize: 12, color: 'var(--ink-40)', marginLeft: 8 }}>
+            <span style={{ fontSize: 12, color: 'var(--ink-40)', alignSelf: 'center', marginLeft: 8 }}>
               {t('map.loading')}
             </span>
           )}
+        </div>
       </div>
 
-      {/* Main layout */}
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }} className="map-main">
-        {/* Sidebar */}
-        <div
-          style={{
-            width: 360,
-            flexShrink: 0,
-            overflowY: 'auto',
-            background: 'var(--surface-3)',
-            borderRight: '1px solid var(--border)',
-            zIndex: 5,
-          }}
+      {/* Map (occupies 100% of space) */}
+      <div className="gmap-map-wrapper">
+        <Map
+          theme={theme}
+          viewport={viewport}
+          onViewportChange={handleViewportChange}
+          className="w-full h-full"
         >
-          <div style={{ padding: '16px 16px 10px' }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>
-              {t('map.restaurantCount', { count: restaurants.length })}
-            </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {restaurants.map((rest) => {
-              const id = Number(rest.id);
-              return (
-                <button
-                  key={id}
-                  onClick={() => handleSelectRestaurant(rest)}
-                  style={{
-                    width: '100%',
-                    padding: '14px 16px',
-                    display: 'flex',
-                    gap: 12,
-                    alignItems: 'center',
-                    textAlign: 'left',
-                    background: id === selectedId ? 'var(--primary-glow)' : 'transparent',
-                    borderLeft:
-                      id === selectedId
-                        ? '3px solid var(--primary)'
-                        : '3px solid transparent',
-                    border: 'none',
-                    borderBottom: '1px solid var(--border)',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <img
-                    src={rest.image}
-                    alt={rest.name}
-                    style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
-                  />
-                  <div style={{ flex: 1, minWidth: 0 }}>
+          <MapControls showZoom showCompass showFullscreen />
+
+          {restaurants.map((rest) => {
+            const lng = rest.coords[1];
+            const lat = rest.coords[0];
+            const id = Number(rest.id);
+            const isActive = id === selectedId;
+
+            return (
+              <MapMarker
+                key={id}
+                longitude={lng}
+                latitude={lat}
+                onClick={() => handleSelectRestaurant(rest)}
+              >
+                <MarkerContent>
+                  <div
+                    style={{
+                      width: isActive ? 40 : 32,
+                      height: isActive ? 40 : 32,
+                      borderRadius: '50%',
+                      background: isActive ? 'var(--primary)' : 'var(--navy)',
+                      border: `3px solid ${isActive ? '#fff' : 'rgba(255,255,255,0.5)'}`,
+                      boxShadow: isActive
+                         ? '0 4px 20px rgba(249,116,21,0.6)'
+                         : '0 2px 8px rgba(0,0,0,0.4)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.2s',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span
+                      className="material-symbols-outlined"
+                      style={{
+                        color: '#fff',
+                        fontSize: isActive ? 20 : 16,
+                        fontVariationSettings: "'FILL' 1",
+                      }}
+                    >
+                      restaurant
+                    </span>
+                  </div>
+                </MarkerContent>
+
+                {isActive && (
+                  <MarkerPopup>
                     <div
                       style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        color: 'var(--ink)',
+                        background: 'var(--surface-3)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 16,
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
+                        minWidth: 200,
+                        boxShadow: 'var(--sh-md)',
                       }}
                     >
-                      {rest.name}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 2 }}>
-                      {t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} · {rest.location}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                      <span
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 2,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: 'var(--primary)',
-                        }}
-                      >
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}
+                      <img
+                        src={rest.image}
+                        alt={rest.name}
+                        style={{ width: '100%', height: 100, objectFit: 'cover' }}
+                      />
+                      <div style={{ padding: '12px 14px' }}>
+                        <div
+                          style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 3 }}
                         >
-                          star
-                        </span>
-                        {rest.rating}
-                      </span>
-                      <span style={{ fontSize: 11, color: 'var(--ink-40)' }}>·</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)' }}>
-                        {rest.priceRange}
-                      </span>
+                          {rest.name}
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--ink-55)', marginBottom: 10 }}>
+                          {t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} ·{' '}
+                          {rest.priceRange}
+                        </div>
+                        <button
+                          onClick={() => navigate(`/restaurant/${id}`)}
+                          style={{
+                            width: '100%',
+                            height: 34,
+                            borderRadius: 8,
+                            background: 'var(--navy)',
+                            color: '#fff',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            border: 'none',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {t('map.book')}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  {id === selectedId && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/restaurant/${id}`);
-                      }}
-                      style={{
-                        flexShrink: 0,
-                        height: 32,
-                        padding: '0 12px',
-                        borderRadius: 8,
-                        background: 'var(--navy)',
-                        color: '#fff',
-                        fontSize: 11,
-                        fontWeight: 700,
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
-                    >
-                      {t('map.view')}
-                    </button>
-                  )}
-                </button>
-              );
-            })}
+                  </MarkerPopup>
+                )}
+              </MapMarker>
+            );
+          })}
+        </Map>
+      </div>
+
+      {/* Google Maps floating sidebar overlay panel */}
+      <div className="gmap-sidebar">
+        {/* Title, totals, and desktop filters inside the sidebar header */}
+        <div className="gmap-sidebar-header">
+          <span
+            className="editorial"
+            style={{ fontSize: 18, fontWeight: 400, letterSpacing: '-0.02em', display: 'block', marginBottom: 12 }}
+          >
+            {t('map.title')} <span className="italic-accent">{t('map.titleAccent')}</span>
+          </span>
+
+          <div className="gmap-filters-scroll">
+            {currentOptions.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCuisineFilter(cuisineFilter === c ? '' : c)}
+                style={{
+                  height: 28,
+                  padding: '0 10px',
+                  borderRadius: 999,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  border: '1px solid',
+                  background: cuisineFilter === c ? 'var(--navy)' : 'transparent',
+                  borderColor: cuisineFilter === c ? 'var(--navy)' : 'var(--border-strong)',
+                  color: cuisineFilter === c ? '#fff' : 'var(--ink)',
+                  transition: 'all 0.15s',
+                  flexShrink: 0,
+                }}
+              >
+                {t(`cuisines.${c}`, { defaultValue: c })}
+              </button>
+            ))}
+            {loading && (
+              <span style={{ fontSize: 11, color: 'var(--ink-40)', alignSelf: 'center', marginLeft: 8 }}>
+                {t('map.loading')}
+              </span>
+            )}
+          </div>
+
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-55)', marginTop: 12 }}>
+            {t('map.restaurantCount', { count: restaurants.length })}
           </div>
         </div>
 
-        {/* Map */}
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Map
-            theme={theme}
-            viewport={viewport}
-            onViewportChange={handleViewportChange}
-            className="w-full h-full"
-          >
-            <MapControls showZoom showCompass showFullscreen />
-
-            {restaurants.map((rest) => {
-              const lng = rest.coords[1];
-              const lat = rest.coords[0];
-              const id = Number(rest.id);
-              const isActive = id === selectedId;
-
-              return (
-                <MapMarker
-                  key={id}
-                  longitude={lng}
-                  latitude={lat}
-                  onClick={() => handleSelectRestaurant(rest)}
-                >
-                  <MarkerContent>
-                    <div
+        {/* List of restaurants (scrolls vertically on desktop, horizontally snaps on mobile) */}
+        <div className="gmap-sidebar-list">
+          {restaurants.map((rest) => {
+            const id = Number(rest.id);
+            return (
+              <button
+                key={id}
+                onClick={() => handleSelectRestaurant(rest)}
+                className="gmap-restaurant-card"
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  display: 'flex',
+                  gap: 12,
+                  alignItems: 'center',
+                  textAlign: 'left',
+                  background: id === selectedId ? 'var(--primary-glow)' : 'transparent',
+                  borderLeft:
+                    id === selectedId
+                      ? '3px solid var(--primary)'
+                      : '3px solid transparent',
+                  border: 'none',
+                  borderBottom: '1px solid var(--border)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <img
+                  src={rest.image}
+                  alt={rest.name}
+                  style={{ width: 52, height: 52, borderRadius: 10, objectFit: 'cover', flexShrink: 0 }}
+                />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 700,
+                      color: 'var(--ink)',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {rest.name}
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-55)', marginTop: 2 }}>
+                    {t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} · {rest.location}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                    <span
                       style={{
-                        width: isActive ? 40 : 32,
-                        height: isActive ? 40 : 32,
-                        borderRadius: '50%',
-                        background: isActive ? 'var(--primary)' : 'var(--navy)',
-                        border: `3px solid ${isActive ? '#fff' : 'rgba(255,255,255,0.5)'}`,
-                        boxShadow: isActive
-                          ? '0 4px 20px rgba(249,116,21,0.6)'
-                          : '0 2px 8px rgba(0,0,0,0.4)',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'all 0.2s',
-                        cursor: 'pointer',
+                        gap: 2,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: 'var(--primary)',
                       }}
                     >
                       <span
                         className="material-symbols-outlined"
-                        style={{
-                          color: '#fff',
-                          fontSize: isActive ? 20 : 16,
-                          fontVariationSettings: "'FILL' 1",
-                        }}
+                        style={{ fontSize: 11, fontVariationSettings: "'FILL' 1" }}
                       >
-                        restaurant
+                        star
                       </span>
-                    </div>
-                  </MarkerContent>
-
-                  {isActive && (
-                    <MarkerPopup>
-                      <div
-                        style={{
-                          background: 'var(--surface-3)',
-                          border: '1px solid var(--border)',
-                          borderRadius: 16,
-                          overflow: 'hidden',
-                          minWidth: 200,
-                          boxShadow: 'var(--sh-md)',
-                        }}
-                      >
-                        <img
-                          src={rest.image}
-                          alt={rest.name}
-                          style={{ width: '100%', height: 100, objectFit: 'cover' }}
-                        />
-                        <div style={{ padding: '12px 14px' }}>
-                          <div
-                            style={{ fontWeight: 700, fontSize: 14, color: 'var(--ink)', marginBottom: 3 }}
-                          >
-                            {rest.name}
-                          </div>
-                          <div style={{ fontSize: 12, color: 'var(--ink-55)', marginBottom: 10 }}>
-                            {t(`cuisines.${rest.cuisine}`, { defaultValue: rest.cuisine })} ·{' '}
-                            {rest.priceRange}
-                          </div>
-                          <button
-                            onClick={() => navigate(`/restaurant/${id}`)}
-                            style={{
-                              width: '100%',
-                              height: 34,
-                              borderRadius: 8,
-                              background: 'var(--navy)',
-                              color: '#fff',
-                              fontSize: 12,
-                              fontWeight: 700,
-                              border: 'none',
-                              cursor: 'pointer',
-                            }}
-                          >
-                            {t('map.book')}
-                          </button>
-                        </div>
-                      </div>
-                    </MarkerPopup>
-                  )}
-                </MapMarker>
-              );
-            })}
-          </Map>
+                      {rest.rating}
+                    </span>
+                    <span style={{ fontSize: 11, color: 'var(--ink-40)' }}>·</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink)' }}>
+                      {rest.priceRange}
+                    </span>
+                  </div>
+                </div>
+                {id === selectedId && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/restaurant/${id}`);
+                    }}
+                    style={{
+                      flexShrink: 0,
+                      height: 32,
+                      padding: '0 12px',
+                      borderRadius: 8,
+                      background: 'var(--navy)',
+                      color: '#fff',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      border: 'none',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    {t('map.view')}
+                  </button>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .map-main { flex-direction: column !important; }
-          .map-main > div:first-child { width: 100% !important; max-height: 240px; }
-        }
-      `}</style>
     </div>
   );
 };

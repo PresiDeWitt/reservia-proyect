@@ -849,3 +849,341 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     @apply hidden!;
   }
 }
+
+/* =============================================
+   FOOTER RESPONSIVE FIXES
+   ============================================= */
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px 40px;
+}
+
+.footer-logo-row {
+  margin-bottom: 28px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.footer-nav-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-bottom {
+  padding: 20px 0 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-logo-row {
+    justify-content: center !important;
+    margin-bottom: 24px !important;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 40px 24px !important;
+  }
+  .footer-brand {
+    order: 99 !important; /* Push brand column below nav columns */
+    align-items: center !important;
+    text-align: center !important;
+    grid-column: span 2 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    padding-top: 36px !important;
+    margin-top: 16px !important;
+    width: 100% !important;
+  }
+  .footer-brand p {
+    max-width: 320px !important;
+    margin: 0 auto !important;
+  }
+  .footer-brand div {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+  .footer-nav-col {
+    order: 1 !important; /* Navigation columns stay at the top */
+  }
+  .footer-bottom {
+    flex-direction: column !important;
+    text-align: center !important;
+    justify-content: center !important;
+    gap: 16px !important;
+  }
+  .footer-bottom-left {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 10px 18px !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+  .footer-bottom-separator {
+    display: none !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 32px 16px !important;
+  }
+}
+
+
+/* =============================================
+   GOOGLE MAPS VIEWPORT & OVERLAY LAYOUT
+   ============================================= */
+.gmap-layout {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 72px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gmap-map-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.gmap-sidebar {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  bottom: 24px;
+  width: 380px;
+  background: var(--surface-3);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(15, 23, 42, 0.16);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: all 0.3s var(--ease-out-expo);
+}
+
+.gmap-sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.gmap-sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.gmap-filters-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 20px;
+  scrollbar-width: none;
+}
+.gmap-filters-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile responsive (Google Maps style bottom sheet / horizontal overlay cards) */
+@media (max-width: 768px) {
+  .gmap-sidebar {
+    position: absolute !important;
+    top: auto !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 20px !important;
+    width: auto !important;
+    height: auto !important;
+    max-height: 200px !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    overflow: visible !important;
+  }
+
+  .gmap-sidebar-header {
+    display: none !important;
+  }
+
+  .gmap-sidebar-list {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 4px 12px 12px !important;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    width: 100vw;
+    margin-left: -12px;
+  }
+  .gmap-sidebar-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .gmap-restaurant-card {
+    scroll-snap-align: center;
+    width: 290px !important;
+    flex-shrink: 0 !important;
+    background: var(--surface-3) !important;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    padding: 12px !important;
+  }
+
+  .gmap-mobile-filters {
+    position: absolute !important;
+    top: 12px !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 10 !important;
+    padding: 0 12px !important;
+    width: 100% !important;
+  }
+
+  .gmap-mobile-filters .gmap-filters-scroll {
+    padding: 6px 4px !important;
+    background: var(--surface-3) !important;
+    border: 1px solid var(--border-strong) !important;
+    border-radius: 99px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+    justify-content: flex-start !important;
+    overflow-x: auto !important;
+  }
+}
+
+/* =============================================
+   OWNER DASHBOARD RESPONSIVE & ICON FIXES
+   ============================================= */
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  display: inline-block;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+}
+
+.owner-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.owner-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.owner-tabs-container {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 6px;
+  margin-bottom: 24px;
+  width: fit-content;
+  flex-wrap: wrap;
+}
+
+.owner-filter-pills {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .owner-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    margin-bottom: 24px !important;
+  }
+  .owner-btn-group {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .owner-btn-group button {
+    width: 100% !important;
+    justify-content: center !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+  }
+  .owner-tabs-container {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    border-radius: 12px !important;
+    padding: 4px !important;
+  }
+  .owner-tabs-container button {
+    padding: 6px 8px !important;
+    font-size: 11px !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    gap: 4px !important;
+  }
+  .owner-filter-pills {
+    gap: 6px !important;
+  }
+  .owner-filter-pills button {
+    font-size: 11px !important;
+    padding: 0 12px !important;
+    height: 30px !important;
+  }
+}
+
+

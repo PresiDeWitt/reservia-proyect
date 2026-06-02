@@ -86,18 +86,18 @@ const Footer: React.FC = () => {
       <div style={{ height: 1, background: 'linear-gradient(90deg, transparent, rgba(249,116,21,0.5), transparent)' }} />
 
       <div className="container" style={{ padding: '72px 24px 0' }}>
+        <div className="footer-logo-row">
+          <Logo size={38} />
+        </div>
         <div
+          className="footer-grid"
           style={{
-            display: 'grid',
-            gridTemplateColumns: '2fr 1fr 1fr 1fr',
-            gap: '48px 40px',
             paddingBottom: 56,
             borderBottom: '1px solid rgba(255,255,255,0.1)',
           }}
         >
           {/* Brand column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>
-            <Logo size={38} />
+          <div className="footer-brand" style={{ display: 'flex', flexDirection: 'column', gap: 24, alignItems: 'flex-start' }}>
 
             <p
               className="editorial"
@@ -156,7 +156,7 @@ const Footer: React.FC = () => {
 
           {/* Nav columns */}
           {COLUMN_KEYS.map((col) => (
-            <div key={col.titleKey}>
+            <div key={col.titleKey} className="footer-nav-col">
               <div
                 style={{
                   fontSize: 11,
@@ -227,19 +227,10 @@ const Footer: React.FC = () => {
         </div>
 
         {/* Bottom bar */}
-        <div
-          style={{
-            padding: '20px 0 28px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 12,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+        <div className="footer-bottom">
+          <div className="footer-bottom-left">
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>{t('footer.rights')}</span>
-            <span style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+            <span className="footer-bottom-separator" style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
             {BOTTOM_LINKS.map((link) =>
               link.to ? (
                 <Link

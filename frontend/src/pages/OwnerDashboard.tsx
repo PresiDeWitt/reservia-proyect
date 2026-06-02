@@ -187,11 +187,11 @@ const OwnerDashboard: React.FC = () => {
       <div style={{ maxWidth: 1200, margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
           <div className="eyebrow" style={{ marginBottom: 10 }}>{restCuisine ? `${t('owner.panel')} · ${restCuisine}` : t('owner.panel')}</div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+          <div className="owner-header-row">
             <h1 className="editorial" style={{ fontSize: 'clamp(36px,5vw,56px)', fontWeight: 300, letterSpacing: '-0.02em', margin: 0 }}>
               {firstWord} {restRest && <span className="italic-accent">{restRest}</span>}
             </h1>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className="owner-btn-group">
               <button style={{
                 height: 40, padding: '0 18px', borderRadius: 12,
                 background: 'var(--navy)', color: '#fff',
@@ -253,7 +253,7 @@ const OwnerDashboard: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: 16, padding: 6, marginBottom: 24, width: 'fit-content' }}>
+        <div className="owner-tabs-container">
           {([['reservations', t('owner.tabs.reservations'), 'event'], ['floor', t('owner.tabs.floor'), 'table_restaurant'], ['heatmap', t('owner.tabs.heatmap'), 'bar_chart']] as const).map(([id, label, icon]) => (
             <button
               key={id}
@@ -276,7 +276,7 @@ const OwnerDashboard: React.FC = () => {
         {activeTab === 'reservations' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             {/* Filter pills */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            <div className="owner-filter-pills">
               {[['all', t('owner.filters.all')], ['confirmed', t('owner.filters.confirmed')], ['arrived', t('owner.filters.arrived')], ['no_show', t('owner.filters.no_show')], ['cancelled', t('owner.filters.cancelled')]].map(([v, l]) => (
                 <button
                   key={v}
