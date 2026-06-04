@@ -137,6 +137,16 @@ class Command(BaseCommand):
         parser.add_argument('--reset', action='store_true', help='Delete existing data before seeding')
 
     def handle(self, *args, **options):
+        """
+        Seed the database with demo restaurants, menus, tables, owners, reviews,
+        reservations, and staff codes.
+
+        PRODUCTION WARNING: Do NOT run `seed --reset` in production — it wipes
+        restaurants, menus, tables, owners and cascades to all reviews and reservations.
+        To add new demo data, edit the seed lists and re-run plain
+        `python manage.py seed` (no-op if data exists, or use a separate idempotent
+        migration).
+        """
         if options['reset']:
             MenuItem.objects.all().delete()
             Restaurant.objects.all().delete()

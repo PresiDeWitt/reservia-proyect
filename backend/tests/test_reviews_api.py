@@ -1,14 +1,9 @@
-from datetime import date, time, timedelta
-
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.models import Review
-from tests.factories import create_reservation, create_restaurant, create_user
-
-YESTERDAY = date.today() - timedelta(days=1)
-RES_TIME = time(20, 30)
+from tests.factories import create_restaurant, create_user
 
 
 def auth_header(user):
@@ -32,12 +27,13 @@ class ReviewListTests(APITestCase):
         self.assertFalse(response.data['can_review'])
         self.assertFalse(response.data['has_reviewed'])
 
-    def test_can_review_false_without_past_reservation(self):
+    def test_can_review_true_when_logged_in_without_review(self):
+        """Any authenticated user with no prior review can review."""
         response = self.client.get(self._url(), **auth_header(self.user))
-        self.assertFalse(response.data['can_review'])
+        self.assertTrue(response.data['can_review'])
 
-    def test_can_review_true_with_past_reservation(self):
-        create_reservation(self.user, self.restaurant, date=YESTERDAY, time=RES_TIME, status='confirmed')
+    def test_can_review_true_without_reservation(self):
+        """No reservation needed — logged-in user with no review can review."""
         response = self.client.get(self._url(), **auth_header(self.user))
         self.assertTrue(response.data['can_review'])
 
@@ -63,31 +59,27 @@ class ReviewCreateTests(APITestCase):
         response = self.client.post(self._url(), self._payload(), format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_create_requires_past_reservation(self):
-        response = self.client.post(self._url(), self._payload(), format='json', **auth_header(self.user))
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
     def test_create_success(self):
-        create_reservation(self.user, self.restaurant, date=YESTERDAY, time=RES_TIME, status='confirmed')
+        """Authenticated user can post a review without any reservation."""
         response = self.client.post(self._url(), self._payload(), format='json', **auth_header(self.user))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['rating'], 5)
         self.assertEqual(response.data['userName'], 'Ana Ruiz')
 
     def test_create_updates_restaurant_rating(self):
-        create_reservation(self.user, self.restaurant, date=YESTERDAY, time=RES_TIME, status='confirmed')
+        """Posting a review recalculates the restaurant aggregate rating."""
         self.client.post(self._url(), {'rating': 3, 'comment': ''}, format='json', **auth_header(self.user))
         self.restaurant.refresh_from_db()
         self.assertEqual(self.restaurant.rating, 3.0)
         self.assertEqual(self.restaurant.reviews_count, 1)
 
     def test_cannot_review_twice(self):
-        create_reservation(self.user, self.restaurant, date=YESTERDAY, time=RES_TIME, status='confirmed')
+        """A user may only submit one review per restaurant."""
         self.client.post(self._url(), self._payload(), format='json', **auth_header(self.user))
         response = self.client.post(self._url(), self._payload(rating=1), format='json', **auth_header(self.user))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_invalid_rating_rejected(self):
-        create_reservation(self.user, self.restaurant, date=YESTERDAY, time=RES_TIME, status='confirmed')
+        """Ratings outside 1-5 are rejected with HTTP 400."""
         response = self.client.post(self._url(), {'rating': 6, 'comment': 'bad'}, format='json', **auth_header(self.user))
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
