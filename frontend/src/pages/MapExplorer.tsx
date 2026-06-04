@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Map,
   MapControls,
@@ -30,6 +30,7 @@ function computeCenter(list: Restaurant[]): [number, number] {
 const MapExplorer: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { theme } = useTheme();
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -58,6 +59,22 @@ const MapExplorer: React.FC = () => {
             [...new Set(list.map((r) => r.cuisine))].sort(),
           );
 
+          // Auto-select restaurant when arriving via ?restaurant=<id>
+          const targetId = searchParams.get('restaurant');
+          if (targetId) {
+            const target = list.find((r) => String(r.id) === targetId);
+            if (target) {
+              const numId = Number(target.id);
+              setSelectedId(numId);
+              setViewport((prev) => ({
+                ...prev,
+                center: [target.coords[1], target.coords[0]],
+                zoom: 17,
+              }));
+              return;
+            }
+          }
+
           if (!cuisineFilter) {
             setViewport((prev) => ({
               ...prev,
@@ -72,6 +89,7 @@ const MapExplorer: React.FC = () => {
         console.error('Failed to load restaurants:', err);
         setLoadedCuisine(cuisineFilter);
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cuisineFilter]);
 
   const handleSelectRestaurant = useCallback(

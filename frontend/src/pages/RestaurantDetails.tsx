@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { restaurantsApi, type Restaurant, type Review, type ReviewsResponse } from '../api/restaurants';
@@ -49,11 +49,13 @@ const RestaurantDetails: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<TabKey>('about');
   const [authOpen, setAuthOpen] = useState(false);
   const [favorite, setFavorite] = useState(false);
+  const [shareLabel, setShareLabel] = useState<'share' | 'copied'>('share');
 
   const [reviewsData, setReviewsData] = useState<ReviewsResponse | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
@@ -83,6 +85,26 @@ const RestaurantDetails: React.FC = () => {
       restaurantsApi.addFavorite(numId).catch(() => {});
       setFavorite(true);
     }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = restaurant?.name ?? 'ReserVia';
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url });
+      } catch {
+        // user cancelled — no-op
+      }
+    } else {
+      await navigator.clipboard.writeText(url).catch(() => {});
+      setShareLabel('copied');
+      setTimeout(() => setShareLabel('share'), 2000);
+    }
+  };
+
+  const handleDirections = () => {
+    navigate(`/map?restaurant=${id}`);
   };
 
   useEffect(() => {
@@ -216,11 +238,17 @@ const RestaurantDetails: React.FC = () => {
                 </span>
                 <span>{favorite ? t('restaurantDetail.saved') : t('restaurantDetail.save')}</span>
               </button>
-              <button className="btn btn-dark">
-                <span className="mat" style={{ fontSize: 16 }}>ios_share</span>
-                <span>{t('restaurantDetail.share')}</span>
+              <button className="btn btn-dark" onClick={handleShare}>
+                <span className="mat" style={{ fontSize: 16 }}>
+                  {shareLabel === 'copied' ? 'check_circle' : 'ios_share'}
+                </span>
+                <span>
+                  {shareLabel === 'copied'
+                    ? t('restaurantDetail.linkCopied', '¡Enlace copiado!')
+                    : t('restaurantDetail.share')}
+                </span>
               </button>
-              <button className="btn btn-dark">
+              <button className="btn btn-dark" onClick={handleDirections}>
                 <span className="mat" style={{ fontSize: 16 }}>directions</span>
                 <span>{t('restaurantDetail.directions')}</span>
               </button>
