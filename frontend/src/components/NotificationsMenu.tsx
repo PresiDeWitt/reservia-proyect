@@ -17,15 +17,15 @@ const iconForType = (type: string): string => {
 };
 
 // Tiempo relativo legible
-const relativeTime = (iso: string): string => {
+const relativeTime = (iso: string, t: (key: string) => string): string => {
   const diff = Date.now() - new Date(iso).getTime();
   const m = Math.floor(diff / 60000);
-  if (m < 1)  return 'ahora';
-  if (m < 60) return `hace ${m}m`;
+  if (m < 1)  return t('notifications.justNow');
+  if (m < 60) return t('notifications.minutesAgo').replace('${m}', String(m));
   const h = Math.floor(m / 60);
-  if (h < 24) return `hace ${h}h`;
+  if (h < 24) return t('notifications.hoursAgo').replace('${h}', String(h));
   const d = Math.floor(h / 24);
-  return `hace ${d}d`;
+  return t('notifications.daysAgo').replace('${d}', String(d));
 };
 
 interface Props {
@@ -223,14 +223,14 @@ const NotificationsMenu: React.FC<Props> = ({ variant = 'dark' }) => {
               {loading && (
                 <div style={{ padding: '24px 20px', textAlign: 'center', color: 'var(--ink-55)', fontSize: 14 }}>
                   <span className="mat" style={{ fontSize: 22, display: 'block', marginBottom: 8, opacity: 0.5 }}>hourglass_empty</span>
-                  Cargando...
+                  {t('notifications.loading')}
                 </div>
               )}
 
               {!loading && notifications.length === 0 && (
                 <div style={{ padding: '32px 20px', textAlign: 'center', color: 'var(--ink-55)' }}>
                   <span className="mat" style={{ fontSize: 36, display: 'block', marginBottom: 12, opacity: 0.35 }}>notifications_off</span>
-                  <p style={{ fontSize: 14, margin: 0 }}>Sin notificaciones</p>
+                  <p style={{ fontSize: 14, margin: 0 }}>{t('notifications.empty')}</p>
                 </div>
               )}
 
@@ -274,7 +274,7 @@ const NotificationsMenu: React.FC<Props> = ({ variant = 'dark' }) => {
                       {n.message}
                     </p>
                     <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'var(--ink-40)', margin: 0, textTransform: 'uppercase' }}>
-                      {relativeTime(n.created_at)}
+                      {relativeTime(n.created_at, t)}
                     </p>
                   </div>
 

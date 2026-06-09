@@ -1,24 +1,11 @@
 import type { UserRole } from './auth';
-import { STORAGE_KEYS, storage } from './storage';
 
-type RoleMap = Record<string, UserRole>;
+/**
+ * Los roles se determinan exclusivamente desde el backend.
+ * Este archivo se mantiene como utilidad de compatibilidad.
+ */
+export const getRole = (_email: string): UserRole => 'customer';
 
-const read = (): RoleMap => storage.getJSON<RoleMap>(STORAGE_KEYS.ROLES) ?? {};
-
-export const setRole = (email: string, role: UserRole) => {
-  const map = read();
-  map[email.toLowerCase()] = role;
-  storage.setJSON(STORAGE_KEYS.ROLES, map);
-};
-
-// Hardcoded admin emails — sólo estas cuentas obtienen rol admin al loguear.
-// Cambia esta lista por tus emails privados.
-const ADMIN_EMAILS = new Set<string>([
-  'admin@reservia.com',
-]);
-
-export const getRole = (email: string): UserRole => {
-  const e = email.toLowerCase();
-  if (ADMIN_EMAILS.has(e)) return 'admin';
-  return read()[e] ?? 'customer';
+export const setRole = (_email: string, _role: UserRole) => {
+  // No-op: los roles vienen del backend
 };

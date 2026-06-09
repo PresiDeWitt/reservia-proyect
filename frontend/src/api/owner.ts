@@ -47,4 +47,60 @@ export const ownerApi = {
   },
   updateStatus: (id: number, status: OwnerAttendanceStatus) =>
     staffApi.patch<{ id: number; status: OwnerReservationStatus }>(`/owner/reservations/${id}/status/`, { status }),
+
+  // ── Profile ──────────────────────────────────────────────────────────────
+  getProfile: () => staffApi.get<OwnerRestaurantProfile>('/owner/profile/'),
+  updateProfile: (data: Partial<OwnerRestaurantProfile>) =>
+    staffApi.patch<{ message: string; id: number }>('/owner/profile/', data),
+
+  // ── Menu items ───────────────────────────────────────────────────────────
+  getMenuItems: () => staffApi.get<OwnerMenuItem[]>('/owner/menu-items/'),
+  createMenuItem: (data: { name: string; description?: string; price: number }) =>
+    staffApi.post<OwnerMenuItem>('/owner/menu-items/', data),
+  updateMenuItem: (id: number, data: Partial<OwnerMenuItem>) =>
+    staffApi.patch<OwnerMenuItem>(`/owner/menu-items/${id}/`, data),
+  deleteMenuItem: (id: number) =>
+    staffApi.delete(`/owner/menu-items/${id}/`),
+
+  // ── Tables ───────────────────────────────────────────────────────────────
+  getTables: () => staffApi.get<OwnerTableData[]>('/owner/tables/'),
+  createTable: (data: Partial<OwnerTableData>) =>
+    staffApi.post<OwnerTableData>('/owner/tables/', data),
+  updateTable: (id: number, data: Partial<OwnerTableData>) =>
+    staffApi.patch<OwnerTableData>(`/owner/tables/${id}/`, data),
+  deleteTable: (id: number) =>
+    staffApi.delete(`/owner/tables/${id}/`),
 };
+
+export interface OwnerRestaurantProfile {
+  id: number;
+  name: string;
+  cuisine: string;
+  address: string;
+  description: string;
+  location: string;
+  price_range: string;
+  image_url: string;
+  lat: number;
+  lng: number;
+  phone: string;
+}
+
+export interface OwnerMenuItem {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+}
+
+export interface OwnerTableData {
+  id: number;
+  label: string;
+  zone: string;
+  capacity: number;
+  supplement: number;
+  pos_x: number;
+  pos_y: number;
+  rotation: number;
+  is_active: boolean;
+}

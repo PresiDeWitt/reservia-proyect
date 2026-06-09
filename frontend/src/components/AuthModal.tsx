@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { authApi, type UserRole } from '../api/auth';
-import { setRole, getRole } from '../api/roles';
 import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 
@@ -51,9 +50,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode }) =
               email,
               password,
             });
-      const finalRole: UserRole =
-        mode === 'register' ? 'customer' : getRole(res.user.email);
-      if (mode === 'register') setRole(res.user.email, finalRole);
+      const finalRole: UserRole = res.user.role || 'customer';
       login(res.token, res.refresh, { ...res.user, role: finalRole });
       onClose();
       if (finalRole === 'owner') navigate('/owner');
@@ -70,8 +67,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, defaultMode }) =
     setLoading(true);
     try {
       const res = await authApi.google(credential);
-      const finalRole: UserRole = mode === 'register' ? 'customer' : getRole(res.user.email);
-      if (mode === 'register') setRole(res.user.email, finalRole);
+      const finalRole: UserRole = res.user.role || 'customer';
       login(res.token, res.refresh, { ...res.user, role: finalRole });
       onClose();
       if (finalRole === 'owner') navigate('/owner');

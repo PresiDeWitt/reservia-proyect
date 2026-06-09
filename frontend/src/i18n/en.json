@@ -66,6 +66,12 @@
     "header": "ALERTS",
     "title": "Inbox",
     "markAllRead": "Mark all read",
+    "loading": "Loading…",
+    "empty": "No notifications",
+    "justNow": "just now",
+    "minutesAgo": "${m}m ago",
+    "hoursAgo": "${h}h ago",
+    "daysAgo": "${d}d ago",
     "items": {
       "1": {
         "title": "Booking confirmed",
@@ -656,7 +662,10 @@
     "help": "Help & support",
     "logout": "Log out",
     "logoutHint": "We'll miss you",
-    "tagline": "See you soon"
+    "tagline": "See you soon",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "appearanceHint": "Change the look of the app"
   },
   "bookings": {
     "title": "My Bookings",
@@ -672,7 +681,12 @@
     "filterUpcoming": "Upcoming",
     "filterPast": "Past",
     "filterCancelled": "Cancelled",
-    "confirmCancelPrompt": "Cancel this booking? This action cannot be undone."
+    "confirmCancelPrompt": "Cancel this booking? This action cannot be undone.",
+    "occasionNone": "No special occasion",
+    "occasionBirthday": "Birthday",
+    "occasionAnniversary": "Anniversary",
+    "occasionBusiness": "Business",
+    "occasionOther": "Other"
   },
   "cuisines": {
     "Italian": "Italian",
@@ -690,6 +704,9 @@
     "notConfigured": "The AI assistant is not available right now. Set OPENROUTER_API_KEY to enable it.",
     "locationOn": "Location enabled",
     "locationOff": "Enable location for nearby suggestions",
+    "chooseFloorPlan": "Choose Table in 3D",
+    "bookingConfirmed": "Booking Confirmed!",
+    "draftCancelled": "Draft reservation cancelled.",
     "suggestions": {
       "romantic": "Romantic dinner with good wine",
       "group": "Table for a group with lively vibe"

@@ -216,10 +216,10 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({ variant = 'dark' }) => {
                 </span>
                 <span className="flex-1 text-left">
                   <span className="block text-sm font-semibold">
-                    {theme === 'dark' ? 'Modo oscuro' : 'Modo claro'}
+                    {theme === 'dark' ? t('profile.darkMode') : t('profile.lightMode')}
                   </span>
                   <span className="block text-[11px]" style={{ color: 'var(--ink-55)' }}>
-                    Cambia el aspecto de la app
+                    {t('profile.appearanceHint')}
                   </span>
                 </span>
                 <span

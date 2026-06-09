@@ -14,6 +14,7 @@ interface Props {
 const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, onDone, onCancel }) => {
   const { t } = useTranslation();
   const isEdit = !!initialProfile;
+  const [saving, setSaving] = useState(false);
 
   const CUISINES = [
     'Italiana', 'Japonesa', 'Mediterránea', 'Mexicana', 'Asiática', 'Tradicional', 'Fusión', 'Otra',
@@ -26,11 +27,18 @@ const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, 
   const [phone, setPhone] = useState(initialProfile?.phone ?? '');
   const [description, setDescription] = useState(initialProfile?.description ?? '');
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const profile: OwnerProfile = { name, cuisine, address, capacity, phone, description };
-    setOwnerProfile(email, profile);
-    onDone(profile);
+    setSaving(true);
+    try {
+      const profile: OwnerProfile = { name, cuisine, address, capacity, phone, description };
+      await setOwnerProfile(email, profile);
+      onDone(profile);
+    } catch {
+      // error will be surfaced by parent
+    } finally {
+      setSaving(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -105,8 +113,8 @@ const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, 
           </Field>
 
           <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
-            <button type="submit" className="btn btn-ember" style={{ height: 52 }}>
-              <span>{isEdit ? t('onboarding.submit.save') : t('onboarding.submit.create')}</span>
+            <button type="submit" className="btn btn-ember" style={{ height: 52 }} disabled={saving}>
+              <span>{saving ? (isEdit ? 'Guardando…' : 'Creando…') : (isEdit ? t('onboarding.submit.save') : t('onboarding.submit.create'))}</span>
               <span className="mat" style={{ fontSize: 18 }}>{isEdit ? 'check' : 'arrow_forward'}</span>
             </button>
             {isEdit && onCancel && (
