@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import Count, Avg, Sum
+from django.db.models import Count, Avg, Sum, Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
@@ -15,6 +15,61 @@ def log_admin_action(request, action, target_type, target_id="", detail=""):
         target_id=str(target_id),
         detail=detail,
     )
+
+
+def _paginate(request, qs, page_size=20):
+    page = max(1, int(request.query_params.get('page', 1)))
+    total = qs.count()
+    return qs[(page - 1) * page_size: page * page_size], page, total, max(1, (total + page_size - 1) // page_size)
+
+
+@api_view(["GET"])
+@permission_classes([IsStaffAdmin])
+def admin_users(request):
+    from django.contrib.auth.models import User
+    qs = User.objects.order_by('-date_joined')
+    search = request.query_params.get('search', '').strip()
+    if search:
+        qs = qs.filter(
+            Q(email__icontains=search) |
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search)
+        )
+    items, page, total, total_pages = _paginate(request, qs)
+    return Response({
+        "users": [
+            {
+                "id": u.id,
+                "email": u.email,
+                "name": f"{u.first_name} {u.last_name}".strip(),
+                "isActive": u.is_active,
+                "dateJoined": u.date_joined.date().isoformat(),
+                "reservations": u.reservations.count(),
+            }
+            for u in items
+        ],
+        "total": total, "page": page, "total_pages": total_pages,
+    })
+
+
+@api_view(["PATCH"])
+@permission_classes([IsStaffAdmin])
+def admin_user_detail(request, pk):
+    from django.contrib.auth.models import User
+    from rest_framework import status as drf_status
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({"error": "Usuario no encontrado"}, status=drf_status.HTTP_404_NOT_FOUND)
+
+    if "is_active" not in request.data:
+        return Response({"error": "Falta is_active"}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+    user.is_active = bool(request.data["is_active"])
+    user.save(update_fields=["is_active"])
+    action = "user_deactivate" if not user.is_active else "user_activate"
+    log_admin_action(request, action, "user", user.id, f"Usuario {user.email}")
+    return Response({"id": user.id, "isActive": user.is_active})
 
 
 @api_view(["GET"])

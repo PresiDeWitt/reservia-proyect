@@ -111,7 +111,7 @@ def log_admin_action(request, action, target_type, target_id="", detail=""):
 - Modify: `backend/api/urls.py`
 - Test: `backend/api/tests/test_admin_users.py` (create)
 
-- [ ] **Step 2.1: Tests que fallan**
+- [x] **Step 2.1: Tests que fallan**
 
 ```python
 # backend/api/tests/test_admin_users.py
@@ -163,8 +163,8 @@ class AdminUsersTests(TestCase):
         self.assertEqual(res.status_code, 403)
 ```
 
-- [ ] **Step 2.2:** Run `python manage.py test api.tests.test_admin_users -v 2`. Expected: FAIL (404).
-- [ ] **Step 2.3: Implementación** — en `views_admin.py` (añadir `from django.db.models import Q` al import existente):
+- [x] **Step 2.2:** Run `python manage.py test api.tests.test_admin_users -v 2`. Expected: FAIL (404).
+- [x] **Step 2.3: Implementación** — en `views_admin.py` (añadir `from django.db.models import Q` al import existente):
 
 ```python
 def _paginate(request, qs, page_size=20):
@@ -224,15 +224,15 @@ def admin_user_detail(request, pk):
 
 Nota: `Q` viene de `django.db.models`; el archivo ya importa `from django.db import models`, así que añade `Q` explícito: `from django.db.models import Count, Avg, Sum, Q`.
 
-- [ ] **Step 2.4: Rutas** — en `urls.py`, sección Admin Dashboard:
+- [x] **Step 2.4: Rutas** — en `urls.py`, sección Admin Dashboard:
 
 ```python
     path("admin/users/", views_admin.admin_users, name="admin-users"),
     path("admin/users/<int:pk>/", views_admin.admin_user_detail, name="admin-user-detail"),
 ```
 
-- [ ] **Step 2.5:** Run tests. Expected: PASS (4/4).
-- [ ] **Step 2.6:** Commit: `git add backend/api/views_admin.py backend/api/urls.py backend/api/tests/test_admin_users.py && git commit -m "feat: gestion de usuarios desde panel admin con auditoria"`
+- [x] **Step 2.5:** Run tests. Expected: PASS (4/4).
+- [x] **Step 2.6:** Commit: `git add backend/api/views_admin.py backend/api/urls.py backend/api/tests/test_admin_users.py && git commit -m "feat: gestion de usuarios desde panel admin con auditoria"`
 
 ---
 
