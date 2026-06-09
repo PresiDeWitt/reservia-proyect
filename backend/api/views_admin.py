@@ -194,6 +194,67 @@ def admin_review_detail(request, pk):
     return Response(status=drf_status.HTTP_204_NO_CONTENT)
 
 
+@api_view(["GET", "POST"])
+@permission_classes([IsStaffAdmin])
+def admin_staff_codes(request):
+    from rest_framework import status as drf_status
+    if request.method == "GET":
+        qs = StaffCode.objects.select_related('restaurant').order_by('-created_at')
+        items, page, total, total_pages = _paginate(request, qs)
+        return Response({
+            "codes": [
+                {
+                    "id": c.id, "code": c.code, "role": c.role,
+                    "email": c.email or "", "isActive": c.is_active,
+                    "restaurantName": c.restaurant.name if c.restaurant else None,
+                    "createdAt": c.created_at.date().isoformat(),
+                }
+                for c in items
+            ],
+            "total": total, "page": page, "total_pages": total_pages,
+        })
+
+    data = request.data
+    code = str(data.get("code", "")).strip()
+    role = str(data.get("role", "")).strip()
+    if not code:
+        return Response({"error": "El código es obligatorio"}, status=drf_status.HTTP_400_BAD_REQUEST)
+    if role not in (StaffCode.Role.OWNER, StaffCode.Role.ADMIN):
+        return Response({"error": "Rol no válido (owner|admin)"}, status=drf_status.HTTP_400_BAD_REQUEST)
+    if StaffCode.objects.filter(code=code).exists():
+        return Response({"error": "Ese código ya existe"}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+    restaurant = None
+    if data.get("restaurant_id"):
+        restaurant = Restaurant.objects.filter(pk=data["restaurant_id"]).first()
+        if restaurant is None:
+            return Response({"error": "Restaurante no encontrado"}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+    staff_code = StaffCode.objects.create(
+        code=code, role=role, email=str(data.get("email", "")), restaurant=restaurant)
+    log_admin_action(request, "staffcode_create", "staffcode", staff_code.id,
+                     f"Código {role} {code[:8]}...")
+    return Response({"id": staff_code.id, "code": staff_code.code, "role": staff_code.role},
+                    status=drf_status.HTTP_201_CREATED)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsStaffAdmin])
+def admin_staff_code_detail(request, pk):
+    from rest_framework import status as drf_status
+    try:
+        staff_code = StaffCode.objects.get(pk=pk)
+    except StaffCode.DoesNotExist:
+        return Response({"error": "Código no encontrado"}, status=drf_status.HTTP_404_NOT_FOUND)
+    if "is_active" not in request.data:
+        return Response({"error": "Falta is_active"}, status=drf_status.HTTP_400_BAD_REQUEST)
+    staff_code.is_active = bool(request.data["is_active"])
+    staff_code.save(update_fields=["is_active"])
+    action = "staffcode_revoke" if not staff_code.is_active else "staffcode_activate"
+    log_admin_action(request, action, "staffcode", pk, f"Código {staff_code.code[:8]}...")
+    return Response({"id": staff_code.id, "isActive": staff_code.is_active})
+
+
 @api_view(["GET"])
 @permission_classes([IsStaffAdmin])
 def admin_stats(request):

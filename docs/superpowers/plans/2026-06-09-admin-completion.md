@@ -509,7 +509,7 @@ def admin_review_detail(request, pk):
 - Modify: `backend/api/views_admin.py`, `backend/api/urls.py`
 - Test: `backend/api/tests/test_admin_staff_codes.py` (create)
 
-- [ ] **Step 5.1: Tests que fallan**
+- [x] **Step 5.1: Tests que fallan**
 
 ```python
 # backend/api/tests/test_admin_staff_codes.py
@@ -557,8 +557,8 @@ class AdminStaffCodesTests(TestCase):
         self.assertTrue(AdminAuditLog.objects.filter(action="staffcode_revoke").exists())
 ```
 
-- [ ] **Step 5.2:** Run. Expected: FAIL (404).
-- [ ] **Step 5.3: Implementación:**
+- [x] **Step 5.2:** Run. Expected: FAIL (404).
+- [x] **Step 5.3: Implementación:**
 
 ```python
 @api_view(["GET", "POST"])
@@ -622,15 +622,15 @@ def admin_staff_code_detail(request, pk):
     return Response({"id": staff_code.id, "isActive": staff_code.is_active})
 ```
 
-- [ ] **Step 5.4: Rutas:**
+- [x] **Step 5.4: Rutas:**
 
 ```python
     path("admin/staff-codes/", views_admin.admin_staff_codes, name="admin-staff-codes"),
     path("admin/staff-codes/<int:pk>/", views_admin.admin_staff_code_detail, name="admin-staff-code-detail"),
 ```
 
-- [ ] **Step 5.5:** Run tests. Expected: PASS (5/5).
-- [ ] **Step 5.6:** Commit: `git commit -m "feat: gestion de codigos staff desde panel admin"`
+- [x] **Step 5.5:** Run tests. Expected: PASS (5/5).
+- [x] **Step 5.6:** Commit: `git commit -m "feat: gestion de codigos staff desde panel admin"`
 
 ---
 
