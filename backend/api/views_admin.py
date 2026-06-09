@@ -3,8 +3,18 @@ from django.db.models import Count, Avg, Sum
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import Restaurant, Reservation
-from .permissions import IsStaffAdmin
+from .models import Restaurant, Reservation, Review, StaffCode, AdminAuditLog
+from .permissions import IsStaffAdmin, get_staff_email
+
+
+def log_admin_action(request, action, target_type, target_id="", detail=""):
+    AdminAuditLog.objects.create(
+        admin_email=get_staff_email(request) or "unknown",
+        action=action,
+        target_type=target_type,
+        target_id=str(target_id),
+        detail=detail,
+    )
 
 
 @api_view(["GET"])

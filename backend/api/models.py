@@ -195,6 +195,22 @@ class Favorite(models.Model):
         ordering = ['-created_at']
 
 
+class AdminAuditLog(models.Model):
+    admin_email = models.CharField(max_length=255)
+    action = models.CharField(max_length=50)
+    target_type = models.CharField(max_length=50)
+    target_id = models.CharField(max_length=50, blank=True)
+    detail = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['-created_at'])]
+
+    def __str__(self):
+        return f"{self.admin_email}: {self.action} {self.target_type}#{self.target_id}"
+
+
 from django.db.models.signals import post_save, post_delete
 from django.db.models import Avg, Count
 from django.dispatch import receiver

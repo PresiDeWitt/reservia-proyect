@@ -44,7 +44,7 @@ git commit -m "feat: perfiles owner desde backend, roles del servidor y mejoras 
 - Modify: `backend/api/views_admin.py`
 - Test: `backend/api/tests/test_admin_audit.py` (create)
 
-- [ ] **Step 1.1: Test que falla**
+- [x] **Step 1.1: Test que falla**
 
 ```python
 # backend/api/tests/test_admin_audit.py
@@ -65,8 +65,8 @@ class AdminAuditLogModelTests(TestCase):
         self.assertEqual(AdminAuditLog.objects.count(), 1)
 ```
 
-- [ ] **Step 1.2:** Run `python manage.py test api.tests.test_admin_audit -v 2`. Expected: FAIL (ImportError: AdminAuditLog).
-- [ ] **Step 1.3: Modelo** — en `models.py`, después de `Favorite` y antes de los signals:
+- [x] **Step 1.2:** Run `python manage.py test api.tests.test_admin_audit -v 2`. Expected: FAIL (ImportError: AdminAuditLog).
+- [x] **Step 1.3: Modelo** — en `models.py`, después de `Favorite` y antes de los signals:
 
 ```python
 class AdminAuditLog(models.Model):
@@ -85,8 +85,8 @@ class AdminAuditLog(models.Model):
         return f"{self.admin_email}: {self.action} {self.target_type}#{self.target_id}"
 ```
 
-- [ ] **Step 1.4:** `python manage.py makemigrations api && python manage.py migrate`. Expected: nueva migración con `AdminAuditLog`.
-- [ ] **Step 1.5: Helper** — en `views_admin.py`, tras los imports (añadir `from .permissions import IsStaffAdmin, get_staff_email` y `from .models import Restaurant, Reservation, Review, StaffCode, AdminAuditLog`):
+- [x] **Step 1.4:** `python manage.py makemigrations api && python manage.py migrate`. Expected: nueva migración con `AdminAuditLog`.
+- [x] **Step 1.5: Helper** — en `views_admin.py`, tras los imports (añadir `from .permissions import IsStaffAdmin, get_staff_email` y `from .models import Restaurant, Reservation, Review, StaffCode, AdminAuditLog`):
 
 ```python
 def log_admin_action(request, action, target_type, target_id="", detail=""):
@@ -99,8 +99,8 @@ def log_admin_action(request, action, target_type, target_id="", detail=""):
     )
 ```
 
-- [ ] **Step 1.6:** Run test. Expected: PASS.
-- [ ] **Step 1.7:** Commit: `git add backend/api/models.py backend/api/migrations backend/api/views_admin.py backend/api/tests/test_admin_audit.py && git commit -m "feat: modelo AdminAuditLog y helper de auditoria admin"`
+- [x] **Step 1.6:** Run test. Expected: PASS.
+- [x] **Step 1.7:** Commit: `git add backend/api/models.py backend/api/migrations backend/api/views_admin.py backend/api/tests/test_admin_audit.py && git commit -m "feat: modelo AdminAuditLog y helper de auditoria admin"`
 
 ---
 
