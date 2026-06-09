@@ -157,6 +157,45 @@ def admin_restaurant_detail(request, pk):
 
 @api_view(["GET"])
 @permission_classes([IsStaffAdmin])
+def admin_reviews(request):
+    qs = Review.objects.select_related('user', 'restaurant').order_by('-created_at')
+    search = request.query_params.get('search', '').strip()
+    if search:
+        qs = qs.filter(
+            Q(restaurant__name__icontains=search) |
+            Q(user__email__icontains=search) |
+            Q(comment__icontains=search)
+        )
+    items, page, total, total_pages = _paginate(request, qs)
+    return Response({
+        "reviews": [
+            {
+                "id": rv.id, "rating": rv.rating, "comment": rv.comment,
+                "userEmail": rv.user.email, "restaurantName": rv.restaurant.name,
+                "createdAt": rv.created_at.date().isoformat(),
+            }
+            for rv in items
+        ],
+        "total": total, "page": page, "total_pages": total_pages,
+    })
+
+
+@api_view(["DELETE"])
+@permission_classes([IsStaffAdmin])
+def admin_review_detail(request, pk):
+    from rest_framework import status as drf_status
+    try:
+        review = Review.objects.select_related('restaurant').get(pk=pk)
+    except Review.DoesNotExist:
+        return Response({"error": "Reseña no encontrada"}, status=drf_status.HTTP_404_NOT_FOUND)
+    detail = f"Reseña de {review.user.email} en {review.restaurant.name} ({review.rating}★)"
+    review.delete()
+    log_admin_action(request, "review_delete", "review", pk, detail)
+    return Response(status=drf_status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@permission_classes([IsStaffAdmin])
 def admin_stats(request):
     from django.contrib.auth.models import User as DjangoUser
 

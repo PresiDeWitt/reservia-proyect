@@ -49,6 +49,8 @@ urlpatterns = [
     path("admin/users/<int:pk>/", views_admin.admin_user_detail, name="admin-user-detail"),
     path("admin/restaurants/", views_admin.admin_restaurants, name="admin-restaurants"),
     path("admin/restaurants/<int:pk>/", views_admin.admin_restaurant_detail, name="admin-restaurant-detail"),
+    path("admin/reviews/", views_admin.admin_reviews, name="admin-reviews"),
+    path("admin/reviews/<int:pk>/", views_admin.admin_review_detail, name="admin-review-detail"),
     # Health
     path("health/", views_system.health_check, name="health"),
     # AI Chat

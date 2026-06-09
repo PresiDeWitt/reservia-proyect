@@ -411,7 +411,7 @@ def admin_restaurant_detail(request, pk):
 - Modify: `backend/api/views_admin.py`, `backend/api/urls.py`
 - Test: `backend/api/tests/test_admin_reviews.py` (create)
 
-- [ ] **Step 4.1: Tests que fallan**
+- [x] **Step 4.1: Tests que fallan**
 
 ```python
 # backend/api/tests/test_admin_reviews.py
@@ -448,8 +448,8 @@ class AdminReviewsTests(TestCase):
         self.assertTrue(AdminAuditLog.objects.filter(action="review_delete").exists())
 ```
 
-- [ ] **Step 4.2:** Run. Expected: FAIL (404).
-- [ ] **Step 4.3: Implementación:**
+- [x] **Step 4.2:** Run. Expected: FAIL (404).
+- [x] **Step 4.3: Implementación:**
 
 ```python
 @api_view(["GET"])
@@ -491,15 +491,15 @@ def admin_review_detail(request, pk):
     return Response(status=drf_status.HTTP_204_NO_CONTENT)
 ```
 
-- [ ] **Step 4.4: Rutas:**
+- [x] **Step 4.4: Rutas:**
 
 ```python
     path("admin/reviews/", views_admin.admin_reviews, name="admin-reviews"),
     path("admin/reviews/<int:pk>/", views_admin.admin_review_detail, name="admin-review-detail"),
 ```
 
-- [ ] **Step 4.5:** Run tests. Expected: PASS (3/3).
-- [ ] **Step 4.6:** Commit: `git commit -m "feat: moderacion de resenas desde panel admin"`
+- [x] **Step 4.5:** Run tests. Expected: PASS (3/3).
+- [x] **Step 4.6:** Commit: `git commit -m "feat: moderacion de resenas desde panel admin"`
 
 ---
 
