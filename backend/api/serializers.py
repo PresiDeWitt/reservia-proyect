@@ -32,10 +32,21 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     name = serializers.CharField(source='first_name')
+    role = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'name', 'email']
+        fields = ['id', 'name', 'email', 'role']
+
+    def get_role(self, obj):
+        from .models import StaffCode
+        if obj.is_superuser:
+            return 'admin'
+        email = obj.email.lower()
+        sc = StaffCode.objects.filter(email=email, is_active=True).first()
+        if sc:
+            return sc.role
+        return 'customer'
 
 
 class MenuItemSerializer(serializers.ModelSerializer):

@@ -32,9 +32,14 @@ urlpatterns = [
     path("restaurants/<int:pk>/tables/", views_restaurants.restaurant_tables, name="restaurant-tables"),
     path("restaurants/<int:pk>/reviews/", views_reviews.restaurant_reviews, name="restaurant-reviews"),
     # Owner Dashboard
+    path("owner/profile/", views_owner.owner_profile, name="owner-profile"),
     path("owner/stats/", views_owner.owner_stats, name="owner-stats"),
     path("owner/reservations/", views_owner.owner_reservations, name="owner-reservations"),
     path("owner/reservations/<int:pk>/status/", views_owner.owner_update_reservation_status, name="owner-reservation-status"),
+    path("owner/menu-items/", views_owner.owner_menu_items, name="owner-menu-items"),
+    path("owner/menu-items/<int:pk>/", views_owner.owner_menu_item_detail, name="owner-menu-item-detail"),
+    path("owner/tables/", views_owner.owner_tables, name="owner-tables"),
+    path("owner/tables/<int:pk>/", views_owner.owner_table_detail, name="owner-table-detail"),
     # Admin Dashboard
     path("admin/stats/", views_admin.admin_stats, name="admin-stats"),
     path("admin/top-restaurants/", views_admin.admin_top_restaurants, name="admin-top-restaurants"),
