@@ -72,6 +72,89 @@ def admin_user_detail(request, pk):
     return Response({"id": user.id, "isActive": user.is_active})
 
 
+@api_view(["GET", "POST"])
+@permission_classes([IsStaffAdmin])
+def admin_restaurants(request):
+    from rest_framework import status as drf_status
+    if request.method == "GET":
+        qs = Restaurant.objects.order_by('name')
+        search = request.query_params.get('search', '').strip()
+        if search:
+            qs = qs.filter(Q(name__icontains=search) | Q(location__icontains=search))
+        items, page, total, total_pages = _paginate(request, qs)
+        return Response({
+            "restaurants": [
+                {
+                    "id": r.id, "name": r.name, "cuisine": r.cuisine,
+                    "location": r.location, "rating": r.rating,
+                    "ownerEmail": r.owner.email if r.owner else None,
+                }
+                for r in items
+            ],
+            "total": total, "page": page, "total_pages": total_pages,
+        })
+
+    data = request.data
+    name = str(data.get("name", "")).strip()
+    if not name:
+        return Response({"error": "El nombre es obligatorio"}, status=drf_status.HTTP_400_BAD_REQUEST)
+    restaurant = Restaurant.objects.create(
+        name=name,
+        cuisine=str(data.get("cuisine", "")).strip() or "General",
+        location=str(data.get("location", "")).strip() or "Sin ciudad",
+        address=str(data.get("address", "")).strip(),
+        description=str(data.get("description", "")),
+        rating=0.0,
+        price_range=str(data.get("price_range", "€€")),
+        lat=float(data.get("lat", 0)),
+        lng=float(data.get("lng", 0)),
+        image_url=str(data.get("image_url", "")),
+    )
+    log_admin_action(request, "restaurant_create", "restaurant", restaurant.id, f"Creado {restaurant.name}")
+    return Response({"id": restaurant.id, "name": restaurant.name}, status=drf_status.HTTP_201_CREATED)
+
+
+@api_view(["PATCH", "DELETE"])
+@permission_classes([IsStaffAdmin])
+def admin_restaurant_detail(request, pk):
+    from django.contrib.auth.models import User
+    from rest_framework import status as drf_status
+    try:
+        restaurant = Restaurant.objects.get(pk=pk)
+    except Restaurant.DoesNotExist:
+        return Response({"error": "Restaurante no encontrado"}, status=drf_status.HTTP_404_NOT_FOUND)
+
+    if request.method == "DELETE":
+        name = restaurant.name
+        restaurant.delete()
+        log_admin_action(request, "restaurant_delete", "restaurant", pk, f"Eliminado {name}")
+        return Response(status=drf_status.HTTP_204_NO_CONTENT)
+
+    data = request.data
+    if "name" in data and not str(data["name"]).strip():
+        return Response({"error": "El nombre no puede estar vacío"}, status=drf_status.HTTP_400_BAD_REQUEST)
+    if "owner_email" in data:
+        email = str(data["owner_email"]).strip()
+        if email:
+            owner = User.objects.filter(email=email).first()
+            if owner is None:
+                return Response({"error": f"No existe usuario con email {email}"},
+                                status=drf_status.HTTP_400_BAD_REQUEST)
+            restaurant.owner = owner
+        else:
+            restaurant.owner = None
+    for field in ("name", "cuisine", "location", "address", "description", "price_range", "image_url"):
+        if field in data:
+            setattr(restaurant, field, str(data[field]).strip() if field == "name" else data[field])
+    if "lat" in data and "lng" in data:
+        restaurant.lat = float(data["lat"])
+        restaurant.lng = float(data["lng"])
+    restaurant.save()
+    log_admin_action(request, "restaurant_update", "restaurant", pk, f"Actualizado {restaurant.name}")
+    return Response({"id": restaurant.id, "name": restaurant.name,
+                     "ownerEmail": restaurant.owner.email if restaurant.owner else None})
+
+
 @api_view(["GET"])
 @permission_classes([IsStaffAdmin])
 def admin_stats(request):

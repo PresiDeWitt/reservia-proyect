@@ -242,7 +242,7 @@ Nota: `Q` viene de `django.db.models`; el archivo ya importa `from django.db imp
 - Modify: `backend/api/views_admin.py`, `backend/api/urls.py`
 - Test: `backend/api/tests/test_admin_restaurants.py` (create)
 
-- [ ] **Step 3.1: Tests que fallan**
+- [x] **Step 3.1: Tests que fallan**
 
 ```python
 # backend/api/tests/test_admin_restaurants.py
@@ -306,8 +306,8 @@ class AdminRestaurantsTests(TestCase):
         self.assertTrue(AdminAuditLog.objects.filter(action="restaurant_delete").exists())
 ```
 
-- [ ] **Step 3.2:** Run. Expected: FAIL (404).
-- [ ] **Step 3.3: Implementación** en `views_admin.py`:
+- [x] **Step 3.2:** Run. Expected: FAIL (404).
+- [x] **Step 3.3: Implementación** en `views_admin.py`:
 
 ```python
 @api_view(["GET", "POST"])
@@ -393,15 +393,15 @@ def admin_restaurant_detail(request, pk):
                      "ownerEmail": restaurant.owner.email if restaurant.owner else None})
 ```
 
-- [ ] **Step 3.4: Rutas:**
+- [x] **Step 3.4: Rutas:**
 
 ```python
     path("admin/restaurants/", views_admin.admin_restaurants, name="admin-restaurants"),
     path("admin/restaurants/<int:pk>/", views_admin.admin_restaurant_detail, name="admin-restaurant-detail"),
 ```
 
-- [ ] **Step 3.5:** Run tests. Expected: PASS (6/6).
-- [ ] **Step 3.6:** Commit: `git commit -m "feat: CRUD de restaurantes desde panel admin con auditoria"`
+- [x] **Step 3.5:** Run tests. Expected: PASS (6/6).
+- [x] **Step 3.6:** Commit: `git commit -m "feat: CRUD de restaurantes desde panel admin con auditoria"`
 
 ---
 
