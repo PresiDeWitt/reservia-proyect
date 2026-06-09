@@ -369,9 +369,30 @@ def admin_impersonate_owner(request):
     refresh['staff_role'] = 'owner'
     refresh['email'] = owner.email
 
+    log_admin_action(request, "impersonate", "restaurant", restaurant_id,
+                     f"Impersonó al owner de {restaurant.name}")
+
     return Response({
         "token": str(refresh.access_token),
         "refresh": str(refresh),
         "role": "owner",
     })
 
+
+
+@api_view(["GET"])
+@permission_classes([IsStaffAdmin])
+def admin_audit_log(request):
+    qs = AdminAuditLog.objects.all()
+    items, page, total, total_pages = _paginate(request, qs)
+    return Response({
+        "entries": [
+            {
+                "id": e.id, "adminEmail": e.admin_email, "action": e.action,
+                "targetType": e.target_type, "targetId": e.target_id,
+                "detail": e.detail, "createdAt": e.created_at.isoformat(),
+            }
+            for e in items
+        ],
+        "total": total, "page": page, "total_pages": total_pages,
+    })

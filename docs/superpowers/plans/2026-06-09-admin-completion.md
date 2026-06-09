@@ -640,7 +640,7 @@ def admin_staff_code_detail(request, pk):
 - Modify: `backend/api/views_admin.py`, `backend/api/urls.py`
 - Test: añadir a `backend/api/tests/test_admin_audit.py`
 
-- [ ] **Step 6.1: Tests que fallan** (añadir al archivo de Task 1):
+- [x] **Step 6.1: Tests que fallan** (añadir al archivo de Task 1):
 
 ```python
 from rest_framework.test import APIClient
@@ -666,8 +666,8 @@ class AdminAuditEndpointTests(TestCase):
             action="impersonate", target_id=str(rest.id)).exists())
 ```
 
-- [ ] **Step 6.2:** Run. Expected: FAIL.
-- [ ] **Step 6.3: Implementación** — endpoint nuevo y una línea en `admin_impersonate_owner` justo antes del `return Response({...})` final:
+- [x] **Step 6.2:** Run. Expected: FAIL.
+- [x] **Step 6.3: Implementación** — endpoint nuevo y una línea en `admin_impersonate_owner` justo antes del `return Response({...})` final:
 
 ```python
 @api_view(["GET"])
@@ -695,9 +695,9 @@ En `admin_impersonate_owner`:
                      f"Impersonó al owner de {restaurant.name}")
 ```
 
-- [ ] **Step 6.4: Ruta:** `path("admin/audit-log/", views_admin.admin_audit_log, name="admin-audit-log"),`
-- [ ] **Step 6.5:** Run tests + suite completa: `python manage.py test api`. Expected: todo PASS.
-- [ ] **Step 6.6:** Commit: `git commit -m "feat: log de auditoria consultable e impersonacion auditada"`
+- [x] **Step 6.4: Ruta:** `path("admin/audit-log/", views_admin.admin_audit_log, name="admin-audit-log"),`
+- [x] **Step 6.5:** Run tests + suite completa: `python manage.py test api`. Expected: todo PASS.
+- [x] **Step 6.6:** Commit: `git commit -m "feat: log de auditoria consultable e impersonacion auditada"`
 
 ---
 
