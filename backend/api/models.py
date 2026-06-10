@@ -17,6 +17,7 @@ class Restaurant(models.Model):
     lng = models.FloatField()
     image_url = models.URLField(max_length=500)
     reviews_count = models.IntegerField(default=0)
+    capacity = models.IntegerField(default=0)
     owner = models.ForeignKey(
         User, related_name='owned_restaurants', on_delete=models.SET_NULL,
         null=True, blank=True,

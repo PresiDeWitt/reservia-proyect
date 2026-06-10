@@ -83,6 +83,7 @@ export interface OwnerRestaurantProfile {
   image_url: string;
   lat: number;
   lng: number;
+  capacity: number;
   phone: string;
 }
 

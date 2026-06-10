@@ -16,7 +16,7 @@ export const getOwnerProfile = async (_email: string): Promise<OwnerProfile | nu
       name: res.name,
       cuisine: res.cuisine,
       address: res.address,
-      capacity: 0, // not on the backend yet
+      capacity: res.capacity ?? 0,
       phone: res.phone,
       description: res.description,
     };
@@ -31,11 +31,7 @@ export const setOwnerProfile = async (_email: string, profile: OwnerProfile): Pr
     cuisine: profile.cuisine,
     address: profile.address,
     description: profile.description || '',
-    location: '',
-    price_range: '',
-    image_url: '',
-    lat: 0,
-    lng: 0,
+    capacity: profile.capacity,
     phone: profile.phone || '',
   });
 };

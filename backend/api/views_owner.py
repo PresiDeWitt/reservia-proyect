@@ -156,6 +156,7 @@ def owner_profile(request):
             "image_url": restaurant.image_url,
             "lat": restaurant.lat,
             "lng": restaurant.lng,
+            "capacity": restaurant.capacity,
             "phone": "",  # pending profile field
         })
 
@@ -167,6 +168,12 @@ def owner_profile(request):
     if "lat" in data and "lng" in data:
         restaurant.lat = float(data["lat"])
         restaurant.lng = float(data["lng"])
+    if "capacity" in data:
+        try:
+            restaurant.capacity = max(0, int(data["capacity"]))
+        except (TypeError, ValueError):
+            return Response({"error": "Capacidad no válida"},
+                            status=status.HTTP_400_BAD_REQUEST)
     restaurant.save()
     return Response({"message": "Restaurante actualizado", "id": restaurant.id})
 
