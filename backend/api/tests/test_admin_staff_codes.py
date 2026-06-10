@@ -40,3 +40,25 @@ class AdminStaffCodesTests(TestCase):
         self.code.refresh_from_db()
         self.assertFalse(self.code.is_active)
         self.assertTrue(AdminAuditLog.objects.filter(action="staffcode_revoke").exists())
+
+
+class AdminStaffCodeInputValidationTests(TestCase):
+    def setUp(self):
+        self.client = admin_client()
+        self.code = StaffCode.objects.create(code="VAL-1", role="owner")
+
+    def test_create_with_invalid_restaurant_id_returns_400(self):
+        res = self.client.post("/api/admin/staff-codes/", {
+            "code": "VAL-2", "role": "owner", "restaurant_id": "abc",
+        }, format="json")
+        self.assertEqual(res.status_code, 400)
+
+    def test_revoke_with_form_encoded_false_string(self):
+        res = self.client.patch(
+            f"/api/admin/staff-codes/{self.code.id}/",
+            data="is_active=false",
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assertEqual(res.status_code, 200)
+        self.code.refresh_from_db()
+        self.assertFalse(self.code.is_active)

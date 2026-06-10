@@ -45,3 +45,25 @@ class AdminUsersTests(TestCase):
         # Sin credenciales DRF devuelve 401 (NotAuthenticated), igual que en test_admin_api
         res = APIClient().get("/api/admin/users/")
         self.assertEqual(res.status_code, 401)
+
+
+class AdminInputValidationTests(TestCase):
+    def setUp(self):
+        self.client = admin_client()
+        self.target = User.objects.create_user(
+            username="c2@test.com", email="c2@test.com")
+
+    def test_list_users_invalid_page_returns_200(self):
+        res = self.client.get("/api/admin/users/?page=abc")
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["page"], 1)
+
+    def test_deactivate_with_form_encoded_false_string(self):
+        res = self.client.patch(
+            f"/api/admin/users/{self.target.id}/",
+            data="is_active=false",
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assertEqual(res.status_code, 200)
+        self.target.refresh_from_db()
+        self.assertFalse(self.target.is_active)

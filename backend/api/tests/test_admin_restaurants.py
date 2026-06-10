@@ -56,3 +56,28 @@ class AdminRestaurantsTests(TestCase):
         self.assertEqual(res.status_code, 204)
         self.assertFalse(Restaurant.objects.filter(pk=self.rest.id).exists())
         self.assertTrue(AdminAuditLog.objects.filter(action="restaurant_delete").exists())
+
+
+class AdminRestaurantInputValidationTests(TestCase):
+    def setUp(self):
+        self.client = admin_client()
+        self.rest = make_restaurant(name="Validación")
+
+    def test_create_invalid_coordinates_returns_400(self):
+        res = self.client.post("/api/admin/restaurants/", {
+            "name": "Coords", "lat": "abc", "lng": "1.0",
+        }, format="json")
+        self.assertEqual(res.status_code, 400)
+
+    def test_create_null_coordinates_defaults_to_zero(self):
+        res = self.client.post("/api/admin/restaurants/", {
+            "name": "Coords", "lat": None, "lng": None,
+        }, format="json")
+        self.assertEqual(res.status_code, 201)
+        self.assertEqual(Restaurant.objects.get(name="Coords").lat, 0.0)
+
+    def test_update_invalid_coordinates_returns_400(self):
+        res = self.client.patch(f"/api/admin/restaurants/{self.rest.id}/", {
+            "lat": "x", "lng": "y",
+        }, format="json")
+        self.assertEqual(res.status_code, 400)

@@ -17,8 +17,17 @@ def log_admin_action(request, action, target_type, target_id="", detail=""):
     )
 
 
+def _parse_bool(value):
+    if isinstance(value, str):
+        return value.strip().lower() in ("1", "true", "yes")
+    return bool(value)
+
+
 def _paginate(request, qs, page_size=20):
-    page = max(1, int(request.query_params.get('page', 1)))
+    try:
+        page = max(1, int(request.query_params.get('page', 1)))
+    except (TypeError, ValueError):
+        page = 1
     total = qs.count()
     return qs[(page - 1) * page_size: page * page_size], page, total, max(1, (total + page_size - 1) // page_size)
 
@@ -65,7 +74,7 @@ def admin_user_detail(request, pk):
     if "is_active" not in request.data:
         return Response({"error": "Falta is_active"}, status=drf_status.HTTP_400_BAD_REQUEST)
 
-    user.is_active = bool(request.data["is_active"])
+    user.is_active = _parse_bool(request.data["is_active"])
     user.save(update_fields=["is_active"])
     action = "user_deactivate" if not user.is_active else "user_activate"
     log_admin_action(request, action, "user", user.id, f"Usuario {user.email}")
@@ -98,6 +107,11 @@ def admin_restaurants(request):
     name = str(data.get("name", "")).strip()
     if not name:
         return Response({"error": "El nombre es obligatorio"}, status=drf_status.HTTP_400_BAD_REQUEST)
+    try:
+        lat = float(data.get("lat") or 0)
+        lng = float(data.get("lng") or 0)
+    except (TypeError, ValueError):
+        return Response({"error": "Coordenadas no válidas"}, status=drf_status.HTTP_400_BAD_REQUEST)
     restaurant = Restaurant.objects.create(
         name=name,
         cuisine=str(data.get("cuisine", "")).strip() or "General",
@@ -106,8 +120,8 @@ def admin_restaurants(request):
         description=str(data.get("description", "")),
         rating=0.0,
         price_range=str(data.get("price_range", "€€")),
-        lat=float(data.get("lat", 0)),
-        lng=float(data.get("lng", 0)),
+        lat=lat,
+        lng=lng,
         image_url=str(data.get("image_url", "")),
     )
     log_admin_action(request, "restaurant_create", "restaurant", restaurant.id, f"Creado {restaurant.name}")
@@ -147,8 +161,11 @@ def admin_restaurant_detail(request, pk):
         if field in data:
             setattr(restaurant, field, str(data[field]).strip() if field == "name" else data[field])
     if "lat" in data and "lng" in data:
-        restaurant.lat = float(data["lat"])
-        restaurant.lng = float(data["lng"])
+        try:
+            restaurant.lat = float(data["lat"])
+            restaurant.lng = float(data["lng"])
+        except (TypeError, ValueError):
+            return Response({"error": "Coordenadas no válidas"}, status=drf_status.HTTP_400_BAD_REQUEST)
     restaurant.save()
     log_admin_action(request, "restaurant_update", "restaurant", pk, f"Actualizado {restaurant.name}")
     return Response({"id": restaurant.id, "name": restaurant.name,
@@ -226,7 +243,11 @@ def admin_staff_codes(request):
 
     restaurant = None
     if data.get("restaurant_id"):
-        restaurant = Restaurant.objects.filter(pk=data["restaurant_id"]).first()
+        try:
+            restaurant_pk = int(data["restaurant_id"])
+        except (TypeError, ValueError):
+            return Response({"error": "restaurant_id no válido"}, status=drf_status.HTTP_400_BAD_REQUEST)
+        restaurant = Restaurant.objects.filter(pk=restaurant_pk).first()
         if restaurant is None:
             return Response({"error": "Restaurante no encontrado"}, status=drf_status.HTTP_400_BAD_REQUEST)
 
@@ -248,7 +269,7 @@ def admin_staff_code_detail(request, pk):
         return Response({"error": "Código no encontrado"}, status=drf_status.HTTP_404_NOT_FOUND)
     if "is_active" not in request.data:
         return Response({"error": "Falta is_active"}, status=drf_status.HTTP_400_BAD_REQUEST)
-    staff_code.is_active = bool(request.data["is_active"])
+    staff_code.is_active = _parse_bool(request.data["is_active"])
     staff_code.save(update_fields=["is_active"])
     action = "staffcode_revoke" if not staff_code.is_active else "staffcode_activate"
     log_admin_action(request, action, "staffcode", pk, f"Código {staff_code.code[:8]}...")
