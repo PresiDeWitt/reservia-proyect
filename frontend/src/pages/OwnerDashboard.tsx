@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { getOwnerProfile, setOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
+import { getOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
 import OwnerOnboarding from '../components/OwnerOnboarding';
 import { ownerApi, type OwnerStats, type OwnerReservation, type OwnerAttendanceStatus, type OwnerTableData } from '../api/owner';
 import { STORAGE_KEYS, storage } from '../api/storage';
@@ -40,7 +40,6 @@ const OwnerDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<OwnerProfile | null>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
   const [activeTab, setActiveTab] = useState<'reservations' | 'floor' | 'heatmap'>('reservations');
   const [filter, setFilter] = useState('all');
   const [editing, setEditing] = useState(false);
@@ -74,12 +73,7 @@ const OwnerDashboard: React.FC = () => {
       return;
     }
     if (user?.email) {
-      getOwnerProfile(user.email).then((p) => {
-        setProfile(p);
-        setLoadingProfile(false);
-      }).catch(() => setLoadingProfile(false));
-    } else {
-      setLoadingProfile(false);
+      getOwnerProfile(user.email).then(setProfile);
     }
     loadStats();
   }, [loadStats, navigate, user?.email]);
