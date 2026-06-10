@@ -13,6 +13,40 @@ def _owner_restaurant(request):
     return Restaurant.objects.filter(owner__email=email).first()
 
 
+def _validate_menu_payload(data, partial=False):
+    if "name" in data or not partial:
+        if not str(data.get("name", "")).strip():
+            return "El nombre es obligatorio"
+    if "price" in data or not partial:
+        try:
+            price = float(data.get("price", 0))
+        except (TypeError, ValueError):
+            return "Precio no válido"
+        if price <= 0:
+            return "El precio debe ser mayor que 0"
+    return None
+
+
+def _validate_table_payload(data, partial=False):
+    if "label" in data or not partial:
+        if not str(data.get("label", "")).strip():
+            return "La etiqueta es obligatoria"
+    if "capacity" in data or not partial:
+        try:
+            capacity = int(data.get("capacity", 0))
+        except (TypeError, ValueError):
+            return "Capacidad no válida"
+        if capacity <= 0:
+            return "La capacidad debe ser mayor que 0"
+    if "supplement" in data:
+        try:
+            if int(data["supplement"]) < 0:
+                return "El suplemento no puede ser negativo"
+        except (TypeError, ValueError):
+            return "Suplemento no válido"
+    return None
+
+
 @api_view(["GET"])
 @permission_classes([IsStaffOwner])
 def owner_stats(request):
@@ -161,6 +195,9 @@ def owner_profile(request):
         })
 
     data = request.data
+    if "name" in data and not str(data["name"]).strip():
+        return Response({"error": "El nombre no puede estar vacío"},
+                        status=status.HTTP_400_BAD_REQUEST)
     for field in ("name", "cuisine", "address", "description",
                   "location", "price_range", "image_url"):
         if field in data:
@@ -192,6 +229,9 @@ def owner_menu_items(request):
         return Response(list(items))
 
     data = request.data
+    err = _validate_menu_payload(data)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
     item = MenuItem.objects.create(
         restaurant=restaurant,
         name=data.get("name", ""),
@@ -220,6 +260,9 @@ def owner_menu_item_detail(request, pk):
         return Response({"message": "Elemento eliminado"}, status=status.HTTP_204_NO_CONTENT)
 
     data = request.data
+    err = _validate_menu_payload(data, partial=True)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
     for field in ("name", "description", "price"):
         if field in data:
             val = float(data[field]) if field == "price" else data[field]
@@ -246,6 +289,9 @@ def owner_tables(request):
         return Response(list(tables))
 
     data = request.data
+    err = _validate_table_payload(data)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
     table = RestaurantTable.objects.create(
         restaurant=restaurant,
         label=data.get("label", ""),
@@ -279,6 +325,9 @@ def owner_table_detail(request, pk):
         return Response({"message": "Mesa eliminada"}, status=status.HTTP_204_NO_CONTENT)
 
     data = request.data
+    err = _validate_table_payload(data, partial=True)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
     for field in ("label", "zone", "capacity", "supplement", "pos_x", "pos_y", "rotation", "is_active"):
         if field in data:
             val = data[field]
