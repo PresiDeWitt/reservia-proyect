@@ -32,14 +32,28 @@ urlpatterns = [
     path("restaurants/<int:pk>/tables/", views_restaurants.restaurant_tables, name="restaurant-tables"),
     path("restaurants/<int:pk>/reviews/", views_reviews.restaurant_reviews, name="restaurant-reviews"),
     # Owner Dashboard
+    path("owner/profile/", views_owner.owner_profile, name="owner-profile"),
     path("owner/stats/", views_owner.owner_stats, name="owner-stats"),
     path("owner/reservations/", views_owner.owner_reservations, name="owner-reservations"),
     path("owner/reservations/<int:pk>/status/", views_owner.owner_update_reservation_status, name="owner-reservation-status"),
+    path("owner/menu-items/", views_owner.owner_menu_items, name="owner-menu-items"),
+    path("owner/menu-items/<int:pk>/", views_owner.owner_menu_item_detail, name="owner-menu-item-detail"),
+    path("owner/tables/", views_owner.owner_tables, name="owner-tables"),
+    path("owner/tables/<int:pk>/", views_owner.owner_table_detail, name="owner-table-detail"),
     # Admin Dashboard
     path("admin/stats/", views_admin.admin_stats, name="admin-stats"),
     path("admin/top-restaurants/", views_admin.admin_top_restaurants, name="admin-top-restaurants"),
     path("admin/city-distribution/", views_admin.admin_city_distribution, name="admin-city-distribution"),
     path("admin/impersonate/", views_admin.admin_impersonate_owner, name="admin-impersonate-owner"),
+    path("admin/users/", views_admin.admin_users, name="admin-users"),
+    path("admin/users/<int:pk>/", views_admin.admin_user_detail, name="admin-user-detail"),
+    path("admin/restaurants/", views_admin.admin_restaurants, name="admin-restaurants"),
+    path("admin/restaurants/<int:pk>/", views_admin.admin_restaurant_detail, name="admin-restaurant-detail"),
+    path("admin/reviews/", views_admin.admin_reviews, name="admin-reviews"),
+    path("admin/reviews/<int:pk>/", views_admin.admin_review_detail, name="admin-review-detail"),
+    path("admin/staff-codes/", views_admin.admin_staff_codes, name="admin-staff-codes"),
+    path("admin/staff-codes/<int:pk>/", views_admin.admin_staff_code_detail, name="admin-staff-code-detail"),
+    path("admin/audit-log/", views_admin.admin_audit_log, name="admin-audit-log"),
     # Health
     path("health/", views_system.health_check, name="health"),
     # AI Chat

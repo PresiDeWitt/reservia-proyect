@@ -92,3 +92,21 @@ class OwnerReservationApiTests(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+
+class OwnerProfileCapacityTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.owner = create_user(email='cap-owner@example.com')
+        self.restaurant = create_restaurant(owner=self.owner)
+        staff_user = create_user(email='staff-cap@example.com')
+        refresh = RefreshToken.for_user(staff_user)
+        refresh['staff_role'] = 'owner'
+        refresh['email'] = self.owner.email
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {refresh.access_token}')
+
+    def test_owner_profile_capacity_roundtrip(self):
+        res = self.client.patch('/api/owner/profile/', {'capacity': 40}, format='json')
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        res = self.client.get('/api/owner/profile/')
+        self.assertEqual(res.data['capacity'], 40)

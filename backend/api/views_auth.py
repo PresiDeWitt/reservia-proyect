@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import StaffCode
 from .serializers import RegisterSerializer, UserSerializer
 from .throttling import LoginRateThrottle, PasswordResetRateThrottle, RegisterRateThrottle
+from .emails import send_welcome_email
 
 
 class RegisterView(generics.CreateAPIView):
@@ -21,6 +22,8 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        from django.db import transaction
+        transaction.on_commit(lambda: send_welcome_email(user))
         refresh = RefreshToken.for_user(user)
         return Response(
             {
@@ -147,6 +150,8 @@ def google_auth_view(request):
     if created:
         user.set_unusable_password()
         user.save()
+        from django.db import transaction
+        transaction.on_commit(lambda: send_welcome_email(user))
 
     refresh = RefreshToken.for_user(user)
     return Response({

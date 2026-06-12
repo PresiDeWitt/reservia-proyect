@@ -3,10 +3,28 @@ import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import { afterEach, vi } from 'vitest';
 
+const makeStorage = (): Storage => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (k: string) => store[k] ?? null,
+    setItem: (k: string, v: string) => { store[k] = v; },
+    removeItem: (k: string) => { delete store[k]; },
+    clear: () => { store = {}; },
+    get length() { return Object.keys(store).length; },
+    key: (i: number) => Object.keys(store)[i] ?? null,
+  };
+};
+
+const fakeLocalStorage = makeStorage();
+const fakeSessionStorage = makeStorage();
+
+Object.defineProperty(globalThis, 'localStorage', { value: fakeLocalStorage, writable: true });
+Object.defineProperty(globalThis, 'sessionStorage', { value: fakeSessionStorage, writable: true });
+
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  localStorage.clear();
+  fakeLocalStorage.clear();
 });
 
 class MockIntersectionObserver {

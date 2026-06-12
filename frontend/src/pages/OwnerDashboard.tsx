@@ -5,22 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { getOwnerProfile, type OwnerProfile } from '../api/ownerProfile';
 import OwnerOnboarding from '../components/OwnerOnboarding';
-import { ownerApi, type OwnerStats, type OwnerReservation, type OwnerAttendanceStatus } from '../api/owner';
+import { ownerApi, type OwnerStats, type OwnerReservation, type OwnerAttendanceStatus, type OwnerTableData } from '../api/owner';
 import { STORAGE_KEYS, storage } from '../api/storage';
 
-const FLOOR = [
-  { id: 'A1', x: 8, y: 10, w: 14, h: 14, status: 'free', cap: 2 },
-  { id: 'A2', x: 8, y: 30, w: 14, h: 14, status: 'taken', cap: 4, who: 'Elena M.' },
-  { id: 'A3', x: 8, y: 50, w: 14, h: 14, status: 'reserved', cap: 2 },
-  { id: 'A4', x: 8, y: 70, w: 14, h: 14, status: 'taken', cap: 4, who: 'Marco F.' },
-  { id: 'B1', x: 30, y: 10, w: 18, h: 14, status: 'reserved', cap: 2 },
-  { id: 'B2', x: 30, y: 30, w: 18, h: 14, status: 'free', cap: 2 },
-  { id: 'B3', x: 30, y: 50, w: 18, h: 20, status: 'taken', cap: 6, who: 'Grupo 6' },
-  { id: 'C1', x: 58, y: 10, w: 16, h: 20, status: 'free', cap: 4 },
-  { id: 'C2', x: 58, y: 36, w: 16, h: 14, status: 'free', cap: 2 },
-  { id: 'C3', x: 58, y: 56, w: 16, h: 28, status: 'reserved', cap: 8, who: 'Sara L.' },
-  { id: 'D1', x: 82, y: 20, w: 14, h: 60, status: 'free', cap: 10 },
-];
+
 
 const ALL_HOURS = ['12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'];
 
@@ -43,13 +31,15 @@ const floorBorder: Record<string, string> = {
   reserved: '#f59e0b',
 };
 
+const TABLE_W = 14;
+const TABLE_H = 10;
+const COLS = 6;
+
 const OwnerDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<OwnerProfile | null>(() =>
-    user?.email ? getOwnerProfile(user.email) : null,
-  );
+  const [profile, setProfile] = useState<OwnerProfile | null>(null);
   const [activeTab, setActiveTab] = useState<'reservations' | 'floor' | 'heatmap'>('reservations');
   const [filter, setFilter] = useState('all');
   const [editing, setEditing] = useState(false);
@@ -58,6 +48,8 @@ const OwnerDashboard: React.FC = () => {
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingRes, setLoadingRes] = useState(true);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [tables, setTables] = useState<OwnerTableData[]>([]);
+  const [loadingTables, setLoadingTables] = useState(false);
 
   const handleLogout = () => {
     storage.remove(STORAGE_KEYS.STAFF_ROLE);
@@ -80,8 +72,11 @@ const OwnerDashboard: React.FC = () => {
       navigate('/staff', { replace: true });
       return;
     }
+    if (user?.email) {
+      getOwnerProfile(user.email).then(setProfile);
+    }
     loadStats();
-  }, [loadStats, navigate]);
+  }, [loadStats, navigate, user?.email]);
 
   const loadReservations = useCallback(() => {
     setLoadingRes(true);
@@ -92,6 +87,16 @@ const OwnerDashboard: React.FC = () => {
   }, [filter]);
 
   useEffect(() => { loadReservations(); }, [loadReservations]);
+
+  useEffect(() => {
+    if (activeTab === 'floor') {
+      setLoadingTables(true);
+      ownerApi.getTables()
+        .then(setTables)
+        .catch(() => setTables([]))
+        .finally(() => setLoadingTables(false));
+    }
+  }, [activeTab]);
 
   const handleStatusUpdate = async (id: number, newStatus: OwnerAttendanceStatus) => {
     setUpdatingId(id);
@@ -415,6 +420,11 @@ const OwnerDashboard: React.FC = () => {
         {/* Floor plan tab */}
         {activeTab === 'floor' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            {loadingTables ? (
+              <div style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>{t('owner.loading')}</div>
+            ) : tables.length === 0 ? (
+              <div style={{ padding: 32, textAlign: 'center', color: 'var(--ink-55)', fontSize: 13 }}>No hay mesas configuradas. Añádelas desde la gestión de mesas.</div>
+            ) : (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 20 }}>
               <div style={{ background: 'var(--surface-3)', borderRadius: 20, border: '1px solid var(--border)', padding: 24, overflow: 'hidden' }}>
                 <div className="eyebrow" style={{ marginBottom: 16 }}>{t('owner.floor.title')}</div>
@@ -423,20 +433,25 @@ const OwnerDashboard: React.FC = () => {
                   <rect x="0" y="0" width="100" height="6" fill="#e2e0db" />
                   <text x="50" y="4.5" textAnchor="middle" fontSize="2.5" fill="#94928e" fontWeight="600">{t('owner.floor.entrance')}</text>
 
-                  {FLOOR.map(t => (
-                    <g key={t.id}>
-                      <rect
-                        x={t.x} y={t.y} width={t.w} height={t.h}
-                        rx="2"
-                        fill={floorColor[t.status]}
-                        stroke={floorBorder[t.status]}
-                        strokeWidth="0.8"
-                      />
-                      <text x={t.x + t.w / 2} y={t.y + t.h / 2 - 1} textAnchor="middle" fontSize="2.8" fontWeight="700" fill="#1e293b">{t.id}</text>
-                      {t.who && <text x={t.x + t.w / 2} y={t.y + t.h / 2 + 3} textAnchor="middle" fontSize="2" fill="#64748b">{t.who}</text>}
-                      <text x={t.x + t.w / 2} y={t.y + t.h - 2} textAnchor="middle" fontSize="1.8" fill="#94928e">{t.cap}p</text>
-                    </g>
-                  ))}
+                  {tables.map((t, i) => {
+                    const col = i % COLS;
+                    const row = Math.floor(i / COLS);
+                    const x = 3 + col * (100 / COLS);
+                    const y = 10 + row * (TABLE_H + 2);
+                    return (
+                      <g key={t.id}>
+                        <rect
+                          x={x} y={y} width={TABLE_W} height={TABLE_H}
+                          rx="2"
+                          fill={t.is_active ? floorColor.free : '#f1f0ed'}
+                          stroke={t.is_active ? floorBorder.free : '#d1d0cc'}
+                          strokeWidth="0.8"
+                        />
+                        <text x={x + TABLE_W / 2} y={y + TABLE_H / 2 - 1} textAnchor="middle" fontSize="2.8" fontWeight="700" fill="#1e293b">{t.label}</text>
+                        <text x={x + TABLE_W / 2} y={y + TABLE_H - 2} textAnchor="middle" fontSize="1.8" fill="#94928e">{t.capacity}p</text>
+                      </g>
+                    );
+                  })}
                 </svg>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -451,7 +466,9 @@ const OwnerDashboard: React.FC = () => {
                 </div>
                 <div style={{ background: 'var(--surface-3)', borderRadius: 16, border: '1px solid var(--border)', padding: 18 }}>
                   <div className="eyebrow" style={{ marginBottom: 12 }}>{t('owner.floor.summary')}</div>
-                  {[[t('owner.floor.freeTables'), FLOOR.filter(x => x.status === 'free').length], [t('owner.floor.takenTables'), FLOOR.filter(x => x.status === 'taken').length], [t('owner.floor.reservedTables'), FLOOR.filter(x => x.status === 'reserved').length]].map(([l, v]) => (
+                  {[[t('owner.floor.freeTables'), tables.filter(x => x.is_active).length],
+                    [t('owner.floor.takenTables'), 0],
+                    [t('owner.floor.reservedTables'), 0]].map(([l, v]) => (
                     <div key={l as string} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                       <span style={{ fontSize: 13, color: 'var(--ink-55)' }}>{l}</span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)' }}>{v}</span>
@@ -460,6 +477,7 @@ const OwnerDashboard: React.FC = () => {
                 </div>
               </div>
             </div>
+            )}
           </motion.div>
         )}
 

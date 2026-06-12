@@ -7,12 +7,12 @@ import { useAuth } from '../context/AuthContext';
 
 // ── Horarios disponibles ──────────────────────────────────────────────────────
 const TIME_SLOTS = ['13:00', '13:30', '14:00', '14:30', '15:00', '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'];
-const OCCASIONS  = [
-  { value: '', label: 'Sin ocasión especial' },
-  { value: 'birthday',    label: '🎂 Cumpleaños' },
-  { value: 'anniversary', label: '💑 Aniversario' },
-  { value: 'business',    label: '💼 Negocios' },
-  { value: 'other',       label: '✨ Otro' },
+const OCCASIONS = (t: (key: string) => string) => [
+  { value: '', label: t('bookings.occasionNone') },
+  { value: 'birthday',    label: `🎂 ${t('bookings.occasionBirthday')}` },
+  { value: 'anniversary', label: `💑 ${t('bookings.occasionAnniversary')}` },
+  { value: 'business',    label: `💼 ${t('bookings.occasionBusiness')}` },
+  { value: 'other',       label: `✨ ${t('bookings.occasionOther')}` },
 ];
 
 // ── Modal de edición ──────────────────────────────────────────────────────────
@@ -23,6 +23,8 @@ interface EditModalProps {
 }
 
 const EditModal: React.FC<EditModalProps> = ({ booking, onClose, onSaved }) => {
+  const { t } = useTranslation();
+  const occasions = OCCASIONS(t);
   const [date,     setDate]     = useState(booking.date);
   const [time,     setTime]     = useState(booking.time.slice(0, 5));
   const [guests,   setGuests]   = useState(booking.guests);
@@ -187,7 +189,7 @@ const EditModal: React.FC<EditModalProps> = ({ booking, onClose, onSaved }) => {
               className="input"
               style={{ width: '100%', background: 'var(--ink-5)', border: 'none', color: 'var(--ink)' }}
             >
-              {OCCASIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {occasions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
 
@@ -406,7 +408,7 @@ const MyBookings: React.FC = () => {
                       {b.occasion && (
                         <span>
                           <span className="mat" style={{ fontSize: 14, verticalAlign: 'middle' }}>celebration</span>{' '}
-                          {OCCASIONS.find((o) => o.value === b.occasion)?.label ?? b.occasion}
+                          {OCCASIONS(t).find((o) => o.value === b.occasion)?.label ?? b.occasion}
                         </span>
                       )}
                     </div>

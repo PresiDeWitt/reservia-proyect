@@ -12,6 +12,7 @@ from rest_framework.response import Response
 
 from .models import Reservation, AvailabilitySlot
 from .serializers import ReservationSerializer
+from .emails import send_booking_confirmation_email, send_booking_cancellation_email
 
 
 class ReservationCreateView(generics.CreateAPIView):
@@ -56,7 +57,8 @@ class ReservationCreateView(generics.CreateAPIView):
 
             slot.is_available = False
             slot.save(update_fields=['is_available'])
-            serializer.save(user=self.request.user, assigned_table=slot.table)
+            reservation = serializer.save(user=self.request.user, assigned_table=slot.table)
+            transaction.on_commit(lambda: send_booking_confirmation_email(reservation))
 
 
 
@@ -95,6 +97,7 @@ def cancel_reservation(request, pk):
                 date=reservation.date,
                 time=reservation.time,
             ).update(is_available=True)
+    transaction.on_commit(lambda: send_booking_cancellation_email(reservation))
     return Response({"message": "Reservation cancelled"})
 
 
@@ -150,15 +153,19 @@ def edit_reservation(request, pk):
 
     if slot_changed:
         with transaction.atomic():
-            # Liberar slot actual
+            # Lock old slot before freeing to prevent TOCTOU race
+            old_slot = None
             if reservation.assigned_table:
-                AvailabilitySlot.objects.filter(
+                old_slot = AvailabilitySlot.objects.select_for_update().filter(
                     table=reservation.assigned_table,
                     date=reservation.date,
                     time=reservation.time,
-                ).update(is_available=True)
+                ).first()
+                if old_slot:
+                    old_slot.is_available = True
+                    old_slot.save(update_fields=['is_available'])
 
-            # Buscar nuevo slot disponible
+            # Buscar nuevo slot disponible (lockeado)
             new_slot = (
                 AvailabilitySlot.objects
                 .select_for_update()
@@ -175,13 +182,10 @@ def edit_reservation(request, pk):
                 .first()
             )
             if new_slot is None:
-                # Revertir liberación del slot anterior
-                if reservation.assigned_table:
-                    AvailabilitySlot.objects.filter(
-                        table=reservation.assigned_table,
-                        date=reservation.date,
-                        time=reservation.time,
-                    ).update(is_available=False)
+                # Revertir: si lockeamos el old_slot, nadie más pudo tomarlo
+                if old_slot:
+                    old_slot.is_available = False
+                    old_slot.save(update_fields=['is_available'])
                 return Response(
                     {'error': 'No hay mesas disponibles para esa fecha, hora y número de comensales.'},
                     status=status.HTTP_400_BAD_REQUEST,

@@ -1,3 +1,5 @@
+import { ownerApi } from './owner';
+
 export interface OwnerProfile {
   name: string;
   cuisine: string;
@@ -7,17 +9,29 @@ export interface OwnerProfile {
   description?: string;
 }
 
-import { STORAGE_KEYS, storage } from './storage';
+export const getOwnerProfile = async (_email: string): Promise<OwnerProfile | null> => {
+  try {
+    const res = await ownerApi.getProfile();
+    return {
+      name: res.name,
+      cuisine: res.cuisine,
+      address: res.address,
+      capacity: res.capacity ?? 0,
+      phone: res.phone,
+      description: res.description,
+    };
+  } catch {
+    return null;
+  }
+};
 
-type Map = Record<string, OwnerProfile>;
-
-const read = (): Map => storage.getJSON<Map>(STORAGE_KEYS.OWNER_PROFILES) ?? {};
-
-export const getOwnerProfile = (email: string): OwnerProfile | null =>
-  read()[email.toLowerCase()] ?? null;
-
-export const setOwnerProfile = (email: string, profile: OwnerProfile) => {
-  const map = read();
-  map[email.toLowerCase()] = profile;
-  storage.setJSON(STORAGE_KEYS.OWNER_PROFILES, map);
+export const setOwnerProfile = async (_email: string, profile: OwnerProfile): Promise<void> => {
+  await ownerApi.updateProfile({
+    name: profile.name,
+    cuisine: profile.cuisine,
+    address: profile.address,
+    description: profile.description || '',
+    capacity: profile.capacity,
+    phone: profile.phone || '',
+  });
 };

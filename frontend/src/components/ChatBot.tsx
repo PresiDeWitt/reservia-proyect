@@ -301,7 +301,7 @@ const ChatBot: React.FC = () => {
                           className="w-full py-2 px-3.5 rounded-xl text-xs font-black bg-[#f97415] hover:bg-[#d95d02] text-[#f8f7f5] transition-colors duration-200 shadow-md flex items-center justify-center gap-1.5 border border-[#f97415]/10 tracking-wide uppercase"
                         >
                           <span className="material-symbols-outlined text-base">3d_rotation</span>
-                          Elegir Mesa en 3D
+                          {t('chat.chooseFloorPlan')}
                         </button>
                       </div>
                     )}
@@ -320,7 +320,7 @@ const ChatBot: React.FC = () => {
                             }}
                           >
                             <span className="material-symbols-outlined text-emerald-600 text-3xl">check_circle</span>
-                            <div className="text-xs font-bold uppercase tracking-wider">¡Reserva Confirmada!</div>
+                            <div className="text-xs font-bold uppercase tracking-wider">{t('chat.bookingConfirmed')}</div>
                             <div className="font-semibold text-xs leading-normal">
                               Mesa para {isConfirmed.guests} en <strong>{isConfirmed.restaurantName}</strong> — {isConfirmed.date} a las {isConfirmed.time}.
                             </div>
@@ -353,7 +353,7 @@ const ChatBot: React.FC = () => {
                               color: 'var(--ink-55)'
                             }}
                           >
-                            Reserva borrador cancelada.
+                            {t('chat.draftCancelled')}
                           </div>
                         ) : (
                           <div

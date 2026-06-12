@@ -4,20 +4,47 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import Restaurant, Reservation
+from .models import Restaurant, Reservation, MenuItem, RestaurantTable
 from .permissions import IsStaffOwner, get_staff_email
-
-OCCASION_LABELS = {
-    'birthday': 'Cumpleaños',
-    'anniversary': 'Aniversario',
-    'business': 'Negocios',
-    'other': 'Otro',
-}
 def _owner_restaurant(request):
     email = get_staff_email(request)
     if not email:
         return None
     return Restaurant.objects.filter(owner__email=email).first()
+
+
+def _validate_menu_payload(data, partial=False):
+    if "name" in data or not partial:
+        if not str(data.get("name", "")).strip():
+            return "El nombre es obligatorio"
+    if "price" in data or not partial:
+        try:
+            price = float(data.get("price", 0))
+        except (TypeError, ValueError):
+            return "Precio no válido"
+        if price <= 0:
+            return "El precio debe ser mayor que 0"
+    return None
+
+
+def _validate_table_payload(data, partial=False):
+    if "label" in data or not partial:
+        if not str(data.get("label", "")).strip():
+            return "La etiqueta es obligatoria"
+    if "capacity" in data or not partial:
+        try:
+            capacity = int(data.get("capacity", 0))
+        except (TypeError, ValueError):
+            return "Capacidad no válida"
+        if capacity <= 0:
+            return "La capacidad debe ser mayor que 0"
+    if "supplement" in data:
+        try:
+            if int(data["supplement"]) < 0:
+                return "El suplemento no puede ser negativo"
+        except (TypeError, ValueError):
+            return "Suplemento no válido"
+    return None
 
 
 @api_view(["GET"])
@@ -141,3 +168,176 @@ def owner_update_reservation_status(request, pk):
     reservation.status = new_status
     reservation.save(update_fields=["status"])
     return Response({"id": reservation.id, "status": reservation.status})
+
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsStaffOwner])
+def owner_profile(request):
+    restaurant = _owner_restaurant(request)
+    if restaurant is None:
+        return Response({"error": "No tienes ningun restaurante asociado"},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == "GET":
+        return Response({
+            "id": restaurant.id,
+            "name": restaurant.name,
+            "cuisine": restaurant.cuisine,
+            "address": restaurant.address,
+            "description": restaurant.description,
+            "location": restaurant.location,
+            "price_range": restaurant.price_range,
+            "image_url": restaurant.image_url,
+            "lat": restaurant.lat,
+            "lng": restaurant.lng,
+            "capacity": restaurant.capacity,
+            "phone": "",  # pending profile field
+        })
+
+    data = request.data
+    if "name" in data and not str(data["name"]).strip():
+        return Response({"error": "El nombre no puede estar vacío"},
+                        status=status.HTTP_400_BAD_REQUEST)
+    for field in ("name", "cuisine", "address", "description",
+                  "location", "price_range", "image_url"):
+        if field in data:
+            setattr(restaurant, field, data[field])
+    if "lat" in data and "lng" in data:
+        restaurant.lat = float(data["lat"])
+        restaurant.lng = float(data["lng"])
+    if "capacity" in data:
+        try:
+            restaurant.capacity = max(0, int(data["capacity"]))
+        except (TypeError, ValueError):
+            return Response({"error": "Capacidad no válida"},
+                            status=status.HTTP_400_BAD_REQUEST)
+    restaurant.save()
+    return Response({"message": "Restaurante actualizado", "id": restaurant.id})
+
+
+# ── Menu items ──────────────────────────────────────────────────────────────
+@api_view(["GET", "POST"])
+@permission_classes([IsStaffOwner])
+def owner_menu_items(request):
+    restaurant = _owner_restaurant(request)
+    if restaurant is None:
+        return Response({"error": "No tienes ningun restaurante asociado"},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == "GET":
+        items = restaurant.menu_items.all().values("id", "name", "description", "price")
+        return Response(list(items))
+
+    data = request.data
+    err = _validate_menu_payload(data)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
+    item = MenuItem.objects.create(
+        restaurant=restaurant,
+        name=data.get("name", ""),
+        description=data.get("description", ""),
+        price=float(data.get("price", 0)),
+    )
+    return Response({"id": item.id, "name": item.name, "description": item.description,
+                     "price": item.price}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["PATCH", "DELETE"])
+@permission_classes([IsStaffOwner])
+def owner_menu_item_detail(request, pk):
+    restaurant = _owner_restaurant(request)
+    if restaurant is None:
+        return Response({"error": "No tienes ningun restaurante asociado"},
+                        status=status.HTTP_403_FORBIDDEN)
+    try:
+        item = MenuItem.objects.get(pk=pk, restaurant=restaurant)
+    except MenuItem.DoesNotExist:
+        return Response({"error": "Elemento del menu no encontrado"},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "DELETE":
+        item.delete()
+        return Response({"message": "Elemento eliminado"}, status=status.HTTP_204_NO_CONTENT)
+
+    data = request.data
+    err = _validate_menu_payload(data, partial=True)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
+    for field in ("name", "description", "price"):
+        if field in data:
+            val = float(data[field]) if field == "price" else data[field]
+            setattr(item, field, val)
+    item.save()
+    return Response({"id": item.id, "name": item.name, "description": item.description,
+                     "price": item.price})
+
+
+# ── Tables ──────────────────────────────────────────────────────────────────
+@api_view(["GET", "POST"])
+@permission_classes([IsStaffOwner])
+def owner_tables(request):
+    restaurant = _owner_restaurant(request)
+    if restaurant is None:
+        return Response({"error": "No tienes ningun restaurante asociado"},
+                        status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == "GET":
+        tables = restaurant.tables.all().values(
+            "id", "label", "zone", "capacity", "supplement",
+            "pos_x", "pos_y", "rotation", "is_active",
+        )
+        return Response(list(tables))
+
+    data = request.data
+    err = _validate_table_payload(data)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
+    table = RestaurantTable.objects.create(
+        restaurant=restaurant,
+        label=data.get("label", ""),
+        zone=data.get("zone", "main"),
+        capacity=int(data.get("capacity", 2)),
+        supplement=int(data.get("supplement", 0)),
+        pos_x=float(data.get("pos_x", 0)),
+        pos_y=float(data.get("pos_y", 0)),
+        rotation=float(data.get("rotation", 0)),
+        is_active=bool(data.get("is_active", True)),
+    )
+    return Response({"id": table.id, "label": table.label, "zone": table.zone,
+                     "capacity": table.capacity}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["PATCH", "DELETE"])
+@permission_classes([IsStaffOwner])
+def owner_table_detail(request, pk):
+    restaurant = _owner_restaurant(request)
+    if restaurant is None:
+        return Response({"error": "No tienes ningun restaurante asociado"},
+                        status=status.HTTP_403_FORBIDDEN)
+    try:
+        table = RestaurantTable.objects.get(pk=pk, restaurant=restaurant)
+    except RestaurantTable.DoesNotExist:
+        return Response({"error": "Mesa no encontrada"},
+                        status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "DELETE":
+        table.delete()
+        return Response({"message": "Mesa eliminada"}, status=status.HTTP_204_NO_CONTENT)
+
+    data = request.data
+    err = _validate_table_payload(data, partial=True)
+    if err:
+        return Response({"error": err}, status=status.HTTP_400_BAD_REQUEST)
+    for field in ("label", "zone", "capacity", "supplement", "pos_x", "pos_y", "rotation", "is_active"):
+        if field in data:
+            val = data[field]
+            if field in ("capacity", "supplement"):
+                val = int(val)
+            elif field in ("pos_x", "pos_y", "rotation"):
+                val = float(val)
+            elif field == "is_active":
+                val = bool(val)
+            setattr(table, field, val)
+    table.save()
+    return Response({"id": table.id, "label": table.label, "zone": table.zone,
+                     "capacity": table.capacity})
