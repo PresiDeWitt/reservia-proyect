@@ -23,6 +23,12 @@ def get_staff_email(request) -> str | None:
     return token.get('email') if token else None
 
 
+def get_staff_restaurant_id(request) -> int | None:
+    token = _decode_staff_token(request)
+    val = token.get('restaurant_id') if token else None
+    return int(val) if val else None
+
+
 class IsStaffOwner(BasePermission):
     def has_permission(self, request, view):
         return get_staff_role(request) == 'owner'

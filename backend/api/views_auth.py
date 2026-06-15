@@ -106,6 +106,8 @@ def staff_login_view(request):
     refresh = RefreshToken.for_user(staff_user)
     refresh['staff_role'] = role
     refresh['email'] = email or ''
+    if staff_code and staff_code.restaurant_id:
+        refresh['restaurant_id'] = staff_code.restaurant_id
 
     return Response({
         "token": str(refresh.access_token),

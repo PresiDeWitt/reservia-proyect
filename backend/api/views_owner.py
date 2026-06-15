@@ -5,8 +5,13 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from .models import Restaurant, Reservation, MenuItem, RestaurantTable
-from .permissions import IsStaffOwner, get_staff_email
+from .permissions import IsStaffOwner, get_staff_email, get_staff_restaurant_id
+
+
 def _owner_restaurant(request):
+    restaurant_id = get_staff_restaurant_id(request)
+    if restaurant_id:
+        return Restaurant.objects.filter(pk=restaurant_id).first()
     email = get_staff_email(request)
     if not email:
         return None
