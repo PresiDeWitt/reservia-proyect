@@ -307,12 +307,18 @@ class Command(BaseCommand):
 
         owner_code = os.environ.get('STAFF_OWNER_CODE')
         admin_code = os.environ.get('STAFF_ADMIN_CODE')
-        owner_email = os.environ.get('STAFF_OWNER_EMAIL', '')
+        # Mismo email por defecto que el propietario del primer restaurante, para
+        # que la resolución por email coincida cuando STAFF_OWNER_EMAIL no se define.
+        owner_email = os.environ.get('STAFF_OWNER_EMAIL', 'owner@reservia.website')
 
         if owner_code:
             if not StaffCode.objects.filter(role='owner', is_active=True).exists():
+                # Vincular el código de propietario al primer restaurante para que
+                # el panel resuelva el restaurante sin depender del email.
+                main_restaurant = Restaurant.objects.order_by('id').first()
                 StaffCode.objects.create(
-                    code=make_password(owner_code), role='owner', email=owner_email
+                    code=make_password(owner_code), role='owner',
+                    email=owner_email, restaurant=main_restaurant,
                 )
         else:
             self.stdout.write(self.style.WARNING('STAFF_OWNER_CODE no configurado — se omite el código de propietario.'))

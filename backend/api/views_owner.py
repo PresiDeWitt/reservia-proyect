@@ -9,13 +9,25 @@ from .permissions import IsStaffOwner, get_staff_email, get_staff_restaurant_id
 
 
 def _owner_restaurant(request):
+    # 1) Vínculo explícito del StaffCode (admin asocia un restaurante al código).
     restaurant_id = get_staff_restaurant_id(request)
     if restaurant_id:
-        return Restaurant.objects.filter(pk=restaurant_id).first()
+        restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
+        if restaurant is not None:
+            return restaurant
+
+    # 2) Coincidencia por email del propietario (impersonación de admin, seed por email).
     email = get_staff_email(request)
-    if not email:
-        return None
-    return Restaurant.objects.filter(owner__email=email).first()
+    if email:
+        restaurant = Restaurant.objects.filter(owner__email=email).first()
+        if restaurant is not None:
+            return restaurant
+
+    # 3) Último recurso para setups de un solo propietario (código de owner por
+    #    variable de entorno / seed sin vínculo explícito): el primer restaurante.
+    #    Los códigos creados desde el panel de admin siempre llevan FK y nunca
+    #    llegan hasta aquí.
+    return Restaurant.objects.order_by('id').first()
 
 
 def _validate_menu_payload(data, partial=False):
