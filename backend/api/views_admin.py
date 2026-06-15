@@ -238,7 +238,8 @@ def admin_staff_codes(request):
         return Response({"error": "El código es obligatorio"}, status=drf_status.HTTP_400_BAD_REQUEST)
     if role not in (StaffCode.Role.OWNER, StaffCode.Role.ADMIN):
         return Response({"error": "Rol no válido (owner|admin)"}, status=drf_status.HTTP_400_BAD_REQUEST)
-    if StaffCode.objects.filter(code=code).exists():
+    from django.contrib.auth.hashers import check_password as _check_pw
+    if any(_check_pw(code, sc.code) for sc in StaffCode.objects.all()):
         return Response({"error": "Ese código ya existe"}, status=drf_status.HTTP_400_BAD_REQUEST)
 
     restaurant = None
@@ -251,8 +252,9 @@ def admin_staff_codes(request):
         if restaurant is None:
             return Response({"error": "Restaurante no encontrado"}, status=drf_status.HTTP_400_BAD_REQUEST)
 
+    from django.contrib.auth.hashers import make_password
     staff_code = StaffCode.objects.create(
-        code=code, role=role, email=str(data.get("email", "")), restaurant=restaurant)
+        code=make_password(code), role=role, email=str(data.get("email", "")), restaurant=restaurant)
     log_admin_action(request, "staffcode_create", "staffcode", staff_code.id,
                      f"Código {role} {code[:8]}...")
     return Response({"id": staff_code.id, "code": staff_code.code, "role": staff_code.role},
