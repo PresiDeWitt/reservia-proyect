@@ -23,6 +23,14 @@ export default defineConfig([
       // Legitimate patterns: sync state reset before async fetch, animation reset,
       // and prop-driven initialization. The rule is too strict for these valid cases.
       'react-hooks/set-state-in-effect': 'off',
+      // Honour the `_`-prefix convention for intentionally-unused identifiers
+      // (e.g. compatibility shims that keep a stable signature: getOwnerProfile(_email)).
+      // Genuinely unused names without the prefix are still reported as errors.
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      }],
     },
   },
 ])
