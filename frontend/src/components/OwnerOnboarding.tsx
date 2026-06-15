@@ -15,6 +15,7 @@ const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, 
   const { t } = useTranslation();
   const isEdit = !!initialProfile;
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
 
   const CUISINES = [
     'Italiana', 'Japonesa', 'Mediterránea', 'Mexicana', 'Asiática', 'Tradicional', 'Fusión', 'Otra',
@@ -30,12 +31,13 @@ const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setSaveError('');
     try {
       const profile: OwnerProfile = { name, cuisine, address, capacity, phone, description };
       await setOwnerProfile(email, profile);
       onDone(profile);
-    } catch {
-      // error will be surfaced by parent
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Error al guardar');
     } finally {
       setSaving(false);
     }
@@ -112,6 +114,11 @@ const OwnerOnboarding: React.FC<Props> = ({ email, initialName, initialProfile, 
             />
           </Field>
 
+          {saveError && (
+            <div style={{ color: 'var(--ruby)', fontSize: 13, padding: '10px 14px', borderRadius: 8, background: '#fef2f2', border: '1px solid #fecaca' }}>
+              {saveError}
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' }}>
             <button type="submit" className="btn btn-ember" style={{ height: 52 }} disabled={saving}>
               <span>{saving ? (isEdit ? 'Guardando…' : 'Creando…') : (isEdit ? t('onboarding.submit.save') : t('onboarding.submit.create'))}</span>

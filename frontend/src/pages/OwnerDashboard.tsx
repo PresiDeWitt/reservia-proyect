@@ -40,6 +40,7 @@ const OwnerDashboard: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<OwnerProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'reservations' | 'floor' | 'heatmap'>('reservations');
   const [filter, setFilter] = useState('all');
   const [editing, setEditing] = useState(false);
@@ -72,11 +73,12 @@ const OwnerDashboard: React.FC = () => {
       navigate('/staff', { replace: true });
       return;
     }
-    if (user?.email) {
-      getOwnerProfile(user.email).then(setProfile);
-    }
+    getOwnerProfile('').then((p) => {
+      setProfile(p);
+      setProfileLoading(false);
+    });
     loadStats();
-  }, [loadStats, navigate, user?.email]);
+  }, [loadStats, navigate]);
 
   const loadReservations = useCallback(() => {
     setLoadingRes(true);
@@ -113,13 +115,16 @@ const OwnerDashboard: React.FC = () => {
     }
   };
 
-  if (!profile && user?.email) {
-    return <OwnerOnboarding email={user.email} initialName={user.name} onDone={setProfile} />;
+  if (profileLoading) {
+    return null;
   }
-  if (editing && user?.email && profile) {
+  if (!profile) {
+    return <OwnerOnboarding email={user?.email ?? ''} initialName={user?.name} onDone={setProfile} />;
+  }
+  if (editing) {
     return (
       <OwnerOnboarding
-        email={user.email}
+        email={user?.email ?? ''}
         initialProfile={profile}
         onDone={(p) => { setProfile(p); setEditing(false); }}
         onCancel={() => setEditing(false)}
